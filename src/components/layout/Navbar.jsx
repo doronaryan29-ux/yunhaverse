@@ -53,7 +53,7 @@ const Navbar = () => {
               </a>
             ))}
             <a
-              href="login.php"
+              href="/#/login"
               className="rounded-full bg-rose-500 px-4 py-2 text-xs font-semibold tracking-[0.2em] text-white shadow-lg shadow-rose-200 transition hover:-translate-y-0.5"
             >
               Login
@@ -88,7 +88,7 @@ const Navbar = () => {
                 </a>
               ))}
               <a
-                href="login.php"
+                href="/#/login"
                 className="rounded-full bg-rose-500 px-4 py-2 text-center text-xs font-semibold tracking-[0.2em] text-white"
                 onClick={() => setMenuOpen(false)}
               >

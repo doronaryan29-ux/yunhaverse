@@ -128,12 +128,26 @@ const CalendarSection = () => {
         <button
           type="button"
           onClick={() => setFiltersOpen((prev) => !prev)}
-          className="rounded-full border border-rose-200 bg-white px-6 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-500 shadow-sm transition hover:-translate-y-0.5"
+          aria-expanded={filtersOpen}
+          aria-controls="calendar-filters"
+          className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] shadow-sm transition-all duration-300 ease-out active:scale-95 ${
+            filtersOpen
+              ? 'border-rose-500 bg-rose-500 text-white shadow-lg shadow-rose-200'
+              : 'border-rose-200 bg-white text-rose-500 hover:-translate-y-0.5'
+          }`}
         >
+          <i className="fas fa-filter text-[12px]" aria-hidden="true" />
           {filtersOpen ? 'Hide Filters' : 'Show Filters'}
         </button>
       </div>
-      {filtersOpen && (
+      <div
+        id="calendar-filters"
+        className={`overflow-hidden transition-all duration-300 ease-out ${
+          filtersOpen
+            ? 'max-h-[420px] opacity-100 translate-y-0'
+            : 'max-h-0 opacity-0 -translate-y-2 pointer-events-none'
+        }`}
+      >
         <div className="flex flex-col gap-3 rounded-3xl border border-rose-100 bg-white/80 p-4 shadow-sm">
           <div className="flex flex-wrap items-center justify-center gap-3">
             {[
@@ -146,7 +160,7 @@ const CalendarSection = () => {
                 key={filter.id}
                 type="button"
                 onClick={() => setEventFilter(filter.id)}
-                className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] transition ${
+                className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] transition ${
                   eventFilter === filter.id
                     ? 'border-rose-500 bg-rose-500 text-white shadow-lg shadow-rose-200'
                     : 'border-rose-200 bg-white text-rose-500 hover:-translate-y-0.5'
@@ -165,7 +179,7 @@ const CalendarSection = () => {
                 key={scope.id}
                 type="button"
                 onClick={() => setEventScope(scope.id)}
-                className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] transition ${
+                className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] transition ${
                   eventScope === scope.id
                     ? 'border-slate-700 bg-slate-800 text-white shadow-lg shadow-slate-200'
                     : 'border-slate-200 bg-white text-slate-600 hover:-translate-y-0.5'
@@ -200,7 +214,7 @@ const CalendarSection = () => {
             </select>
           </div>
         </div>
-      )}
+      </div>
       <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr]">
         <div className="rounded-3xl border border-pink-100 bg-white p-6 shadow-xl">
           <div className="flex items-center justify-between border-b border-pink-100 pb-4">
