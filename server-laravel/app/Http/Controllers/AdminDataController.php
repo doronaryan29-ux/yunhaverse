@@ -92,6 +92,33 @@ class AdminDataController extends Controller
             ->limit($limit)
             ->get();
 
+        $lastLoginById = [];
+        if (Schema::hasTable('audit_logs')) {
+            $userIds = $rows->pluck('id')->filter()->values();
+            if ($userIds->isNotEmpty()) {
+                $loginActions = ['auth.login_success', 'auth.otp_verify_success', 'auth.google_login_success'];
+                $auditRows = DB::table('audit_logs')
+                    ->select(['entity_id', 'actor_user_id', 'created_at'])
+                    ->whereIn('action', $loginActions)
+                    ->where(function ($query) use ($userIds) {
+                        $query->whereIn('entity_id', $userIds)
+                            ->orWhereIn('actor_user_id', $userIds);
+                    })
+                    ->orderByDesc('created_at')
+                    ->get();
+
+                foreach ($auditRows as $auditRow) {
+                    $userId = $auditRow->entity_id ?? $auditRow->actor_user_id;
+                    if (!$userId) {
+                        continue;
+                    }
+                    if (!isset($lastLoginById[$userId])) {
+                        $lastLoginById[$userId] = $auditRow->created_at;
+                    }
+                }
+            }
+        }
+
         $items = $rows->map(function ($row) {
             $fullName = trim((string) ($row->full_name ?? ''));
             if (!$fullName) {
@@ -104,9 +131,15 @@ class AdminDataController extends Controller
             return [
                 'id' => $row->id,
                 'name' => $fullName,
+                'email' => $row->email ?? null,
+                'first_name' => $row->first_name ?? null,
+                'last_name' => $row->last_name ?? null,
+                'full_name' => $row->full_name ?? null,
                 'role' => ucfirst(strtolower((string) ($row->role ?? 'member'))),
                 'status' => ucfirst(strtolower((string) ($row->status ?? 'pending'))),
+                'created_at' => $row->created_at,
                 'joinedAt' => $row->created_at,
+                'last_login_at' => $lastLoginById[$row->id] ?? null,
             ];
         })->values();
 

@@ -33,3 +33,41 @@ export const buildCalendarDays = (monthDate) => {
     return { date: new Date(year, month, dayNumber), inMonth: true }
   })
 }
+
+export const MANILA_TIME_ZONE = 'Asia/Manila'
+
+const coerceDateInManila = (value) => {
+  if (value instanceof Date) return value
+  if (typeof value !== 'string') return new Date(value)
+
+  const trimmed = value.trim()
+  const hasTimeZone = /([zZ]|[+-]\\d{2}:?\\d{2})$/.test(trimmed)
+  if (hasTimeZone) return new Date(trimmed)
+
+  const isoLike = trimmed.replace(' ', 'T')
+  return new Date(`${isoLike}Z`)
+}
+
+export const formatDateInManila = (value, options = {}) =>
+  coerceDateInManila(value).toLocaleDateString('en-US', {
+    timeZone: MANILA_TIME_ZONE,
+    ...options,
+  })
+
+export const formatDateTimeInManila = (value, options = {}) =>
+  coerceDateInManila(value).toLocaleString('en-US', {
+    timeZone: MANILA_TIME_ZONE,
+    ...options,
+  })
+
+export const getManilaYearMonth = (value) => {
+  const date = coerceDateInManila(value)
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: MANILA_TIME_ZONE,
+    year: 'numeric',
+    month: 'numeric',
+  }).formatToParts(date)
+  const year = Number(parts.find((part) => part.type === 'year')?.value || 0)
+  const month = Number(parts.find((part) => part.type === 'month')?.value || 0)
+  return { year, month }
+}

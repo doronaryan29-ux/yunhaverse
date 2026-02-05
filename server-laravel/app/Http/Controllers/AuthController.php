@@ -110,6 +110,11 @@ class AuthController extends Controller
         return hash('sha256', $otp);
     }
 
+    private function generateResetToken(): string
+    {
+        return bin2hex(random_bytes(24));
+    }
+
     public function sendOtp(Request $request)
     {
         $email = strtolower(trim((string) $request->input('email', '')));
@@ -451,6 +456,191 @@ class AuthController extends Controller
             ->delete();
 
         return response()->json(['message' => 'Signup cancelled.']);
+    }
+
+    public function sendPasswordResetOtp(Request $request)
+    {
+        $email = strtolower(trim((string) $request->input('email', '')));
+        if (!$email) {
+            return response()->json(['message' => 'Email is required.'], 400);
+        }
+
+        $user = DB::table('users')->where('email', $email)->first();
+        if (!$user) {
+            AuditLog::write(
+                'auth.reset_otp_failed',
+                'user',
+                null,
+                null,
+                $email,
+                null,
+                [],
+                ['reason' => 'user_not_found'],
+                $request
+            );
+            return response()->json(['message' => 'Account not found.'], 404);
+        }
+
+        if ($user->status === 'suspended') {
+            AuditLog::write(
+                'auth.reset_otp_failed',
+                'user',
+                (int) $user->id,
+                (int) $user->id,
+                $email,
+                $user->role,
+                [],
+                ['reason' => 'account_suspended'],
+                $request
+            );
+            return response()->json(['message' => 'Account not active.'], 403);
+        }
+
+        $otpTtlMinutes = (int) env('OTP_TTL_MINUTES', 10);
+        $otpCooldownSeconds = (int) env('OTP_COOLDOWN_SECONDS', 60);
+
+        if ($user->otp_expires_at) {
+            $remaining = strtotime($user->otp_expires_at) - time();
+            if ($remaining > $otpCooldownSeconds) {
+                return response()->json(['message' => 'OTP already sent. Please wait.'], 429);
+            }
+        }
+
+        $otp = $this->generateOtp();
+        $otpHash = $this->hashOtp($otp);
+        $expiresAt = now()->addMinutes($otpTtlMinutes);
+
+        DB::table('users')->where('id', $user->id)->update([
+            'otp_code' => $otpHash,
+            'otp_expires_at' => $expiresAt,
+            'otp_attempts' => 0,
+            'updated_at' => now(),
+        ]);
+
+        Mail::raw(
+            "Your password reset code is {$otp}. It expires in {$otpTtlMinutes} minutes.",
+            function ($message) use ($email) {
+                $message->to($email)->subject('Your YUNHAverse password reset code');
+            }
+        );
+
+        AuditLog::write(
+            'auth.reset_otp_sent',
+            'user',
+            (int) $user->id,
+            (int) $user->id,
+            $email,
+            $user->role,
+            [],
+            ['method' => 'email'],
+            $request
+        );
+
+        return response()->json(['message' => 'OTP sent.']);
+    }
+
+    public function verifyPasswordResetOtp(Request $request)
+    {
+        $email = strtolower(trim((string) $request->input('email', '')));
+        $otp = strtoupper(trim((string) $request->input('otp', '')));
+
+        if (!$email || !$otp) {
+            return response()->json(['message' => 'Email and OTP are required.'], 400);
+        }
+
+        $otpMaxAttempts = (int) env('OTP_MAX_ATTEMPTS', 5);
+        $user = DB::table('users')->where('email', $email)->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found.'], 404);
+        }
+
+        if ($user->otp_attempts >= $otpMaxAttempts) {
+            $this->maybeFlagOtpLockout($user, (int) $user->otp_attempts, $otpMaxAttempts, $request);
+            return response()->json(['message' => 'Too many attempts. Try later.'], 429);
+        }
+
+        if (!$user->otp_expires_at || now()->greaterThan($user->otp_expires_at)) {
+            return response()->json(['message' => 'OTP expired. Request a new one.'], 400);
+        }
+
+        if ($this->hashOtp($otp) !== $user->otp_code) {
+            $nextAttempts = (int) $user->otp_attempts + 1;
+            DB::table('users')->where('id', $user->id)->update([
+                'otp_attempts' => $nextAttempts,
+                'updated_at' => now(),
+            ]);
+            $this->maybeFlagOtpLockout($user, $nextAttempts, $otpMaxAttempts, $request);
+            return response()->json(['message' => 'Invalid OTP.'], 401);
+        }
+
+        $token = $this->generateResetToken();
+        $ttlMinutes = (int) env('RESET_TOKEN_TTL_MINUTES', 15);
+        Cache::put('auth:reset-token:' . $email, $token, now()->addMinutes($ttlMinutes));
+
+        AuditLog::write(
+            'auth.reset_otp_verified',
+            'user',
+            (int) $user->id,
+            (int) $user->id,
+            $email,
+            $user->role,
+            [],
+            ['method' => 'email'],
+            $request
+        );
+
+        return response()->json(['message' => 'OTP verified.', 'resetToken' => $token]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $email = strtolower(trim((string) $request->input('email', '')));
+        $resetToken = (string) $request->input('resetToken', '');
+        $password = (string) $request->input('password', '');
+
+        if (!$email || !$resetToken || !$password) {
+            return response()->json(['message' => 'Email, reset token, and password are required.'], 400);
+        }
+
+        if (strlen($password) < 8 || !preg_match('/[A-Z]/', $password)) {
+            return response()->json([
+                'message' => 'Password must be at least 8 characters and include 1 uppercase letter.',
+            ], 400);
+        }
+
+        $user = DB::table('users')->where('email', $email)->first();
+        if (!$user) {
+            return response()->json(['message' => 'User not found.'], 404);
+        }
+
+        $cachedToken = Cache::get('auth:reset-token:' . $email);
+        if (!$cachedToken || !hash_equals($cachedToken, $resetToken)) {
+            return response()->json(['message' => 'Reset token invalid or expired.'], 401);
+        }
+
+        DB::table('users')->where('id', $user->id)->update([
+            'password_hash' => Hash::make($password),
+            'otp_code' => null,
+            'otp_expires_at' => null,
+            'otp_attempts' => 0,
+            'updated_at' => now(),
+        ]);
+        Cache::forget('auth:reset-token:' . $email);
+
+        AuditLog::write(
+            'auth.password_reset',
+            'user',
+            (int) $user->id,
+            (int) $user->id,
+            $email,
+            $user->role,
+            [],
+            ['method' => 'email'],
+            $request
+        );
+
+        return response()->json(['message' => 'Password reset successful.']);
     }
 
     public function googleRedirect()

@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { fetchEvents } from '../../services/eventsApi'
-import { buildCalendarDays, toISODate } from '../../utils/date'
+import {
+  buildCalendarDays,
+  formatDateInManila,
+  toISODate,
+} from '../../utils/date'
 
 const CalendarSection = () => {
   const [events, setEvents] = useState([])
@@ -86,7 +90,7 @@ const CalendarSection = () => {
     return aDate - bDate
   })
 
-  const monthLabel = calendarMonth.toLocaleString('en-US', {
+  const monthLabel = formatDateInManila(calendarMonth, {
     month: 'long',
     year: 'numeric',
   })
@@ -238,7 +242,7 @@ const CalendarSection = () => {
                 {monthLabel}
               </h3>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
-                {selectedDate.toLocaleDateString('en-US', {
+                {formatDateInManila(selectedDate, {
                   month: 'short',
                   day: 'numeric',
                   year: 'numeric',
@@ -319,7 +323,7 @@ const CalendarSection = () => {
                 className="flex gap-4 rounded-2xl border border-rose-100 bg-rose-50/60 p-4"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-sm font-semibold text-rose-500">
-                  {new Date(event.start_at).toLocaleDateString('en-US', {
+                  {formatDateInManila(event.start_at, {
                     month: 'short',
                     day: 'numeric',
                   })}

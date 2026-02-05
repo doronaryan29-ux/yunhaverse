@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Admin from './pages/Admin'
+import Member from './pages/Member'
 
 const getRoute = () => window.location.hash || '#/'
 const isAdminRole = (role) => String(role || '').trim().toLowerCase() === 'admin'
@@ -99,6 +100,15 @@ function App() {
       return <Login />
     }
     return <Admin />
+  }
+
+  if (route.startsWith('#/member')) {
+    const user = getStoredUser()
+    if (!user || isAdminRole(user.role)) {
+      redirectTo('#/login?force=1')
+      return <Login />
+    }
+    return <Member />
   }
 
   return <Home />
