@@ -23,6 +23,14 @@ const SidebarNav = ({ navItems, activeItem }) => (
                 window.location.replace('/#/admin')
               } else if (item === 'Members') {
                 window.location.replace('/#/admin/members')
+              } else if (item === 'Creative Staff') {
+                window.location.replace('/#/admin/creatives')
+              } else if (item === 'Funds & Donations') {
+                window.location.replace('/#/admin/funds')
+              } else if (item === 'Events') {
+                window.location.replace('/#/admin/events')
+              } else if (item === 'Audit Logs') {
+                window.location.replace('/#/admin/audit-logs')
               }
             }}
             className={`rounded-2xl px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em] transition ${

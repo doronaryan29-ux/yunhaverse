@@ -6,6 +6,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AdminDataController;
+use App\Http\Controllers\DonationsController;
 
 Route::get('/health', function () {
     return response()->json(['ok' => true]);
@@ -32,6 +33,23 @@ Route::post('/admin/audit-flags', [AuditLogController::class, 'storeFlag']);
 Route::post('/admin/audit-flags/{id}/resolve', [AuditLogController::class, 'resolveFlag']);
 Route::get('/admin/upcoming-events', [AdminDataController::class, 'upcomingEvents']);
 Route::get('/admin/members-creative', [AdminDataController::class, 'membersCreativeStaff']);
+Route::get('/admin/creative-requests', [AdminDataController::class, 'creativeRequests']);
+Route::get('/admin/creative-submissions', [AdminDataController::class, 'creativeSubmissions']);
+Route::post('/admin/creative-requests', [AdminDataController::class, 'storeCreativeRequest']);
+Route::post('/admin/creative-requests/{id}', [AdminDataController::class, 'updateCreativeRequest']);
+Route::post('/admin/creative-requests/{id}/delete', [AdminDataController::class, 'deleteCreativeRequest']);
+Route::post('/admin/creative-submissions', [AdminDataController::class, 'storeCreativeSubmission']);
+Route::post('/admin/creative-submissions/{id}', [AdminDataController::class, 'updateCreativeSubmission']);
+Route::post('/admin/creative-submissions/{id}/delete', [AdminDataController::class, 'deleteCreativeSubmission']);
+Route::get('/admin/donations', [AdminDataController::class, 'donations']);
+Route::get('/admin/events', [AdminDataController::class, 'events']);
+Route::post('/admin/events', [AdminDataController::class, 'storeEvent']);
+Route::post('/admin/events/{id}', [AdminDataController::class, 'updateEvent']);
+Route::post('/admin/events/{id}/delete', [AdminDataController::class, 'deleteEvent']);
+Route::post('/donations', [DonationsController::class, 'store']);
+Route::post('/admin/donations', [DonationsController::class, 'storeAdmin']);
+Route::post('/admin/donations/{id}', [DonationsController::class, 'updateAdmin']);
+Route::post('/admin/donations/{id}/delete', [DonationsController::class, 'deleteAdmin']);
 
 Route::options('/{any}', function () {
     return response()->noContent();

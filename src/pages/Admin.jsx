@@ -3,6 +3,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   DashboardSection,
   FlagIssueModal,
+  CreativeStaffPage,
+  EventsPage,
+  FundsDonationsPage,
+  AuditLogsPage,
   MembersPage,
   ProfileSection,
   SidebarNav,
@@ -43,7 +47,21 @@ const Admin = () => {
   const [route, setRoute] = useState(window.location.hash || '#/admin')
   const isProfileRoute = route.startsWith('#/admin/profile')
   const isMembersRoute = route.startsWith('#/admin/members')
-  const activeNavItem = isMembersRoute ? 'Members' : 'Dashboard'
+  const isCreativesRoute = route.startsWith('#/admin/creatives')
+  const isFundsRoute = route.startsWith('#/admin/funds')
+  const isEventsRoute = route.startsWith('#/admin/events')
+  const isAuditLogsRoute = route.startsWith('#/admin/audit-logs')
+  const activeNavItem = isMembersRoute
+    ? 'Members'
+    : isCreativesRoute
+      ? 'Creative Staff'
+      : isFundsRoute
+        ? 'Funds & Donations'
+        : isEventsRoute
+          ? 'Events'
+          : isAuditLogsRoute
+            ? 'Audit Logs'
+          : 'Dashboard'
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
@@ -51,10 +69,19 @@ const Admin = () => {
   const [notificationsLoading, setNotificationsLoading] = useState(false)
   const profileMenuRef = useRef(null)
   const [auditItems, setAuditItems] = useState([])
+  const [auditLogsLoading, setAuditLogsLoading] = useState(false)
   const [memberItems, setMemberItems] = useState([])
   const [upcomingEventItems, setUpcomingEventItems] = useState([])
   const [membersFull, setMembersFull] = useState([])
   const [membersLoading, setMembersLoading] = useState(false)
+  const [creativeRequests, setCreativeRequests] = useState([])
+  const [creativeRequestsLoading, setCreativeRequestsLoading] = useState(false)
+  const [creativeSubmissions, setCreativeSubmissions] = useState([])
+  const [creativeSubmissionsLoading, setCreativeSubmissionsLoading] = useState(false)
+  const [events, setEvents] = useState([])
+  const [eventsLoading, setEventsLoading] = useState(false)
+  const [donations, setDonations] = useState([])
+  const [donationsLoading, setDonationsLoading] = useState(false)
   const [auditFlags, setAuditFlags] = useState([])
   const [auditFlagsLoading, setAuditFlagsLoading] = useState(false)
   const [stats, setStats] = useState({
@@ -146,11 +173,12 @@ const Admin = () => {
     }
   }, [apiBase, profileRoleNormalized])
 
-  const fetchAuditLogs = useCallback(async () => {
+  const fetchAuditLogs = useCallback(async (limit = 6) => {
+    setAuditLogsLoading(true)
     try {
       const params = new URLSearchParams({
         requesterRole: profileRoleNormalized,
-        limit: '6',
+        limit: String(limit),
       })
       const response = await fetch(`${apiBase}/admin/audit-logs?${params.toString()}`)
       const data = await response.json()
@@ -160,6 +188,8 @@ const Admin = () => {
       setAuditItems(Array.isArray(data.items) ? data.items : [])
     } catch {
       setAuditItems([])
+    } finally {
+      setAuditLogsLoading(false)
     }
   }, [apiBase, profileRoleNormalized])
 
@@ -197,6 +227,90 @@ const Admin = () => {
       setMembersFull([])
     } finally {
       setMembersLoading(false)
+    }
+  }, [apiBase, profileRoleNormalized])
+
+  const fetchCreativeRequests = useCallback(async () => {
+    setCreativeRequestsLoading(true)
+    try {
+      const params = new URLSearchParams({
+        requesterRole: profileRoleNormalized,
+        limit: '50',
+      })
+      const response = await fetch(
+        `${apiBase}/admin/creative-requests?${params.toString()}`,
+      )
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data?.message || 'Failed to load creative requests.')
+      }
+      setCreativeRequests(Array.isArray(data.items) ? data.items : [])
+    } catch {
+      setCreativeRequests([])
+    } finally {
+      setCreativeRequestsLoading(false)
+    }
+  }, [apiBase, profileRoleNormalized])
+
+  const fetchCreativeSubmissions = useCallback(async () => {
+    setCreativeSubmissionsLoading(true)
+    try {
+      const params = new URLSearchParams({
+        requesterRole: profileRoleNormalized,
+        limit: '50',
+      })
+      const response = await fetch(
+        `${apiBase}/admin/creative-submissions?${params.toString()}`,
+      )
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data?.message || 'Failed to load creative submissions.')
+      }
+      setCreativeSubmissions(Array.isArray(data.items) ? data.items : [])
+    } catch {
+      setCreativeSubmissions([])
+    } finally {
+      setCreativeSubmissionsLoading(false)
+    }
+  }, [apiBase, profileRoleNormalized])
+
+  const fetchDonations = useCallback(async () => {
+    setDonationsLoading(true)
+    try {
+      const params = new URLSearchParams({
+        requesterRole: profileRoleNormalized,
+        limit: '100',
+      })
+      const response = await fetch(`${apiBase}/admin/donations?${params.toString()}`)
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data?.message || 'Failed to load donations.')
+      }
+      setDonations(Array.isArray(data.items) ? data.items : [])
+    } catch {
+      setDonations([])
+    } finally {
+      setDonationsLoading(false)
+    }
+  }, [apiBase, profileRoleNormalized])
+
+  const fetchEvents = useCallback(async () => {
+    setEventsLoading(true)
+    try {
+      const params = new URLSearchParams({
+        requesterRole: profileRoleNormalized,
+        limit: '100',
+      })
+      const response = await fetch(`${apiBase}/admin/events?${params.toString()}`)
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data?.message || 'Failed to load events.')
+      }
+      setEvents(Array.isArray(data.items) ? data.items : [])
+    } catch {
+      setEvents([])
+    } finally {
+      setEventsLoading(false)
     }
   }, [apiBase, profileRoleNormalized])
 
@@ -316,9 +430,30 @@ const Admin = () => {
   }, [isProfileRoute, apiBase, user?.id, profileRoleNormalized])
 
   useEffect(() => {
-    if (!isMembersRoute) return
+    if (!isMembersRoute && !isCreativesRoute && !isFundsRoute) return
     fetchMembersFull()
-  }, [fetchMembersFull, isMembersRoute])
+  }, [fetchMembersFull, isMembersRoute, isCreativesRoute, isFundsRoute])
+
+  useEffect(() => {
+    if (!isCreativesRoute) return
+    fetchCreativeRequests()
+    fetchCreativeSubmissions()
+  }, [fetchCreativeRequests, fetchCreativeSubmissions, isCreativesRoute])
+
+  useEffect(() => {
+    if (!isFundsRoute) return
+    fetchDonations()
+  }, [fetchDonations, isFundsRoute])
+
+  useEffect(() => {
+    if (!isEventsRoute) return
+    fetchEvents()
+  }, [fetchEvents, isEventsRoute])
+
+  useEffect(() => {
+    if (!isAuditLogsRoute) return
+    fetchAuditLogs(200)
+  }, [fetchAuditLogs, isAuditLogsRoute])
 
   const statCards = [
     {
@@ -629,6 +764,39 @@ const Admin = () => {
               loading={membersLoading}
               currentRole={profileRoleNormalized}
             />
+          ) : isCreativesRoute ? (
+            <CreativeStaffPage
+              apiBase={apiBase}
+              requesterRole={profileRoleNormalized}
+              members={membersFull}
+              requests={creativeRequests}
+              submissions={creativeSubmissions}
+              loadingRequests={creativeRequestsLoading}
+              loadingSubmissions={creativeSubmissionsLoading}
+              onRefresh={() => {
+                fetchCreativeRequests()
+                fetchCreativeSubmissions()
+              }}
+            />
+          ) : isFundsRoute ? (
+            <FundsDonationsPage
+              donations={donations}
+              loading={donationsLoading}
+              apiBase={apiBase}
+              requesterRole={profileRoleNormalized}
+              members={membersFull}
+              onRefresh={fetchDonations}
+            />
+          ) : isEventsRoute ? (
+            <EventsPage
+              events={events}
+              loading={eventsLoading}
+              apiBase={apiBase}
+              requesterRole={profileRoleNormalized}
+              onRefresh={fetchEvents}
+            />
+          ) : isAuditLogsRoute ? (
+            <AuditLogsPage auditItems={auditItems} loading={auditLogsLoading} />
           ) : (
             <DashboardSection
               statCards={statCards}

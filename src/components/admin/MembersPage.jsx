@@ -1,10 +1,13 @@
 import { memo, useMemo, useState } from 'react'
-import { formatDateInManila, getManilaYearMonth } from '../../utils/date'
+import {
+  formatDateInManila,
+  formatDateTimeInManila,
+  getManilaYearMonth,
+} from '../../utils/date'
 
 const getPermissionLevel = (role) => {
   const normalized = String(role || '').trim().toLowerCase()
   if (normalized === 'admin') return 'admin'
-  if (normalized === 'moderator') return 'moderator'
   return 'viewer'
 }
 
@@ -18,7 +21,7 @@ const MembersPage = ({ members, loading, currentRole }) => {
   const [flaggedById, setFlaggedById] = useState({})
 
   const permission = getPermissionLevel(currentRole)
-  const canEdit = permission === 'admin' || permission === 'moderator'
+  const canEdit = permission === 'admin' 
   const canAdmin = permission === 'admin'
 
   const roleOptions = useMemo(() => {
@@ -235,7 +238,7 @@ const MembersPage = ({ members, loading, currentRole }) => {
                     <span>{member.status || 'active'}</span>
                     <span>
                       {member.last_login_at
-                        ? formatDateInManila(member.last_login_at)
+                        ? formatDateTimeInManila(member.last_login_at)
                         : '—'}
                     </span>
                   </button>
@@ -303,7 +306,7 @@ const MembersPage = ({ members, loading, currentRole }) => {
               <p>
                 <span className="font-semibold text-slate-900">Last Login:</span>{' '}
                 {drawerMember.last_login_at
-                  ? formatDateInManila(drawerMember.last_login_at)
+                  ? formatDateTimeInManila(drawerMember.last_login_at)
                   : '—'}
               </p>
             </div>
