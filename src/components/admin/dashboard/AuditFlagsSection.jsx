@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react'
-import { formatDateTimeInManila } from '../../utils/date'
+import { formatDateTimeInManila } from '../../../utils/date'
 
 const AuditFlagsSection = ({ flags, loading, onResolveFlag }) => {
   const previewFlags = useMemo(() => flags.slice(0, 3), [flags])

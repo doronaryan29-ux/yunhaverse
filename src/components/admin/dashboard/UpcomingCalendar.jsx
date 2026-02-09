@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react'
-import { formatDateInManila } from '../../utils/date'
+import { formatDateInManila } from '../../../utils/date'
 
 const UpcomingCalendar = ({ upcomingEventItems }) => {
   const previewEvents = useMemo(() => upcomingEventItems.slice(0, 4), [upcomingEventItems])

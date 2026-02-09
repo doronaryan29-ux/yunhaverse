@@ -15,6 +15,7 @@ const TopHeader = ({
   onToggleProfile,
   onCloseNotifications,
   onGoProfile,
+  onGoHome,
   onLogout,
   onMarkNotificationRead,
 }) => (
@@ -36,6 +37,14 @@ const TopHeader = ({
       </div>
 
       <div className="relative flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onGoHome}
+          className="flex items-center gap-2 rounded-xl border border-rose-100 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-slate-600 transition hover:-translate-y-0.5 hover:bg-rose-50"
+        >
+          <i className="fas fa-house text-[11px] text-rose-500" />
+          Home
+        </button>
         <button
           type="button"
           onClick={onToggleNotifications}

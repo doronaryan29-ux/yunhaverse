@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react'
-import { formatDateTimeInManila } from '../../utils/date'
+import { formatDateTimeInManila } from '../../../utils/date'
 
 const AuditLogSection = ({ auditItems }) => {
   const previewItems = useMemo(() => auditItems.slice(0, 4), [auditItems])

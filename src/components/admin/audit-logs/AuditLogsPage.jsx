@@ -1,5 +1,5 @@
 import { memo, useMemo, useState } from 'react'
-import { formatDateTimeInManila } from '../../utils/date'
+import { formatDateTimeInManila } from '../../../utils/date'
 
 const AuditLogsPage = ({ auditItems = [], loading = false }) => {
   const [search, setSearch] = useState('')

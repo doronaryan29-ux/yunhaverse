@@ -31,6 +31,8 @@ const SidebarNav = ({ navItems, activeItem }) => (
                 window.location.replace('/#/admin/events')
               } else if (item === 'Audit Logs') {
                 window.location.replace('/#/admin/audit-logs')
+              } else if (item === 'Settings') {
+                window.location.replace('/#/admin/settings')
               }
             }}
             className={`rounded-2xl px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em] transition ${

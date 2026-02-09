@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react'
-import { formatDateInManila } from '../../utils/date'
+import { formatDateInManila } from '../../../utils/date'
 
 const MembersCreativeSection = ({ memberItems }) => {
   const previewMembers = useMemo(() => memberItems.slice(0, 4), [memberItems])

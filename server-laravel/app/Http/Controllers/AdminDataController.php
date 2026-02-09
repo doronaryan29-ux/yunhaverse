@@ -8,6 +8,16 @@ use Illuminate\Support\Facades\Schema;
 
 class AdminDataController extends Controller
 {
+    private const DEFAULT_APP_SETTINGS = [
+        'app_name' => 'YunhaVerse',
+        'logo_url' => null,
+        'homepage_headline' => 'Welcome to YunhaVerse',
+        'homepage_subheadline' => 'A place for creators to thrive.',
+        'primary_color' => '#0f172a',
+        'roles' => null,
+        'audit_settings' => null,
+    ];
+
     private function ensureAdmin(Request $request)
     {
         $requesterRole = strtolower(trim((string) $request->input('requesterRole', $request->query('requesterRole', ''))));
@@ -16,6 +26,132 @@ class AdminDataController extends Controller
         }
 
         return null;
+    }
+
+    public function appSettings(Request $request)
+    {
+        $adminError = $this->ensureAdmin($request);
+        if ($adminError) {
+            return $adminError;
+        }
+
+        if (!Schema::hasTable('app_settings')) {
+            return response()->json(self::DEFAULT_APP_SETTINGS);
+        }
+
+        $row = DB::table('app_settings')->orderBy('id')->first();
+
+        if (!$row) {
+            $id = DB::table('app_settings')->insertGetId(array_merge(
+                self::DEFAULT_APP_SETTINGS,
+                ['created_at' => now(), 'updated_at' => now()],
+            ));
+            $row = DB::table('app_settings')->where('id', $id)->first();
+        }
+
+        return response()->json([
+            'id' => $row->id ?? null,
+            'app_name' => $row->app_name ?? self::DEFAULT_APP_SETTINGS['app_name'],
+            'logo_url' => $row->logo_url ?? null,
+            'homepage_headline' => $row->homepage_headline ?? null,
+            'homepage_subheadline' => $row->homepage_subheadline ?? null,
+            'primary_color' => $row->primary_color ?? self::DEFAULT_APP_SETTINGS['primary_color'],
+            'roles' => $row->roles ? json_decode($row->roles, true) : null,
+            'audit_settings' => $row->audit_settings ? json_decode($row->audit_settings, true) : null,
+            'updated_by' => $row->updated_by ?? null,
+            'updated_at' => $row->updated_at ?? null,
+        ]);
+    }
+
+    public function publicSettings()
+    {
+        if (!Schema::hasTable('app_settings')) {
+            return response()->json(self::DEFAULT_APP_SETTINGS);
+        }
+
+        $row = DB::table('app_settings')->orderBy('id')->first();
+        if (!$row) {
+            $id = DB::table('app_settings')->insertGetId(array_merge(
+                self::DEFAULT_APP_SETTINGS,
+                ['created_at' => now(), 'updated_at' => now()],
+            ));
+            $row = DB::table('app_settings')->where('id', $id)->first();
+        }
+
+        return response()->json([
+            'app_name' => $row->app_name ?? self::DEFAULT_APP_SETTINGS['app_name'],
+            'logo_url' => $row->logo_url ?? null,
+            'homepage_headline' => $row->homepage_headline ?? null,
+            'homepage_subheadline' => $row->homepage_subheadline ?? null,
+            'primary_color' => $row->primary_color ?? self::DEFAULT_APP_SETTINGS['primary_color'],
+        ]);
+    }
+
+    public function updateAppSettings(Request $request)
+    {
+        $adminError = $this->ensureAdmin($request);
+        if ($adminError) {
+            return $adminError;
+        }
+
+        if (!Schema::hasTable('app_settings')) {
+            return response()->json(['message' => 'Settings table not found.'], 500);
+        }
+
+        $payload = [
+            'app_name' => trim((string) $request->input('app_name', self::DEFAULT_APP_SETTINGS['app_name'])),
+            'logo_url' => $this->normalizeNullableString($request->input('logo_url')),
+            'homepage_headline' => $this->normalizeNullableString($request->input('homepage_headline')),
+            'homepage_subheadline' => $this->normalizeNullableString($request->input('homepage_subheadline')),
+            'primary_color' => trim((string) $request->input('primary_color', self::DEFAULT_APP_SETTINGS['primary_color'])),
+            'roles' => $this->normalizeJson($request->input('roles')),
+            'audit_settings' => $this->normalizeJson($request->input('auditSettings', $request->input('audit_settings'))),
+            'updated_by' => $request->input('updatedBy'),
+            'updated_at' => now(),
+        ];
+
+        $row = DB::table('app_settings')->orderBy('id')->first();
+        if ($row) {
+            DB::table('app_settings')->where('id', $row->id)->update($payload);
+            $rowId = $row->id;
+        } else {
+            $payload['created_at'] = now();
+            $rowId = DB::table('app_settings')->insertGetId($payload);
+        }
+
+        $updated = DB::table('app_settings')->where('id', $rowId)->first();
+
+        return response()->json([
+            'id' => $updated->id ?? null,
+            'app_name' => $updated->app_name ?? self::DEFAULT_APP_SETTINGS['app_name'],
+            'logo_url' => $updated->logo_url ?? null,
+            'homepage_headline' => $updated->homepage_headline ?? null,
+            'homepage_subheadline' => $updated->homepage_subheadline ?? null,
+            'primary_color' => $updated->primary_color ?? self::DEFAULT_APP_SETTINGS['primary_color'],
+            'roles' => $updated->roles ? json_decode($updated->roles, true) : null,
+            'audit_settings' => $updated->audit_settings ? json_decode($updated->audit_settings, true) : null,
+            'updated_by' => $updated->updated_by ?? null,
+            'updated_at' => $updated->updated_at ?? null,
+        ]);
+    }
+
+    private function normalizeNullableString($value): ?string
+    {
+        $trimmed = trim((string) $value);
+        return $trimmed === '' ? null : $trimmed;
+    }
+
+    private function normalizeJson($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+        if (is_string($value)) {
+            $trimmed = trim($value);
+            return $trimmed === '' ? null : $trimmed;
+        }
+
+        return json_encode($value);
     }
 
     public function upcomingEvents(Request $request)

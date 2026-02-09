@@ -1,5 +1,5 @@
 import { memo, useRef, useState } from 'react'
-import { formatDateInManila } from '../../utils/date'
+import { formatDateInManila } from '../../../utils/date'
 
 const FundsDonationsPage = ({
   donations = [],
