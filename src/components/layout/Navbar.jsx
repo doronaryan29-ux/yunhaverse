@@ -11,7 +11,28 @@ const navItems = [
 ]
 
 const AUTH_MAX_AGE_MS = 12 * 60 * 60 * 1000
-const isAdminRole = (role) => String(role || '').trim().toLowerCase() === 'admin'
+const normalizeRole = (role) => String(role || '').trim().toLowerCase()
+const isAdminRole = (role) => normalizeRole(role) === 'admin'
+const isCreativeRole = (role) => {
+  const normalized = normalizeRole(role)
+  if (!normalized) return false
+  const compact = normalized.replace(/[_-]+/g, ' ')
+  return (
+    compact.includes('creative') ||
+    compact.includes('copywriter') ||
+    compact.includes('sns')
+  )
+}
+const isCopywriterRole = (role) => {
+  const normalized = normalizeRole(role)
+  if (!normalized) return false
+  return normalized.replace(/[_-]+/g, ' ').includes('copywriter')
+}
+const isSnsRole = (role) => {
+  const normalized = normalizeRole(role)
+  if (!normalized) return false
+  return normalized.replace(/[_-]+/g, ' ').includes('sns')
+}
 const getStoredUser = () => {
   try {
     const user = JSON.parse(sessionStorage.getItem('user') || 'null')
@@ -48,10 +69,32 @@ const Navbar = () => {
       return { user: null, authLink: { href: '/#/login', label: 'Login' } }
     }
     const isAdmin = isAdminRole(storedUser.role)
-    const target = isAdmin ? '/#/admin' : '/#/member'
+    const isCopywriter = isCopywriterRole(storedUser.role)
+    const isSns = isSnsRole(storedUser.role)
+    const isCreative = isCreativeRole(storedUser.role)
+    const target = isAdmin
+      ? '/#/admin'
+      : isCopywriter
+        ? '/#/copywriter'
+        : isSns
+          ? '/#/sns'
+          : isCreative
+            ? '/#/staff'
+            : '/#/member'
     return {
       user: storedUser,
-      authLink: { href: target, label: isAdmin ? 'Dashboard' : 'My Page' },
+      authLink: {
+        href: target,
+        label: isAdmin
+          ? 'Dashboard'
+          : isCopywriter
+            ? 'Copywriter'
+            : isSns
+              ? 'SNS Updater'
+              : isCreative
+                ? 'Staff Portal'
+                : 'My Page',
+      },
     }
   }, [])
   const initials = useMemo(() => getUserInitials(user), [user])

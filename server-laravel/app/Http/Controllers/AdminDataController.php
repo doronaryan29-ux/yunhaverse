@@ -28,11 +28,40 @@ class AdminDataController extends Controller
         return null;
     }
 
+    private function ensureAdminOrCreative(Request $request)
+    {
+        $requesterRole = strtolower(trim((string) $request->input('requesterRole', $request->query('requesterRole', ''))));
+        if (
+            $requesterRole !== 'admin' &&
+            !str_contains($requesterRole, 'creative') &&
+            !str_contains($requesterRole, 'copywriter') &&
+            !str_contains($requesterRole, 'sns')
+        ) {
+            return response()->json(['message' => 'Admin or creative access required.'], 403);
+        }
+
+        return null;
+    }
+
+    private function logCreativeRequestHistory(int $requestId, array $payload): void
+    {
+        if (!Schema::hasTable('creative_request_histories')) {
+            return;
+        }
+
+        DB::table('creative_request_histories')->insert(array_merge([
+            'request_id' => $requestId,
+            'action' => 'request.updated',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $payload));
+    }
+
     public function appSettings(Request $request)
     {
-        $adminError = $this->ensureAdmin($request);
-        if ($adminError) {
-            return $adminError;
+        $accessError = $this->ensureAdminOrCreative($request);
+        if ($accessError) {
+            return $accessError;
         }
 
         if (!Schema::hasTable('app_settings')) {
@@ -215,9 +244,9 @@ class AdminDataController extends Controller
 
     public function membersCreativeStaff(Request $request)
     {
-        $adminError = $this->ensureAdmin($request);
-        if ($adminError) {
-            return $adminError;
+        $accessError = $this->ensureAdminOrCreative($request);
+        if ($accessError) {
+            return $accessError;
         }
 
         $limit = max(1, min((int) $request->query('limit', 8), 30));
@@ -233,7 +262,7 @@ class AdminDataController extends Controller
                 'created_at',
                 'last_login_at',
             ])
-            ->whereRaw('LOWER(COALESCE(role, "")) IN (?, ?)', ['member', 'creative'])
+            ->whereRaw('LOWER(COALESCE(role, "")) IN (?, ?, ?, ?, ?)', ['member', 'creative', 'copywriter', 'sns_updater', 'sns updater'])
             ->orderByDesc('created_at')
             ->limit($limit)
             ->get();
@@ -294,9 +323,9 @@ class AdminDataController extends Controller
 
     public function creativeRequests(Request $request)
     {
-        $adminError = $this->ensureAdmin($request);
-        if ($adminError) {
-            return $adminError;
+        $accessError = $this->ensureAdminOrCreative($request);
+        if ($accessError) {
+            return $accessError;
         }
 
         if (!Schema::hasTable('creative_requests')) {
@@ -305,6 +334,9 @@ class AdminDataController extends Controller
 
         $limit = max(1, min((int) $request->query('limit', 25), 200));
         $status = strtolower(trim((string) $request->query('status', '')));
+        $stage = strtolower(trim((string) $request->query('stage', '')));
+        $requestId = $request->query('requestId', $request->query('request_id'));
+        $assignedTo = $request->query('assignedTo', $request->query('assigned_to'));
 
         $query = DB::table('creative_requests as cr')
             ->leftJoin('users as requester', 'cr.requested_by', '=', 'requester.id')
@@ -315,6 +347,7 @@ class AdminDataController extends Controller
                 'cr.description',
                 'cr.requested_by',
                 'cr.assigned_to',
+                'cr.stage',
                 'cr.status',
                 'cr.priority',
                 'cr.due_at',
@@ -333,6 +366,12 @@ class AdminDataController extends Controller
 
         if ($status) {
             $query->whereRaw('LOWER(COALESCE(cr.status, "")) = ?', [$status]);
+        }
+        if ($stage) {
+            $query->whereRaw('LOWER(COALESCE(cr.stage, "")) = ?', [$stage]);
+        }
+        if ($assignedTo !== null && $assignedTo !== '') {
+            $query->where('cr.assigned_to', (int) $assignedTo);
         }
 
         $rows = $query->limit($limit)->get();
@@ -362,6 +401,7 @@ class AdminDataController extends Controller
                 'requested_by_name' => $requesterName,
                 'assigned_to' => $row->assigned_to,
                 'assigned_to_name' => $assigneeName,
+                'stage' => $row->stage ?? 'creative',
                 'status' => $row->status,
                 'priority' => $row->priority,
                 'due_at' => $row->due_at,
@@ -375,9 +415,9 @@ class AdminDataController extends Controller
 
     public function creativeSubmissions(Request $request)
     {
-        $adminError = $this->ensureAdmin($request);
-        if ($adminError) {
-            return $adminError;
+        $accessError = $this->ensureAdminOrCreative($request);
+        if ($accessError) {
+            return $accessError;
         }
 
         if (!Schema::hasTable('creative_submissions')) {
@@ -386,6 +426,8 @@ class AdminDataController extends Controller
 
         $limit = max(1, min((int) $request->query('limit', 25), 200));
         $status = strtolower(trim((string) $request->query('status', '')));
+        $stage = strtolower(trim((string) $request->query('stage', '')));
+        $requestId = $request->query('requestId', $request->query('request_id'));
 
         $query = DB::table('creative_submissions as cs')
             ->leftJoin('creative_requests as cr', 'cs.request_id', '=', 'cr.id')
@@ -397,6 +439,7 @@ class AdminDataController extends Controller
                 'cs.submitted_by',
                 'cs.submission_url',
                 'cs.notes',
+                'cs.stage',
                 'cs.status',
                 'cs.created_at',
                 'cs.updated_at',
@@ -410,6 +453,12 @@ class AdminDataController extends Controller
 
         if ($status) {
             $query->whereRaw('LOWER(COALESCE(cs.status, "")) = ?', [$status]);
+        }
+        if ($stage) {
+            $query->whereRaw('LOWER(COALESCE(cs.stage, "")) = ?', [$stage]);
+        }
+        if ($requestId !== null && $requestId !== '') {
+            $query->where('cs.request_id', (int) $requestId);
         }
 
         $rows = $query->limit($limit)->get();
@@ -432,9 +481,71 @@ class AdminDataController extends Controller
                 'submitted_by_name' => $submitterName,
                 'submission_url' => $row->submission_url,
                 'notes' => $row->notes,
+                'stage' => $row->stage ?? 'creative',
                 'status' => $row->status,
                 'created_at' => $row->created_at,
                 'updated_at' => $row->updated_at,
+            ];
+        })->values();
+
+        return response()->json(['items' => $items]);
+    }
+
+    public function creativeRequestHistory(int $id, Request $request)
+    {
+        $adminError = $this->ensureAdmin($request);
+        if ($adminError) {
+            return $adminError;
+        }
+
+        if (!Schema::hasTable('creative_request_histories')) {
+            return response()->json(['items' => []]);
+        }
+
+        $rows = DB::table('creative_request_histories as history')
+            ->leftJoin('users as actor', 'history.actor_user_id', '=', 'actor.id')
+            ->select([
+                'history.id',
+                'history.action',
+                'history.from_stage',
+                'history.to_stage',
+                'history.from_assigned_to',
+                'history.to_assigned_to',
+                'history.from_status',
+                'history.to_status',
+                'history.notes',
+                'history.created_at',
+                'actor.email as actor_email',
+                'actor.first_name as actor_first_name',
+                'actor.last_name as actor_last_name',
+                'actor.full_name as actor_full_name',
+            ])
+            ->where('history.request_id', $id)
+            ->orderByDesc('history.created_at')
+            ->limit(50)
+            ->get();
+
+        $items = $rows->map(function ($row) {
+            $actorName = trim((string) ($row->actor_full_name ?? ''));
+            if (!$actorName) {
+                $actorName = trim((string) ($row->actor_first_name ?? '') . ' ' . (string) ($row->actor_last_name ?? ''));
+            }
+            if (!$actorName) {
+                $actorName = (string) ($row->actor_email ?? '');
+            }
+
+            return [
+                'id' => $row->id,
+                'action' => $row->action,
+                'from_stage' => $row->from_stage,
+                'to_stage' => $row->to_stage,
+                'from_assigned_to' => $row->from_assigned_to,
+                'to_assigned_to' => $row->to_assigned_to,
+                'from_status' => $row->from_status,
+                'to_status' => $row->to_status,
+                'notes' => $row->notes,
+                'created_at' => $row->created_at,
+                'actor_name' => $actorName,
             ];
         })->values();
 
@@ -457,6 +568,7 @@ class AdminDataController extends Controller
             'description' => ['nullable', 'string'],
             'requestedBy' => ['nullable', 'integer'],
             'assignedTo' => ['nullable', 'integer'],
+            'stage' => ['nullable', 'string', 'max:40'],
             'status' => ['nullable', 'string', 'max:40'],
             'priority' => ['nullable', 'string', 'max:20'],
             'dueAt' => ['nullable', 'date'],
@@ -467,12 +579,38 @@ class AdminDataController extends Controller
             'description' => $validated['description'] ?? null,
             'requested_by' => $validated['requestedBy'] ?? null,
             'assigned_to' => $validated['assignedTo'] ?? null,
+            'stage' => $validated['stage'] ?? 'creative',
             'status' => $validated['status'] ?? 'open',
             'priority' => $validated['priority'] ?? 'medium',
             'due_at' => $validated['dueAt'] ?? null,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        $this->logCreativeRequestHistory($id, [
+            'action' => 'request.created',
+            'to_stage' => $validated['stage'] ?? 'creative',
+            'to_assigned_to' => $validated['assignedTo'] ?? null,
+            'to_status' => $validated['status'] ?? 'open',
+            'actor_user_id' => $validated['requestedBy'] ?? null,
+            'notes' => $validated['description'] ?? null,
+        ]);
+
+        if (!empty($validated['assignedTo']) && Schema::hasTable('notifications')) {
+            DB::table('notifications')->insert([
+                'title' => 'New assignment: ' . $validated['title'],
+                'message' => $validated['description'] ?? 'A new creative task has been assigned.',
+                'type' => 'announcement',
+                'audience' => 'members',
+                'priority' => 'normal',
+                'status' => 'published',
+                'publish_at' => now(),
+                'created_by' => $validated['requestedBy'] ?? null,
+                'user_id' => (int) $validated['assignedTo'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
         return response()->json(['message' => 'Request created.', 'id' => $id], 201);
     }
@@ -493,9 +631,11 @@ class AdminDataController extends Controller
             'description' => ['nullable', 'string'],
             'requestedBy' => ['nullable', 'integer'],
             'assignedTo' => ['nullable', 'integer'],
+            'stage' => ['nullable', 'string', 'max:40'],
             'status' => ['nullable', 'string', 'max:40'],
             'priority' => ['nullable', 'string', 'max:20'],
             'dueAt' => ['nullable', 'date'],
+            'updatedBy' => ['nullable', 'integer'],
         ]);
 
         $payload = [];
@@ -504,6 +644,7 @@ class AdminDataController extends Controller
             'description' => 'description',
             'requestedBy' => 'requested_by',
             'assignedTo' => 'assigned_to',
+            'stage' => 'stage',
             'status' => 'status',
             'priority' => 'priority',
             'dueAt' => 'due_at',
@@ -521,9 +662,64 @@ class AdminDataController extends Controller
 
         $payload['updated_at'] = now();
 
+        $existing = DB::table('creative_requests')->where('id', $id)->first();
         $updated = DB::table('creative_requests')->where('id', $id)->update($payload);
         if (!$updated) {
             return response()->json(['message' => 'Request not found.'], 404);
+        }
+
+        $nextStage = $payload['stage'] ?? null;
+        $nextAssignee = $payload['assigned_to'] ?? null;
+        $nextStatus = $payload['status'] ?? null;
+        if ($existing) {
+            $stageChanged = $nextStage !== null && $nextStage !== $existing->stage;
+            $assigneeChanged = array_key_exists('assigned_to', $payload) && $nextAssignee !== $existing->assigned_to;
+            $statusChanged = $nextStatus !== null && $nextStatus !== $existing->status;
+
+            if ($stageChanged || $assigneeChanged || $statusChanged) {
+                $this->logCreativeRequestHistory($id, [
+                    'action' => $stageChanged ? 'request.handoff' : 'request.updated',
+                    'from_stage' => $existing->stage ?? null,
+                    'to_stage' => $nextStage ?? $existing->stage,
+                    'from_assigned_to' => $existing->assigned_to ?? null,
+                    'to_assigned_to' => $assigneeChanged ? $nextAssignee : $existing->assigned_to,
+                    'from_status' => $existing->status ?? null,
+                    'to_status' => $nextStatus ?? $existing->status,
+                    'actor_user_id' => $validated['updatedBy'] ?? null,
+                    'notes' => $payload['description'] ?? null,
+                ]);
+            }
+        }
+
+        if (
+            array_key_exists('assigned_to', $payload) &&
+            !empty($payload['assigned_to']) &&
+            Schema::hasTable('notifications')
+        ) {
+            $previousAssignee = $existing?->assigned_to;
+            $nextAssignee = $payload['assigned_to'];
+            if ($previousAssignee !== $nextAssignee) {
+                $title = array_key_exists('title', $payload)
+                    ? $payload['title']
+                    : ($existing->title ?? 'New assignment');
+                $message = array_key_exists('description', $payload)
+                    ? ($payload['description'] ?? '')
+                    : ($existing->description ?? 'A new creative task has been assigned.');
+
+                DB::table('notifications')->insert([
+                    'title' => 'New assignment: ' . $title,
+                    'message' => $message ?: 'A new creative task has been assigned.',
+                    'type' => 'announcement',
+                    'audience' => 'members',
+                    'priority' => 'normal',
+                    'status' => 'published',
+                    'publish_at' => now(),
+                    'created_by' => $payload['requested_by'] ?? $existing?->requested_by ?? null,
+                    'user_id' => (int) $nextAssignee,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
         }
 
         return response()->json(['message' => 'Request updated.']);
@@ -531,9 +727,9 @@ class AdminDataController extends Controller
 
     public function storeCreativeSubmission(Request $request)
     {
-        $adminError = $this->ensureAdmin($request);
-        if ($adminError) {
-            return $adminError;
+        $accessError = $this->ensureAdminOrCreative($request);
+        if ($accessError) {
+            return $accessError;
         }
 
         if (!Schema::hasTable('creative_submissions')) {
@@ -546,8 +742,20 @@ class AdminDataController extends Controller
             'submittedBy' => ['nullable', 'integer'],
             'submissionUrl' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],
+            'stage' => ['nullable', 'string', 'max:40'],
             'status' => ['nullable', 'string', 'max:40'],
         ]);
+
+        $stage = $validated['stage'] ?? null;
+        if (!$stage && !empty($validated['requestId'])) {
+            $requestRow = DB::table('creative_requests')
+                ->select(['stage'])
+                ->where('id', $validated['requestId'])
+                ->first();
+            if ($requestRow && !empty($requestRow->stage)) {
+                $stage = $requestRow->stage;
+            }
+        }
 
         $id = DB::table('creative_submissions')->insertGetId([
             'request_id' => $validated['requestId'] ?? null,
@@ -555,10 +763,21 @@ class AdminDataController extends Controller
             'submitted_by' => $validated['submittedBy'] ?? null,
             'submission_url' => $validated['submissionUrl'] ?? null,
             'notes' => $validated['notes'] ?? null,
+            'stage' => $stage ?? 'creative',
             'status' => $validated['status'] ?? 'pending_review',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        if (!empty($validated['requestId'])) {
+            $this->logCreativeRequestHistory((int) $validated['requestId'], [
+                'action' => 'submission.created',
+                'to_stage' => $stage ?? 'creative',
+                'to_status' => $validated['status'] ?? 'pending_review',
+                'actor_user_id' => $validated['submittedBy'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+            ]);
+        }
 
         return response()->json(['message' => 'Submission created.', 'id' => $id], 201);
     }
@@ -580,6 +799,7 @@ class AdminDataController extends Controller
             'submittedBy' => ['nullable', 'integer'],
             'submissionUrl' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],
+            'stage' => ['nullable', 'string', 'max:40'],
             'status' => ['nullable', 'string', 'max:40'],
         ]);
 
@@ -590,6 +810,7 @@ class AdminDataController extends Controller
             'submittedBy' => 'submitted_by',
             'submissionUrl' => 'submission_url',
             'notes' => 'notes',
+            'stage' => 'stage',
             'status' => 'status',
         ];
 

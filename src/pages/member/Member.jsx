@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { AppModal } from '../../components/common'
 
 const getRoute = () => window.location.hash || '#/member'
 const AUTH_MAX_AGE_MS = 12 * 60 * 60 * 1000
@@ -22,6 +23,7 @@ const getStoredUser = () => {
 
 const Member = () => {
   const [route, setRoute] = useState(getRoute())
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
   const user = getStoredUser()
   const profileName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email
 
@@ -56,11 +58,7 @@ const Member = () => {
           <button
             type="button"
             className="rounded-full border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50"
-            onClick={() => {
-              sessionStorage.removeItem('user')
-              sessionStorage.removeItem('authAt')
-              redirectTo('#/login?force=1')
-            }}
+            onClick={() => setLogoutConfirmOpen(true)}
           >
             Sign out
           </button>
@@ -176,6 +174,37 @@ const Member = () => {
           </div>
         </section>
       </div>
+
+      <AppModal
+        open={logoutConfirmOpen}
+        onClose={() => setLogoutConfirmOpen(false)}
+        eyebrow="Confirm Logout"
+        title="Sign out of your account?"
+      >
+        <p className="text-sm text-slate-600">
+          You will be returned to the login screen.
+        </p>
+        <div className="mt-6 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => setLogoutConfirmOpen(false)}
+            className="rounded-xl border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              sessionStorage.removeItem('user')
+              sessionStorage.removeItem('authAt')
+              redirectTo('#/login?force=1')
+            }}
+            className="rounded-xl bg-rose-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white shadow-lg shadow-rose-200 transition hover:-translate-y-0.5"
+          >
+            Logout
+          </button>
+        </div>
+      </AppModal>
     </main>
   )
 }

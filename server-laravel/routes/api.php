@@ -41,6 +41,7 @@ Route::get('/admin/creative-submissions', [AdminDataController::class, 'creative
 Route::post('/admin/creative-requests', [AdminDataController::class, 'storeCreativeRequest']);
 Route::post('/admin/creative-requests/{id}', [AdminDataController::class, 'updateCreativeRequest']);
 Route::post('/admin/creative-requests/{id}/delete', [AdminDataController::class, 'deleteCreativeRequest']);
+Route::get('/admin/creative-requests/{id}/history', [AdminDataController::class, 'creativeRequestHistory']);
 Route::post('/admin/creative-submissions', [AdminDataController::class, 'storeCreativeSubmission']);
 Route::post('/admin/creative-submissions/{id}', [AdminDataController::class, 'updateCreativeSubmission']);
 Route::post('/admin/creative-submissions/{id}/delete', [AdminDataController::class, 'deleteCreativeSubmission']);

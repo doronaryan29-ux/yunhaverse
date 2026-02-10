@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   DashboardSection,
   FlagIssueModal,
-  CreativeStaffPage,
+  ProductionWorkflowPage,
   EventsPage,
   FundsDonationsPage,
   AuditLogsPage,
@@ -12,14 +12,16 @@ import {
   ProfileSection,
   SidebarNav,
   TopHeader,
-} from '../components/admin'
-import { navItems } from '../constants/adminNav'
-import { notificationTypes } from '../constants/adminNotifications'
-import { useAdminActions } from '../hooks/useAdminActions'
-import { useAdminData } from '../hooks/useAdminData'
-import { useAdminProfile } from '../hooks/useAdminProfile'
-import { useAdminRoute } from '../hooks/useAdminRoute'
-import { getSessionUser } from '../utils/sessionUser'
+} from '../../components/admin'
+import { AppModal } from '../../components/common'
+
+import { navItems } from '../../constants/adminNav'
+import { notificationTypes } from '../../constants/adminNotifications'
+import { useAdminActions } from '../../hooks/useAdminActions'
+import { useAdminData } from '../../hooks/useAdminData'
+import { useAdminProfile } from '../../hooks/useAdminProfile'
+import { useAdminRoute } from '../../hooks/useAdminRoute'
+import { getSessionUser } from '../../utils/sessionUser'
 
 const Admin = () => {
   const user = getSessionUser()
@@ -75,6 +77,7 @@ const Admin = () => {
 
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
   const profileMenuRef = useRef(null)
 
   useEffect(() => {
@@ -160,7 +163,7 @@ const Admin = () => {
             onToggleProfile={handleToggleProfile}
             onCloseNotifications={handleCloseNotifications}
             onGoProfile={handleGoProfile}
-            onLogout={actions.handleLogout}
+            onLogout={() => setLogoutConfirmOpen(true)}
             onMarkNotificationRead={adminData.markNotificationRead}
           />
 
@@ -180,9 +183,10 @@ const Admin = () => {
               currentRole={profileRoleNormalized}
             />
           ) : isCreativesRoute ? (
-            <CreativeStaffPage
+            <ProductionWorkflowPage
               apiBase={apiBase}
               requesterRole={profileRoleNormalized}
+              userId={user?.id}
               members={adminData.membersFull}
               requests={adminData.creativeRequests}
               submissions={adminData.creativeSubmissions}
@@ -242,6 +246,33 @@ const Admin = () => {
           )}
         </section>
       </div>
+
+      <AppModal
+        open={logoutConfirmOpen}
+        onClose={() => setLogoutConfirmOpen(false)}
+        eyebrow="Confirm Logout"
+        title="Sign out of admin?"
+      >
+        <p className="text-sm text-slate-600">
+          You will be returned to the login screen.
+        </p>
+        <div className="mt-6 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => setLogoutConfirmOpen(false)}
+            className="rounded-xl border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => actions.handleLogout()}
+            className="rounded-xl bg-rose-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white shadow-lg shadow-rose-200 transition hover:-translate-y-0.5"
+          >
+            Logout
+          </button>
+        </div>
+      </AppModal>
 
       <FlagIssueModal
         open={actions.flagModalOpen}

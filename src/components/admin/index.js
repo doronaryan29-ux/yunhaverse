@@ -1,7 +1,7 @@
 export { default as AuditLogSection } from './dashboard/AuditLogSection'
 export { default as AuditFlagsSection } from './dashboard/AuditFlagsSection'
 export { default as AuditLogsPage } from './audit-logs/AuditLogsPage'
-export { default as CreativeStaffPage } from './creative-staff/CreativeStaffPage'
+export { default as ProductionWorkflowPage } from './production-workflow/ProductionWorkflowPage'
 export { default as DashboardSection } from './dashboard/DashboardSection'
 export { default as DonationTrackingSection } from './dashboard/DonationTrackingSection'
 export { default as EventsPage } from './events/EventsPage'

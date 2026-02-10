@@ -14,7 +14,7 @@ export const useAdminRoute = () => {
   const routeInfo = useMemo(() => {
     const isProfileRoute = route.startsWith('#/admin/profile')
     const isMembersRoute = route.startsWith('#/admin/members')
-    const isCreativesRoute = route.startsWith('#/admin/creatives')
+    const isCreativesRoute = route.startsWith('#/admin/workflow')
     const isFundsRoute = route.startsWith('#/admin/funds')
     const isEventsRoute = route.startsWith('#/admin/events')
     const isAuditLogsRoute = route.startsWith('#/admin/audit-logs')
@@ -23,7 +23,7 @@ export const useAdminRoute = () => {
     const activeNavItem = isMembersRoute
       ? 'Members'
       : isCreativesRoute
-        ? 'Creative Staff'
+        ? 'Production Workflow'
         : isFundsRoute
           ? 'Funds & Donations'
           : isEventsRoute

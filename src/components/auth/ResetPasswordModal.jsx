@@ -1,3 +1,4 @@
+import { AppModal } from '../common'
 import OtpInputs from './OtpInputs'
 
 const ResetPasswordModal = ({
@@ -18,39 +19,20 @@ const ResetPasswordModal = ({
   resetFeedback,
   resetLoading,
 }) => {
-  if (!open) return null
-
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 px-4">
-      <div className="w-full max-w-lg rounded-3xl border border-rose-100 bg-white p-6 shadow-2xl">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-rose-500">
-              Password Reset
-            </p>
-            <h4 className="mt-2 font-display text-2xl font-semibold text-slate-900">
-              {step === 'request'
-                ? 'Request a reset code'
-                : step === 'verify'
-                  ? 'Verify your code'
-                  : 'Set a new password'}
-            </h4>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 hover:text-slate-600"
-          >
-            Close
-          </button>
-        </div>
-
-        <form
-          ref={formRef}
-          data-reset-form
-          className="mt-6 space-y-5"
-          onSubmit={onSubmit}
-        >
+    <AppModal
+      open={open}
+      onClose={onClose}
+      eyebrow="Password Reset"
+      title={
+        step === 'request'
+          ? 'Request a reset code'
+          : step === 'verify'
+            ? 'Verify your code'
+            : 'Set a new password'
+      }
+    >
+      <form ref={formRef} data-reset-form className="space-y-5" onSubmit={onSubmit}>
           <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
             Email
             <input
@@ -129,9 +111,8 @@ const ResetPasswordModal = ({
                     : 'Reset Password'}
             </button>
           </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </AppModal>
   )
 }
 

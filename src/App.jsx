@@ -1,11 +1,30 @@
 import { useEffect, useState } from 'react'
 import Home from './pages/Home'
 import Login from './pages/Login'
-import Admin from './pages/Admin'
-import Member from './pages/Member'
+import Admin from './pages/admin/Admin'
+import Member from './pages/member/Member'
+import CreativeStaff from './pages/creative/CreativeStaff'
+import Copywriter from './pages/copywriter/Copywriter'
+import SnsUpdater from './pages/sns-updater/SnsUpdater'
 
 const getRoute = () => window.location.hash || '#/'
-const isAdminRole = (role) => String(role || '').trim().toLowerCase() === 'admin'
+const normalizeRole = (role) => String(role || '').trim().toLowerCase()
+const isAdminRole = (role) => normalizeRole(role) === 'admin'
+const isCreativeRole = (role) => {
+  const normalized = normalizeRole(role)
+  if (!normalized) return false
+  return normalized.replace(/[_-]+/g, ' ').includes('creative')
+}
+const isCopywriterRole = (role) => {
+  const normalized = normalizeRole(role)
+  if (!normalized) return false
+  return normalized.replace(/[_-]+/g, ' ').includes('copywriter')
+}
+const isSnsRole = (role) => {
+  const normalized = normalizeRole(role)
+  if (!normalized) return false
+  return normalized.replace(/[_-]+/g, ' ').includes('sns')
+}
 const AUTH_MAX_AGE_MS = 12 * 60 * 60 * 1000
 const redirectTo = (hashRoute) => window.location.replace(`/${hashRoute}`)
 const decodeBase64Url = (value) => {
@@ -79,7 +98,17 @@ function App() {
         sessionStorage.removeItem('profileIncomplete')
       }
 
-      redirectTo(isAdminRole(data.role) ? '#/admin' : '#/')
+      if (isAdminRole(data.role)) {
+        redirectTo('#/admin')
+      } else if (isCopywriterRole(data.role)) {
+        redirectTo('#/copywriter')
+      } else if (isSnsRole(data.role)) {
+        redirectTo('#/sns')
+      } else if (isCreativeRole(data.role)) {
+        redirectTo('#/staff')
+      } else {
+        redirectTo('#/')
+      }
     } catch {
       redirectTo('#/login')
     }
@@ -109,6 +138,33 @@ function App() {
       return <Login />
     }
     return <Member />
+  }
+
+  if (route.startsWith('#/staff')) {
+    const user = getStoredUser()
+    if (!user || !isCreativeRole(user.role)) {
+      redirectTo('#/login?force=1')
+      return <Login />
+    }
+    return <CreativeStaff />
+  }
+
+  if (route.startsWith('#/copywriter')) {
+    const user = getStoredUser()
+    if (!user || !isCopywriterRole(user.role)) {
+      redirectTo('#/login?force=1')
+      return <Login />
+    }
+    return <Copywriter />
+  }
+
+  if (route.startsWith('#/sns')) {
+    const user = getStoredUser()
+    if (!user || !isSnsRole(user.role)) {
+      redirectTo('#/login?force=1')
+      return <Login />
+    }
+    return <SnsUpdater />
   }
 
   return <Home />

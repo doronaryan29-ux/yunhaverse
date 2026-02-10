@@ -10,7 +10,7 @@ const SidebarNav = ({ navItems, activeItem }) => (
         YUNHAverse Ops
       </h1>
       <p className="mt-2 text-sm text-slate-600">
-        Members, creatives, funds, events, and safety checks in one place.
+        Members, workflow, funds, events, and safety checks in one place.
       </p>
 
       <nav className="mt-6 flex flex-col gap-2">
@@ -23,8 +23,8 @@ const SidebarNav = ({ navItems, activeItem }) => (
                 window.location.replace('/#/admin')
               } else if (item === 'Members') {
                 window.location.replace('/#/admin/members')
-              } else if (item === 'Creative Staff') {
-                window.location.replace('/#/admin/creatives')
+              } else if (item === 'Production Workflow') {
+                window.location.replace('/#/admin/workflow')
               } else if (item === 'Funds & Donations') {
                 window.location.replace('/#/admin/funds')
               } else if (item === 'Events') {

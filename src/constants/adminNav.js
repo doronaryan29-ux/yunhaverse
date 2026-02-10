@@ -1,7 +1,7 @@
 export const navItems = [
   'Dashboard',
   'Members',
-  'Creative Staff',
+  'Production Workflow',
   'Funds & Donations',
   'Events',
   'Audit Logs',

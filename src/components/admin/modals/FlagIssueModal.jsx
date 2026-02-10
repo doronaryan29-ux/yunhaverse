@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import { AppModal } from '../../common'
 
 const FlagIssueModal = ({
   open,
@@ -9,30 +10,14 @@ const FlagIssueModal = ({
   onClose,
   onSubmit,
 }) => {
-  if (!open) return null
-
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 px-4">
-      <div className="w-full max-w-lg rounded-3xl border border-rose-100 bg-white p-6 shadow-2xl">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-rose-500">
-              Audit Flags
-            </p>
-            <h4 className="mt-2 font-display text-2xl font-semibold text-slate-900">
-              Flag an Issue
-            </h4>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 hover:text-slate-600"
-          >
-            Close
-          </button>
-        </div>
-
-        <form className="mt-6 space-y-4" onSubmit={onSubmit}>
+    <AppModal
+      open={open}
+      onClose={onClose}
+      eyebrow="Audit Flags"
+      title="Flag an Issue"
+    >
+      <form className="space-y-4" onSubmit={onSubmit}>
           <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
             Title
             <input
@@ -93,9 +78,8 @@ const FlagIssueModal = ({
               {loading ? 'Saving...' : 'Create Flag'}
             </button>
           </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </AppModal>
   )
 }
 
