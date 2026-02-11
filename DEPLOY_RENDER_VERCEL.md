@@ -25,21 +25,12 @@ php artisan cache:clear
 Create a new **Web Service** from your repo with:
 
 - Root Directory: `server-laravel`
-- Environment: `PHP`
-- Build Command:
+- Environment: `Docker`
+- Dockerfile Path: `./Dockerfile` (inside `server-laravel`)
 
-```bash
-composer install --no-dev --optimize-autoloader
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-```
-
-- Start Command:
-
-```bash
-php artisan migrate --force && php artisan serve --host 0.0.0.0 --port $PORT
-```
+Note:
+- In Docker mode, Render builds from your Dockerfile.
+- You do not need Render Build/Start commands for this service.
 
 Set Render environment variables (example keys):
 
@@ -74,6 +65,8 @@ Set Render environment variables (example keys):
 - `ADMIN_LAST_NAME=User`
 
 Also set a secure `APP_KEY`:
+
+Run locally from `yunhaverse/server-laravel`:
 
 ```bash
 php artisan key:generate --show
@@ -118,4 +111,3 @@ If any real credentials were ever committed in `.env`, rotate them now:
 - SMTP password
 - Google OAuth secret
 - admin bootstrap password
-
