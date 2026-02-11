@@ -747,21 +747,7 @@ class AuthController extends Controller
             $request
         );
         $profileComplete = (bool) ($user->first_name && $user->last_name && $user->birthdate);
-        $clientOrigin = rtrim((string) env('CLIENT_ORIGIN', ''), '/');
-        if ($clientOrigin === '') {
-            Log::error('Missing CLIENT_ORIGIN while handling OAuth callback.');
-            abort(500, 'Server is not configured for OAuth redirect.');
-        }
-        $originHost = strtolower((string) parse_url($clientOrigin, PHP_URL_HOST));
-        $originScheme = strtolower((string) parse_url($clientOrigin, PHP_URL_SCHEME));
-        if (app()->environment('production') && ($originHost === 'localhost' || $originHost === '127.0.0.1')) {
-            Log::error('CLIENT_ORIGIN points to localhost in production.', ['client_origin' => $clientOrigin]);
-            abort(500, 'Server OAuth redirect is misconfigured.');
-        }
-        if (app()->environment('production') && $originScheme !== 'https') {
-            Log::error('CLIENT_ORIGIN must use https in production.', ['client_origin' => $clientOrigin]);
-            abort(500, 'Server OAuth redirect is misconfigured.');
-        }
+        $clientOrigin = rtrim((string) env('CLIENT_ORIGIN', 'http://localhost:5173'), '/');
         $payload = rtrim(strtr(base64_encode(json_encode([
             'id' => $user->id,
             'email' => $user->email,
