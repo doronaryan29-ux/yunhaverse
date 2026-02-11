@@ -21,6 +21,7 @@ import { useAdminActions } from '../../hooks/useAdminActions'
 import { useAdminData } from '../../hooks/useAdminData'
 import { useAdminProfile } from '../../hooks/useAdminProfile'
 import { useAdminRoute } from '../../hooks/useAdminRoute'
+import { API_BASE } from '../../utils/apiBase'
 import { getSessionUser } from '../../utils/sessionUser'
 
 const Admin = () => {
@@ -28,7 +29,7 @@ const Admin = () => {
   const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ')
   const profileName = fullName || 'Admin User'
   const profileRole = String(user?.role || 'admin').trim()
-  const apiBase = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000'
+  const apiBase = API_BASE
 
   const {
     isProfileRoute,

@@ -8,6 +8,7 @@ import {
   TeamMemberRow,
 } from '../../components/creative'
 import { AppModal } from '../../components/common'
+import { API_BASE } from '../../utils/apiBase'
 import { formatDateInManila } from '../../utils/date'
 
 const AUTH_MAX_AGE_MS = 12 * 60 * 60 * 1000
@@ -73,7 +74,7 @@ const CreativeStaff = () => {
   const profileRole = normalizeRole(user?.role)
   const requesterRole = isCreativeRole(user?.role) ? 'creative' : profileRole || 'creative'
   const stage = 'creative'
-  const apiBase = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000'
+  const apiBase = API_BASE
 
   const [loading, setLoading] = useState(true)
   const [settings, setSettings] = useState({

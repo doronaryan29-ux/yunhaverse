@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { API_BASE } from '../utils/apiBase'
 
 const DEFAULT_SETTINGS = {
   appName: 'YUNHAverse PH',
@@ -15,7 +16,7 @@ export const useAppSettings = () => {
 
   useEffect(() => {
     let isMounted = true
-    const apiBase = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000'
+    const apiBase = API_BASE
 
     const mixColors = (colorA, colorB, amount) => {
       const parse = (hex) => {

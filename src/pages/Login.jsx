@@ -6,6 +6,7 @@ import ErrorModal from '../components/auth/ErrorModal'
 import ResetPasswordModal from '../components/auth/ResetPasswordModal'
 import ToastBanner from '../components/auth/ToastBanner'
 import useAuthFlow from '../hooks/useAuthFlow'
+import { API_BASE } from '../utils/apiBase'
 
 const benefits = [
   'Early access to ticket drops and preregistration slots.',
@@ -16,7 +17,7 @@ const benefits = [
 const isAdminRole = (role) => String(role || '').trim().toLowerCase() === 'admin'
 
 const Login = () => {
-  const apiBase = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000'
+  const apiBase = API_BASE
   const {
     mode,
     email,

@@ -747,7 +747,11 @@ class AuthController extends Controller
             $request
         );
         $profileComplete = (bool) ($user->first_name && $user->last_name && $user->birthdate);
-        $clientOrigin = rtrim((string) env('CLIENT_ORIGIN', 'http://localhost:5173'), '/');
+        $clientOrigin = rtrim((string) env('CLIENT_ORIGIN', ''), '/');
+        if ($clientOrigin === '') {
+            Log::error('Missing CLIENT_ORIGIN while handling OAuth callback.');
+            abort(500, 'Server is not configured for OAuth redirect.');
+        }
         $payload = rtrim(strtr(base64_encode(json_encode([
             'id' => $user->id,
             'email' => $user->email,
