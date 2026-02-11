@@ -1170,6 +1170,61 @@ class AdminDataController extends Controller
         return response()->json(['items' => $items]);
     }
 
+    public function publicEvents(Request $request)
+    {
+        if (!Schema::hasTable('events')) {
+            return response()->json(['items' => []]);
+        }
+
+        $limit = max(1, min((int) $request->query('limit', 100), 300));
+        $columns = Schema::getColumnListing('events');
+
+        $selectColumns = array_values(array_intersect([
+            'id',
+            'title',
+            'description',
+            'start_at',
+            'end_at',
+            'location',
+            'timezone',
+            'image_url',
+            'link_url',
+            'type',
+            'status',
+        ], $columns));
+
+        $query = DB::table('events')->select($selectColumns);
+        if (in_array('status', $columns, true)) {
+            $query->whereRaw('LOWER(COALESCE(status, "")) IN (?, ?)', ['published', 'active']);
+        }
+
+        $rows = $query
+            ->orderByDesc(in_array('start_at', $columns, true) ? 'start_at' : 'created_at')
+            ->limit($limit)
+            ->get();
+
+        $items = $rows->map(function ($row) {
+            return [
+                'id' => $row->id ?? null,
+                'title' => $row->title ?? '',
+                'description' => $row->description ?? null,
+                'start_at' => $row->start_at ?? null,
+                'end_at' => $row->end_at ?? null,
+                'location' => $row->location ?? '',
+                'timezone' => $row->timezone ?? null,
+                'image_url' => $row->image_url ?? null,
+                'link_url' => $row->link_url ?? null,
+                'type' => $row->type ?? 'streaming',
+                'status' => $row->status ?? 'published',
+                // keep compatibility for existing UI usages
+                'date' => $row->start_at ?? null,
+                'channel' => $row->location ?? '',
+            ];
+        })->values();
+
+        return response()->json(['items' => $items]);
+    }
+
     public function storeEvent(Request $request)
     {
         $adminError = $this->ensureAdmin($request);

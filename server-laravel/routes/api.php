@@ -32,6 +32,7 @@ Route::get('/admin/audit-flags', [AuditLogController::class, 'flags']);
 Route::post('/admin/audit-flags', [AuditLogController::class, 'storeFlag']);
 Route::post('/admin/audit-flags/{id}/resolve', [AuditLogController::class, 'resolveFlag']);
 Route::get('/settings', [AdminDataController::class, 'publicSettings']);
+Route::get('/events', [AdminDataController::class, 'publicEvents']);
 Route::get('/admin/settings', [AdminDataController::class, 'appSettings']);
 Route::post('/admin/settings', [AdminDataController::class, 'updateAppSettings']);
 Route::get('/admin/upcoming-events', [AdminDataController::class, 'upcomingEvents']);
