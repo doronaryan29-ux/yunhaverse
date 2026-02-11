@@ -1,8 +1,10 @@
-import { memo } from 'react'
+import { memo, useMemo, useState } from 'react'
+import { AppModal } from '../../common'
 import { formatDateInManila } from '../../../utils/date'
 
 const RequestsSection = ({
   requestItems,
+  archivedItems = [],
   loadingRequests,
   getRequestEdit,
   isRequestDirty,
@@ -19,35 +21,152 @@ const RequestsSection = ({
   setDeleteModal,
   setHistoryModal,
   fetchHistory,
-  openStatusModal,
   getNextStage,
-}) => (
-  <section className="rounded-3xl border border-rose-100 bg-white/90 p-6 shadow-lg shadow-rose-100">
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <h3 className="font-display text-xl font-semibold text-slate-900">
-        Requests Queue
-      </h3>
-      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-        {requestItems.length} active
-      </span>
-    </div>
+  requestStatusFilter,
+  setRequestStatusFilter,
+  requestSubmissionFilter,
+  setRequestSubmissionFilter,
+  onOpenReview,
+}) => {
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [actionsRequestId, setActionsRequestId] = useState(null)
+  const [selectedArchivedIds, setSelectedArchivedIds] = useState([])
 
-    <div className="mt-4 grid gap-3">
-      {loadingRequests && (
-        <p className="rounded-2xl border border-rose-100 bg-rose-50/60 p-4 text-sm text-slate-500">
-          Loading requests...
-        </p>
-      )}
-      {!loadingRequests && requestItems.length === 0 && (
-        <p className="rounded-2xl border border-rose-100 bg-rose-50/60 p-4 text-sm text-slate-500">
-          No requests yet.
-        </p>
-      )}
-      {!loadingRequests &&
-        requestItems.map((item) => {
-          const edit = getRequestEdit(item)
-          const isDirty = isRequestDirty(item, edit)
-          return (
+  const allRequests = useMemo(
+    () => [...requestItems, ...archivedItems],
+    [archivedItems, requestItems],
+  )
+  const actionRequest = allRequests.find(
+    (item) => String(item.id) === String(actionsRequestId),
+  )
+  const actionEdit = actionRequest ? getRequestEdit(actionRequest) : null
+  const noteChanged =
+    actionRequest && actionEdit
+      ? String(actionEdit.reviewNote || '') !== String(actionRequest.review_note || '')
+      : false
+  const actionDirty =
+    actionRequest && actionEdit
+      ? isRequestDirty(actionRequest, actionEdit) || noteChanged
+      : false
+
+  const allArchivedSelected =
+    archivedItems.length > 0 &&
+    archivedItems.every((item) => selectedArchivedIds.includes(item.id))
+
+  return (
+    <section className="rounded-3xl border border-rose-100 bg-white/90 p-6 shadow-lg shadow-rose-100">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="font-display text-xl font-semibold text-slate-900">
+          Requests Queue
+        </h3>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+            {requestItems.length} active
+          </span>
+          <button
+            type="button"
+            onClick={() => setFiltersOpen((prev) => !prev)}
+            className={`rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] transition ${
+              filtersOpen
+                ? 'border-rose-400 bg-rose-500 text-white'
+                : 'border-rose-200 text-rose-500 hover:bg-rose-50'
+            }`}
+          >
+            {filtersOpen ? 'Hide Filters' : 'Filters'}
+          </button>
+        </div>
+      </div>
+
+      <div
+        className={`overflow-hidden transition-all duration-300 ${
+          filtersOpen ? 'mt-4 max-h-64 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
+        }`}
+      >
+        <div className="space-y-3 rounded-2xl border border-rose-100 bg-rose-50/60 p-4">
+          <div className="grid gap-3 md:grid-cols-2">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                Request Status
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {[
+                  { value: 'all', label: 'All Status' },
+                  { value: 'open', label: 'Open' },
+                  { value: 'accepted', label: 'Accepted' },
+                  { value: 'submitted', label: 'Submitted' },
+                  { value: 'declined', label: 'Declined' },
+                  { value: 'revision', label: 'Revision' },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setRequestStatusFilter(option.value)}
+                    className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] ${
+                      requestStatusFilter === option.value
+                        ? 'border-rose-400 bg-rose-500 text-white'
+                        : 'border-rose-200 bg-white text-rose-500 hover:bg-rose-50'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                Submission State
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {[
+                  { value: 'all', label: 'All Requests' },
+                  { value: 'with_submission', label: 'With Submission' },
+                  { value: 'no_submission', label: 'No Submission' },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setRequestSubmissionFilter(option.value)}
+                    className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] ${
+                      requestSubmissionFilter === option.value
+                        ? 'border-rose-400 bg-rose-500 text-white'
+                        : 'border-rose-200 bg-white text-rose-500 hover:bg-rose-50'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setRequestStatusFilter('all')
+              setRequestSubmissionFilter('all')
+            }}
+            className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500"
+          >
+            <span className="inline-flex items-center gap-1">
+              <i className="fas fa-rotate-left" aria-hidden="true" />
+              Clear All
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-3">
+        {loadingRequests && (
+          <p className="rounded-2xl border border-rose-100 bg-rose-50/60 p-4 text-sm text-slate-500">
+            Loading requests...
+          </p>
+        )}
+        {!loadingRequests && requestItems.length === 0 && (
+          <p className="rounded-2xl border border-rose-100 bg-rose-50/60 p-4 text-sm text-slate-500">
+            No requests yet.
+          </p>
+        )}
+        {!loadingRequests &&
+          requestItems.map((item) => (
             <article
               key={item.id}
               className="rounded-2xl border border-rose-100 bg-rose-50/60 p-4"
@@ -73,136 +192,103 @@ const RequestsSection = ({
                   <span className="rounded-full bg-rose-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-600">
                     {item.stage || 'creative'}
                   </span>
+                  <span className="rounded-full bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+                    {String(item.status || 'open').replace(/_/g, ' ')}
+                  </span>
                 </div>
               </div>
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                <div className="flex flex-wrap items-center gap-2">
-                  <select
-                    value={edit.assignedTo}
-                    onChange={(event) =>
-                      setRequestEdits((prev) => ({
-                        ...prev,
-                        [item.id]: { ...edit, assignedTo: event.target.value },
-                      }))
-                    }
-                    className="max-w-[220px] rounded-full border border-rose-200 bg-white px-3 py-1 text-[11px] text-slate-600"
-                  >
-                    <option value="">Unassigned</option>
-                    {getMembersForStage(edit.stage).map((member) => (
-                      <option key={member.id} value={member.id}>
-                        {resolveMemberLabel(member)}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    value={edit.stage}
-                    onChange={(event) =>
-                      setRequestEdits((prev) => ({
-                        ...prev,
-                        [item.id]: { ...edit, stage: event.target.value },
-                      }))
-                    }
-                    className="rounded-full border border-rose-200 bg-white px-3 py-1 text-[11px] text-slate-600"
-                  >
-                    {stageOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    value={edit.status}
-                    onChange={(event) =>
-                      setRequestEdits((prev) => ({
-                        ...prev,
-                        [item.id]: { ...edit, status: event.target.value },
-                      }))
-                    }
-                    className="rounded-full border border-rose-200 bg-white px-3 py-1 text-[11px] text-slate-600"
-                  >
-                    {statusOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option.replace('_', ' ')}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    value={edit.priority}
-                    onChange={(event) =>
-                      setRequestEdits((prev) => ({
-                        ...prev,
-                        [item.id]: { ...edit, priority: event.target.value },
-                      }))
-                    }
-                    className="rounded-full border border-rose-200 bg-white px-3 py-1 text-[11px] text-slate-600"
-                  >
-                    {priorityOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
+
+              {(item.submission_url || item.submission_notes || item.submission_title) && (
+                <div className="mt-3 rounded-2xl border border-rose-100 bg-white/80 p-3 text-xs text-slate-600">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500">
+                    Latest Submission
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-slate-800">
+                    {item.submission_title || item.title}
+                  </p>
+                  {item.submission_url ? (
+                    <a
+                      href={item.submission_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-1 inline-flex text-xs font-semibold text-rose-500 hover:underline"
+                    >
+                      {item.submission_url}
+                    </a>
+                  ) : null}
+                  {item.submission_notes ? (
+                    <p className="mt-2 text-xs text-slate-500">
+                      {item.submission_notes}
+                    </p>
+                  ) : null}
+                  {item.submitted_by_name ? (
+                    <p className="mt-2 text-[11px] text-slate-400">
+                      Submitted by {item.submitted_by_name}
+                      {item.submitted_at
+                        ? ` • ${formatDateInManila(item.submitted_at)}`
+                        : ''}
+                    </p>
+                  ) : null}
+                  {item.review_note ? (
+                    <p className="mt-2 text-[11px] text-rose-500">
+                      Review note: {item.review_note}
+                    </p>
+                  ) : null}
                 </div>
+              )}
+
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
                 <div className="ml-auto flex items-center gap-2">
+                  {String(item.status || '').toLowerCase() === 'submitted' ? (
+                    <>
+                      <button
+                        type="button"
+                        disabled={!canSubmit || submitting}
+                        onClick={() => {
+                          const nextStage = getNextStage(item.stage)
+                          onOpenReview?.({ request: item, action: 'approve', nextStage })
+                        }}
+                        className="rounded-full border border-emerald-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-600 disabled:opacity-60"
+                      >
+                        <span className="inline-flex items-center gap-1">
+                          <i className="fas fa-check" aria-hidden="true" />
+                          Approve
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        disabled={!canSubmit || submitting}
+                        onClick={() => onOpenReview?.({ request: item, action: 'revise' })}
+                        className="rounded-full border border-amber-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-600 disabled:opacity-60"
+                      >
+                        <span className="inline-flex items-center gap-1">
+                          <i className="fas fa-pen" aria-hidden="true" />
+                          Revise
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        disabled={!canSubmit || submitting}
+                        onClick={() => onOpenReview?.({ request: item, action: 'decline' })}
+                        className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:opacity-60"
+                      >
+                        <span className="inline-flex items-center gap-1">
+                          <i className="fas fa-xmark" aria-hidden="true" />
+                          Decline
+                        </span>
+                      </button>
+                    </>
+                  ) : null}
                   <button
                     type="button"
-                    disabled={!canSubmit || submitting}
-                    onClick={() => {
-                      const nextStage = getNextStage(edit.stage)
-                      if (!nextStage) {
-                        openStatusModal({
-                          type: 'error',
-                          title: 'No next stage',
-                          message: 'This request is already at the final stage.',
-                        })
-                        return
-                      }
-                      if (!edit.assignedTo) {
-                        openStatusModal({
-                          type: 'error',
-                          title: 'Assign required',
-                          message: 'Select an assignee before handing off.',
-                        })
-                        return
-                      }
-                      updateRequest(item.id, {
-                        assignedTo: Number(edit.assignedTo),
-                        stage: nextStage,
-                        status: 'Open',
-                      })
-                    }}
+                    disabled={!canSubmit}
+                    onClick={() => setActionsRequestId(item.id)}
                     className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:opacity-60"
                   >
-                    Approve &amp; Handoff
-                  </button>
-                  <button
-                    type="button"
-                    disabled={!canSubmit || submitting || !isDirty}
-                    onClick={() =>
-                      updateRequest(item.id, {
-                        assignedTo: edit.assignedTo ? Number(edit.assignedTo) : null,
-                        stage: edit.stage,
-                        status: edit.status,
-                        priority: edit.priority,
-                      })
-                    }
-                    className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:opacity-60"
-                  >
-                    Save
-                  </button>
-                  <button
-                    type="button"
-                    disabled={!canSubmit || submitting}
-                    onClick={() =>
-                      setDeleteModal({
-                        type: 'request',
-                        id: item.id,
-                        title: item.title,
-                      })
-                    }
-                    className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:opacity-60"
-                  >
-                    Delete
+                    <span className="inline-flex items-center gap-1">
+                      <i className="fas fa-sliders" aria-hidden="true" />
+                      Actions
+                    </span>
                   </button>
                   <button
                     type="button"
@@ -213,15 +299,300 @@ const RequestsSection = ({
                     }}
                     className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:opacity-60"
                   >
-                    History
+                    <span className="inline-flex items-center gap-1">
+                      <i className="fas fa-clock-rotate-left" aria-hidden="true" />
+                      History
+                    </span>
                   </button>
                 </div>
               </div>
             </article>
-          )
-        })}
-    </div>
-  </section>
-)
+          ))}
+      </div>
+
+      {!loadingRequests && archivedItems.length > 0 ? (
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-600">
+              Declined Archive
+            </h4>
+            <span className="rounded-full bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+              {archivedItems.length} declined
+            </span>
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-3">
+            <label className="inline-flex items-center gap-2 text-[11px] text-slate-600">
+              <input
+                type="checkbox"
+                checked={allArchivedSelected}
+                onChange={(event) =>
+                  setSelectedArchivedIds(
+                    event.target.checked ? archivedItems.map((item) => item.id) : [],
+                  )
+                }
+                className="h-4 w-4 rounded border border-slate-300"
+              />
+              Select all
+            </label>
+            <button
+              type="button"
+              disabled={!canSubmit || selectedArchivedIds.length === 0}
+              onClick={() =>
+                setDeleteModal({
+                  type: 'request',
+                  ids: selectedArchivedIds,
+                  title: `${selectedArchivedIds.length} selected declined request(s)`,
+                })
+              }
+              className="rounded-full border border-slate-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-600 disabled:opacity-60"
+            >
+              <span className="inline-flex items-center gap-1">
+                <i className="fas fa-trash" aria-hidden="true" />
+                Delete Selected
+              </span>
+            </button>
+            <button
+              type="button"
+              disabled={!canSubmit || archivedItems.length === 0}
+              onClick={() =>
+                setDeleteModal({
+                  type: 'request',
+                  ids: archivedItems.map((item) => item.id),
+                  title: `all ${archivedItems.length} declined request(s)`,
+                })
+              }
+              className="rounded-full border border-slate-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-600 disabled:opacity-60"
+            >
+              <span className="inline-flex items-center gap-1">
+                <i className="fas fa-trash-can" aria-hidden="true" />
+                Delete All
+              </span>
+            </button>
+          </div>
+          <div className="mt-3 grid gap-2">
+            {archivedItems.map((item) => (
+              <article
+                key={`archive-${item.id}`}
+                className="rounded-xl border border-slate-200 bg-white p-3"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedArchivedIds.includes(item.id)}
+                      onChange={(event) =>
+                        setSelectedArchivedIds((prev) => {
+                          if (event.target.checked) {
+                            return prev.includes(item.id) ? prev : [...prev, item.id]
+                          }
+                          return prev.filter((id) => id !== item.id)
+                        })
+                      }
+                      className="mt-1 h-4 w-4 rounded border border-slate-300"
+                    />
+                    <div>
+                      <p className="text-sm font-semibold text-slate-800">{item.title}</p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {item.review_note
+                          ? `Review note: ${item.review_note}`
+                          : 'No review note attached.'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={!canSubmit}
+                      onClick={() => setActionsRequestId(item.id)}
+                      className="rounded-full border border-slate-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-600 disabled:opacity-60"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        <i className="fas fa-sliders" aria-hidden="true" />
+                        Actions
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!canSubmit}
+                      onClick={() => {
+                        setHistoryModal(item)
+                        fetchHistory(item.id)
+                      }}
+                      className="rounded-full border border-slate-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-600 disabled:opacity-60"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        <i className="fas fa-clock-rotate-left" aria-hidden="true" />
+                        History
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      <AppModal
+        open={Boolean(actionsRequestId)}
+        onClose={() => setActionsRequestId(null)}
+        eyebrow="Request Actions"
+        title={actionRequest?.title || 'Request'}
+      >
+        {actionRequest && actionEdit ? (
+          <div className="space-y-3 text-sm text-slate-600">
+            <p className="text-xs text-slate-500">
+              Manage this request with grouped actions.
+            </p>
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                Assignee
+                <select
+                  value={actionEdit.assignedTo}
+                  onChange={(event) =>
+                    setRequestEdits((prev) => ({
+                      ...prev,
+                      [actionRequest.id]: {
+                        ...actionEdit,
+                        assignedTo: event.target.value,
+                      },
+                    }))
+                  }
+                  className="mt-1 w-full rounded-full border border-rose-200 bg-white px-3 py-2 text-[11px] text-slate-600"
+                >
+                  <option value="">Unassigned</option>
+                  {getMembersForStage(actionEdit.stage).map((member) => (
+                    <option key={member.id} value={member.id}>
+                      {resolveMemberLabel(member)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                Stage
+                <select
+                  value={actionEdit.stage}
+                  onChange={(event) =>
+                    setRequestEdits((prev) => ({
+                      ...prev,
+                      [actionRequest.id]: { ...actionEdit, stage: event.target.value },
+                    }))
+                  }
+                  className="mt-1 w-full rounded-full border border-rose-200 bg-white px-3 py-2 text-[11px] text-slate-600"
+                >
+                  {stageOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                Status
+                <select
+                  value={actionEdit.status}
+                  onChange={(event) =>
+                    setRequestEdits((prev) => ({
+                      ...prev,
+                      [actionRequest.id]: { ...actionEdit, status: event.target.value },
+                    }))
+                  }
+                  className="mt-1 w-full rounded-full border border-rose-200 bg-white px-3 py-2 text-[11px] text-slate-600"
+                >
+                  {statusOptions
+                    .filter((option) => String(option) !== 'blocked')
+                    .map((option) => (
+                      <option key={option} value={option}>
+                        {option.replace('_', ' ')}
+                      </option>
+                    ))}
+                </select>
+              </label>
+              <label className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                Priority
+                <select
+                  value={actionEdit.priority}
+                  onChange={(event) =>
+                    setRequestEdits((prev) => ({
+                      ...prev,
+                      [actionRequest.id]: { ...actionEdit, priority: event.target.value },
+                    }))
+                  }
+                  className="mt-1 w-full rounded-full border border-rose-200 bg-white px-3 py-2 text-[11px] text-slate-600"
+                >
+                  {priorityOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <label className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+              Admin Note
+              <textarea
+                rows={3}
+                value={actionEdit.reviewNote || actionRequest.review_note || ''}
+                onChange={(event) =>
+                  setRequestEdits((prev) => ({
+                    ...prev,
+                    [actionRequest.id]: {
+                      ...actionEdit,
+                      reviewNote: event.target.value,
+                    },
+                  }))
+                }
+                className="mt-1 w-full rounded-xl border border-rose-200 bg-white px-3 py-2 text-xs text-slate-700"
+                placeholder="Add admin note for this request..."
+              />
+            </label>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={!canSubmit || submitting || !actionDirty}
+                onClick={() => {
+                  updateRequest(actionRequest.id, {
+                    assignedTo: actionEdit.assignedTo
+                      ? Number(actionEdit.assignedTo)
+                      : null,
+                    stage: actionEdit.stage,
+                    status: actionEdit.status,
+                    priority: actionEdit.priority,
+                    reviewNote: actionEdit.reviewNote || null,
+                  })
+                  setActionsRequestId(null)
+                }}
+                className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:opacity-60"
+              >
+                <span className="inline-flex items-center gap-1">
+                  <i className="fas fa-floppy-disk" aria-hidden="true" />
+                  Save
+                </span>
+              </button>
+              <button
+                type="button"
+                disabled={!canSubmit || submitting}
+                onClick={() => {
+                  setDeleteModal({
+                    type: 'request',
+                    id: actionRequest.id,
+                    title: actionRequest.title,
+                  })
+                  setActionsRequestId(null)
+                }}
+                className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:opacity-60"
+              >
+                <span className="inline-flex items-center gap-1">
+                  <i className="fas fa-trash" aria-hidden="true" />
+                  Delete
+                </span>
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </AppModal>
+    </section>
+  )
+}
 
 export default memo(RequestsSection)

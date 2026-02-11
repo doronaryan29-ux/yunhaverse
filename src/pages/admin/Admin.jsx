@@ -189,12 +189,9 @@ const Admin = () => {
               userId={user?.id}
               members={adminData.membersFull}
               requests={adminData.creativeRequests}
-              submissions={adminData.creativeSubmissions}
               loadingRequests={adminData.creativeRequestsLoading}
-              loadingSubmissions={adminData.creativeSubmissionsLoading}
               onRefresh={() => {
                 adminData.fetchCreativeRequests()
-                adminData.fetchCreativeSubmissions()
               }}
             />
           ) : isFundsRoute ? (

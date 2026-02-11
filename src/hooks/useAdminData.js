@@ -21,8 +21,6 @@ export const useAdminData = ({
   const [membersLoading, setMembersLoading] = useState(false)
   const [creativeRequests, setCreativeRequests] = useState([])
   const [creativeRequestsLoading, setCreativeRequestsLoading] = useState(false)
-  const [creativeSubmissions, setCreativeSubmissions] = useState([])
-  const [creativeSubmissionsLoading, setCreativeSubmissionsLoading] = useState(false)
   const [events, setEvents] = useState([])
   const [eventsLoading, setEventsLoading] = useState(false)
   const [donations, setDonations] = useState([])
@@ -171,27 +169,6 @@ export const useAdminData = ({
     }
   }, [apiBase, profileRoleNormalized])
 
-  const fetchCreativeSubmissions = useCallback(async () => {
-    setCreativeSubmissionsLoading(true)
-    try {
-      const params = new URLSearchParams({
-        requesterRole: profileRoleNormalized,
-        limit: '50',
-      })
-      const response = await fetch(
-        `${apiBase}/admin/creative-submissions?${params.toString()}`,
-      )
-      const data = await response.json()
-      if (!response.ok) {
-        throw new Error(data?.message || 'Failed to load creative submissions.')
-      }
-      setCreativeSubmissions(Array.isArray(data.items) ? data.items : [])
-    } catch {
-      setCreativeSubmissions([])
-    } finally {
-      setCreativeSubmissionsLoading(false)
-    }
-  }, [apiBase, profileRoleNormalized])
 
   const fetchDonations = useCallback(async () => {
     setDonationsLoading(true)
@@ -345,8 +322,7 @@ export const useAdminData = ({
   useEffect(() => {
     if (!isCreativesRoute) return
     fetchCreativeRequests()
-    fetchCreativeSubmissions()
-  }, [fetchCreativeRequests, fetchCreativeSubmissions, isCreativesRoute])
+  }, [fetchCreativeRequests, isCreativesRoute])
 
   useEffect(() => {
     if (!isFundsRoute) return
@@ -381,10 +357,7 @@ export const useAdminData = ({
     fetchMembersFull,
     creativeRequests,
     creativeRequestsLoading,
-    creativeSubmissions,
-    creativeSubmissionsLoading,
     fetchCreativeRequests,
-    fetchCreativeSubmissions,
     events,
     eventsLoading,
     fetchEvents,

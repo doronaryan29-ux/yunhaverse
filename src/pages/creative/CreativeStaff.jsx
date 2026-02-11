@@ -73,7 +73,6 @@ const CreativeStaff = () => {
   const profileRole = normalizeRole(user?.role)
   const requesterRole = isCreativeRole(user?.role) ? 'creative' : profileRole || 'creative'
   const stage = 'creative'
-  const contextStage = null
   const apiBase = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000'
 
   const [loading, setLoading] = useState(true)
@@ -84,8 +83,6 @@ const CreativeStaff = () => {
     auditSettings: null,
   })
   const [requests, setRequests] = useState([])
-  const [submissions, setSubmissions] = useState([])
-  const [contextSubmissions, setContextSubmissions] = useState([])
   const [teamMembers, setTeamMembers] = useState([])
   const [error, setError] = useState('')
   const [notifications, setNotifications] = useState([])
@@ -98,30 +95,22 @@ const CreativeStaff = () => {
   })
   const [activeRequestId, setActiveRequestId] = useState(null)
   const [activeSubmissionId, setActiveSubmissionId] = useState(null)
+  const [submissionModalOpen, setSubmissionModalOpen] = useState(false)
+  const [submissionMode, setSubmissionMode] = useState('new')
+  const [selectedRequestTitle, setSelectedRequestTitle] = useState('')
+  const [requestLocked, setRequestLocked] = useState(false)
+  const [requestGroupFilter, setRequestGroupFilter] = useState('active')
+  const [requestFilter, setRequestFilter] = useState('all')
+  const [priorityFilter, setPriorityFilter] = useState('all')
+  const [submissionFilter, setSubmissionFilter] = useState('all')
+  const [assignmentFiltersOpen, setAssignmentFiltersOpen] = useState(false)
+  const [submissionFiltersOpen, setSubmissionFiltersOpen] = useState(false)
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
   const [submissionFeedback, setSubmissionFeedback] = useState({
     type: '',
     message: '',
   })
   const [submitting, setSubmitting] = useState(false)
-
-  const fetchSubmissions = async () => {
-    const params = new URLSearchParams({
-      requesterRole,
-      limit: '60',
-      stage,
-    })
-    const submissionsRes = await fetch(
-      `${apiBase}/admin/creative-submissions?${params.toString()}`,
-    )
-    const submissionsData = await submissionsRes.json()
-    if (!submissionsRes.ok) {
-      throw new Error(submissionsData?.message || 'Failed to load submissions.')
-    }
-    setSubmissions(
-      Array.isArray(submissionsData.items) ? submissionsData.items : [],
-    )
-  }
 
   const fetchNotifications = async () => {
     if (!user?.id) return
@@ -161,24 +150,14 @@ const CreativeStaff = () => {
           stage,
           assignedTo: user?.id ? String(user.id) : '',
         })
-        const submissionsParams = new URLSearchParams({
-          requesterRole,
-          limit: '60',
-          stage,
-        })
-        const [settingsRes, requestsRes, submissionsRes, membersRes] =
-          await Promise.all([
-            fetch(`${apiBase}/admin/settings?${settingsParams.toString()}`),
-            fetch(`${apiBase}/admin/creative-requests?${requestsParams.toString()}`),
-            fetch(
-              `${apiBase}/admin/creative-submissions?${submissionsParams.toString()}`,
-            ),
-            fetch(`${apiBase}/admin/members-creative?${requestsParams.toString()}`),
-          ])
+        const [settingsRes, requestsRes, membersRes] = await Promise.all([
+          fetch(`${apiBase}/admin/settings?${settingsParams.toString()}`),
+          fetch(`${apiBase}/admin/creative-requests?${requestsParams.toString()}`),
+          fetch(`${apiBase}/admin/members-creative?${requestsParams.toString()}`),
+        ])
 
         const settingsData = await settingsRes.json()
         const requestsData = await requestsRes.json()
-        const submissionsData = await submissionsRes.json()
         const membersData = await membersRes.json()
 
         if (!settingsRes.ok) {
@@ -186,9 +165,6 @@ const CreativeStaff = () => {
         }
         if (!requestsRes.ok) {
           throw new Error(requestsData?.message || 'Failed to load requests.')
-        }
-        if (!submissionsRes.ok) {
-          throw new Error(submissionsData?.message || 'Failed to load submissions.')
         }
         if (!membersRes.ok) {
           throw new Error(membersData?.message || 'Failed to load team roster.')
@@ -205,28 +181,9 @@ const CreativeStaff = () => {
               : null,
         })
         setRequests(Array.isArray(requestsData.items) ? requestsData.items : [])
-        setSubmissions(
-          Array.isArray(submissionsData.items) ? submissionsData.items : [],
-        )
         setTeamMembers(
           Array.isArray(membersData.items) ? membersData.items : [],
         )
-        if (contextStage) {
-          const contextParams = new URLSearchParams({
-            requesterRole,
-            limit: '60',
-            stage: contextStage,
-          })
-          const contextRes = await fetch(
-            `${apiBase}/admin/creative-submissions?${contextParams.toString()}`,
-          )
-          const contextData = await contextRes.json()
-          if (contextRes.ok && isMounted) {
-            setContextSubmissions(
-              Array.isArray(contextData.items) ? contextData.items : [],
-            )
-          }
-        }
         if (isMounted) {
           fetchNotifications()
         }
@@ -249,33 +206,38 @@ const CreativeStaff = () => {
   }
 
   const handleSubmitWork = async (event) => {
-    event.preventDefault()
+    event?.preventDefault?.()
     if (!user) return
     setSubmitting(true)
     setSubmissionFeedback({ type: '', message: '' })
     try {
+      if (!submissionForm.requestId) {
+        throw new Error('Select a linked request before submitting work.')
+      }
       const response = await fetch(
-        `${apiBase}/admin/creative-submissions?requesterRole=${encodeURIComponent(
-          requesterRole,
-        )}`,
+        `${apiBase}/admin/creative-requests/${Number(
+          submissionForm.requestId,
+        )}?requesterRole=${encodeURIComponent(requesterRole)}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             requesterRole,
-            title: submissionForm.title.trim(),
-            requestId: submissionForm.requestId
-              ? Number(submissionForm.requestId)
-              : null,
-            submittedBy: user.id ? Number(user.id) : null,
+            submissionTitle: submissionForm.title.trim(),
             submissionUrl: submissionForm.submissionUrl.trim() || null,
-            notes: submissionForm.notes.trim() || null,
-            stage,
-            status: 'Pending_Review',
+            submissionNotes: submissionForm.notes.trim() || null,
+            submittedBy: user.id ? Number(user.id) : null,
+            status: 'submitted',
           }),
         },
       )
-      const data = await response.json()
+      const raw = await response.text()
+      let data = {}
+      try {
+        data = raw ? JSON.parse(raw) : {}
+      } catch {
+        throw new Error('Server returned an invalid response.')
+      }
       if (!response.ok) {
         throw new Error(data?.message || 'Failed to submit work.')
       }
@@ -285,11 +247,29 @@ const CreativeStaff = () => {
         submissionUrl: '',
         notes: '',
       })
-      await fetchSubmissions()
+      setRequests((prev) =>
+        prev.map((item) =>
+          String(item.id) === String(submissionForm.requestId)
+            ? {
+                ...item,
+                submission_title: submissionForm.title.trim(),
+                submission_url: submissionForm.submissionUrl.trim() || null,
+                submission_notes: submissionForm.notes.trim() || null,
+                submitted_by: user.id ? Number(user.id) : null,
+                submitted_at: new Date().toISOString(),
+                status: 'submitted',
+              }
+            : item,
+        ),
+      )
       setSubmissionFeedback({
         type: 'success',
         message: 'Submission sent for review.',
       })
+      setSubmissionMode('new')
+      setRequestLocked(false)
+      setSelectedRequestTitle('')
+      setSubmissionModalOpen(false)
     } catch (err) {
       setSubmissionFeedback({
         type: 'error',
@@ -328,27 +308,13 @@ const CreativeStaff = () => {
   const mySubmissions = useMemo(() => {
     const userId = resolveId(user?.id)
     if (!userId) return []
-    return submissions.filter((submission) => {
+    return requests.filter((request) => {
       const submittedId = resolveId(
-        submission?.submittedBy ??
-          submission?.submitted_by ??
-          submission?.submitted_user,
+        request?.submitted_by ?? request?.submittedBy,
       )
       return submittedId === userId
     })
-  }, [submissions, user])
-
-  const contextByRequestId = useMemo(() => {
-    if (!contextStage) return new Map()
-    const map = new Map()
-    contextSubmissions.forEach((item) => {
-      if (!item?.request_id) return
-      if (!map.has(item.request_id)) {
-        map.set(item.request_id, item)
-      }
-    })
-    return map
-  }, [contextStage, contextSubmissions])
+  }, [requests, user])
 
   const openTasks = assignedRequests.filter((request) =>
     ['open', 'in_progress', 'blocked'].includes(
@@ -365,9 +331,107 @@ const CreativeStaff = () => {
     return diffDays >= 0 && diffDays <= 7
   }).length
 
-  const pendingReviewCount = mySubmissions.filter((submission) =>
-    String(submission?.status || '').toLowerCase().includes('pending'),
+  const pendingReviewCount = mySubmissions.filter(
+    (submission) => String(submission?.status || '').toLowerCase() === 'submitted',
   ).length
+
+  const normalizedStatus = (value) =>
+    String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '_')
+
+  const getSubmissionBucket = (status) => {
+    const normalized = normalizedStatus(status)
+    if (['approved', 'completed', 'accepted', 'done'].includes(normalized)) return 'accepted'
+    if (normalized === 'submitted') return 'submitted'
+    if (normalized === 'declined') return 'declined'
+    if (normalized === 'revision_requested') return 'revision'
+    return 'active'
+  }
+
+  const lockSubmissionStatus = (status) => {
+    const bucket = getSubmissionBucket(status)
+    return bucket === 'accepted' || bucket === 'declined'
+  }
+
+  const activeAssignments = useMemo(
+    () => assignedRequests.filter((request) => {
+      const bucket = getSubmissionBucket(request?.status)
+      return bucket !== 'accepted' && bucket !== 'declined'
+    }),
+    [assignedRequests],
+  )
+
+  const historicalAssignments = useMemo(
+    () => assignedRequests.filter((request) => {
+      const bucket = getSubmissionBucket(request?.status)
+      return bucket === 'accepted' || bucket === 'declined'
+    }),
+    [assignedRequests],
+  )
+
+  const filteredAssignments = useMemo(() => {
+    const source =
+      requestGroupFilter === 'history'
+        ? historicalAssignments
+        : requestGroupFilter === 'all'
+          ? assignedRequests
+          : activeAssignments
+    const statusFiltered =
+      requestFilter === 'all'
+        ? source
+        : source.filter(
+            (request) =>
+              requestFilter === 'open'
+                ? getSubmissionBucket(request?.status) === 'active'
+                : getSubmissionBucket(request?.status) === requestFilter,
+          )
+    const priorityFiltered =
+      priorityFilter === 'all'
+        ? statusFiltered
+        : statusFiltered.filter(
+            (request) =>
+              String(request?.priority || '').trim().toLowerCase() === priorityFilter,
+          )
+    const statusOrder = {
+      open: 0,
+      in_progress: 1,
+      blocked: 2,
+      submitted: 3,
+      revision_requested: 4,
+      accepted: 5,
+      declined: 6,
+    }
+    return [...priorityFiltered].sort((a, b) => {
+      const statusA = normalizedStatus(a?.status)
+      const statusB = normalizedStatus(b?.status)
+      const rankA = statusOrder[statusA] ?? 99
+      const rankB = statusOrder[statusB] ?? 99
+      if (rankA !== rankB) return rankA - rankB
+
+      const dueA = new Date(a?.dueAt || a?.due_at || 0).getTime()
+      const dueB = new Date(b?.dueAt || b?.due_at || 0).getTime()
+      if (Number.isFinite(dueA) && Number.isFinite(dueB) && dueA !== dueB) {
+        return dueA - dueB
+      }
+      return String(a?.title || '').localeCompare(String(b?.title || ''))
+    })
+  }, [
+    activeAssignments,
+    assignedRequests,
+    historicalAssignments,
+    priorityFilter,
+    requestFilter,
+    requestGroupFilter,
+  ])
+
+  const filteredSubmissions = useMemo(() => {
+    if (submissionFilter === 'all') return mySubmissions
+    return mySubmissions.filter(
+      (item) => getSubmissionBucket(item?.status) === submissionFilter,
+    )
+  }, [mySubmissions, submissionFilter])
 
   if (!user) return null
 
@@ -394,11 +458,63 @@ const CreativeStaff = () => {
   }
 
   const [activeSection, setActiveSection] = useState(getActiveSection())
+  const showWorkPanel = ['assignments', 'scope', 'team'].includes(activeSection)
+  const statusFilterOptions =
+    requestGroupFilter === 'history'
+      ? [
+          { value: 'all', label: 'All Status' },
+          { value: 'accepted', label: 'Accepted' },
+          { value: 'declined', label: 'Declined' },
+        ]
+      : requestGroupFilter === 'active'
+        ? [
+            { value: 'all', label: 'All Status' },
+            { value: 'open', label: 'Open' },
+            { value: 'submitted', label: 'Submitted' },
+            { value: 'revision', label: 'Revision' },
+          ]
+      : [
+          { value: 'all', label: 'All Status' },
+          { value: 'open', label: 'Open' },
+          { value: 'submitted', label: 'Submitted' },
+          { value: 'revision', label: 'Revision' },
+          { value: 'accepted', label: 'Accepted' },
+          { value: 'declined', label: 'Declined' },
+        ]
 
   useEffect(() => {
     const handleHashChange = () => setActiveSection(getActiveSection())
     window.addEventListener('hashchange', handleHashChange)
     return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [])
+
+  useEffect(() => {
+    if (requestGroupFilter !== 'history') return
+    if (requestFilter === 'all' || requestFilter === 'accepted' || requestFilter === 'declined') return
+    setRequestFilter('accepted')
+  }, [requestFilter, requestGroupFilter])
+
+  useEffect(() => {
+    const handleNativeSubmit = (event) => {
+      event.preventDefault()
+      event.stopPropagation()
+    }
+
+    const handleAnchorNavigation = (event) => {
+      const anchor = event.target?.closest?.('a[href]')
+      if (!anchor) return
+      const href = String(anchor.getAttribute('href') || '')
+      if (!href.includes('/admin/creative-requests/')) return
+      event.preventDefault()
+      event.stopPropagation()
+    }
+
+    window.addEventListener('submit', handleNativeSubmit, true)
+    window.addEventListener('click', handleAnchorNavigation, true)
+    return () => {
+      window.removeEventListener('submit', handleNativeSubmit, true)
+      window.removeEventListener('click', handleAnchorNavigation, true)
+    }
   }, [])
 
   return (
@@ -427,7 +543,9 @@ const CreativeStaff = () => {
                 Welcome back, {profileName || user?.email || 'Creative'}
               </h1>
               <p className="mt-2 text-sm text-slate-600">
-                Admin-aligned dashboard for assignments, submissions, and scope.
+                {activeSection === 'overview'
+                  ? 'Admin-aligned dashboard for assignments, submissions, and scope.'
+                  : 'Manage your assigned tasks, submissions, and team workflow.'}
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -441,37 +559,39 @@ const CreativeStaff = () => {
             </div>
           </header>
 
-          <section id="overview" className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {[
-              {
-                label: 'Assigned Tasks',
-                value: assignedRequests.length,
-                hint: `${openTasks.length} active`,
-              },
-              {
-                label: 'Due This Week',
-                value: dueSoonCount,
-                hint: 'Next 7 days',
-              },
-              {
-                label: 'Pending Reviews',
-                value: pendingReviewCount,
-                hint: 'Awaiting admin review',
-              },
-              {
-                label: 'Team Signals',
-                value: teamMembers.length || '--',
-                hint: 'Creative staff visible',
-              },
-            ].map((card) => (
-              <StatCard
-                key={card.label}
-                label={card.label}
-                value={card.value}
-                hint={card.hint}
-              />
-            ))}
-          </section>
+          {activeSection === 'overview' ? (
+            <section id="overview" className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {[
+                {
+                  label: 'Assigned Tasks',
+                  value: assignedRequests.length,
+                  hint: `${openTasks.length} active`,
+                },
+                {
+                  label: 'Due This Week',
+                  value: dueSoonCount,
+                  hint: 'Next 7 days',
+                },
+                {
+                  label: 'Pending Reviews',
+                  value: pendingReviewCount,
+                  hint: 'Awaiting admin review',
+                },
+                {
+                  label: 'Team Signals',
+                  value: teamMembers.length || '--',
+                  hint: 'Creative staff visible',
+                },
+              ].map((card) => (
+                <StatCard
+                  key={card.label}
+                  label={card.label}
+                  value={card.value}
+                  hint={card.hint}
+                />
+              ))}
+            </section>
+          ) : null}
 
           {error ? (
             <div className="rounded-3xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">
@@ -479,81 +599,231 @@ const CreativeStaff = () => {
             </div>
           ) : null}
 
-          <section
-            id="assignments"
-            className="mt-2 grid gap-6 lg:grid-cols-[1.4fr_1fr]"
-          >
-            <div className="rounded-3xl border border-rose-100 bg-white/90 p-6 shadow-lg shadow-rose-100">
+          {activeSection === 'overview' ? (
+            <section className="rounded-3xl border border-rose-100 bg-white/90 p-6 shadow-lg shadow-rose-100">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h2 className="font-display text-2xl font-semibold text-slate-900">
-                    My Assignments
+                    Assignment Preview
                   </h2>
                   <p className="mt-2 text-sm text-slate-600">
-                    Tasks assigned by admin with scope, priority, and due dates.
+                    Latest tasks are shown here. Open the Assignments tab for full actions.
                   </p>
                 </div>
-                <span className="rounded-full bg-rose-50 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-rose-500">
-                  {loading ? 'Loading' : `${assignedRequests.length} tasks`}
-                </span>
+                <button
+                  type="button"
+                  onClick={() => window.location.replace('/#/staff#assignments')}
+                  className="rounded-full border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-500"
+                >
+                  Open Assignments
+                </button>
               </div>
-
               <div className="mt-6 grid gap-4">
+                {assignedRequests.slice(0, 2).map((request) => (
+                  <AssignmentCard
+                    key={request?.id || request?.title}
+                    title={safeString(request?.title, 'Untitled request')}
+                    priority={safeString(request?.priority, 'Medium')}
+                    description={safeString(request?.description, 'No brief added yet.')}
+                    status={safeString(request?.status, 'Open')}
+                    referenceLabel={
+                      request?.submission_url || request?.submission_notes
+                        ? safeString(request?.submission_url || request?.submission_notes)
+                        : ''
+                    }
+                    referenceUrl={request?.submission_url || ''}
+                    active={false}
+                    dueLabel={
+                      request?.dueAt || request?.due_at
+                        ? formatDateInManila(request?.dueAt || request?.due_at, {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })
+                        : 'TBD'
+                    }
+                    requestedBy={safeString(
+                      request?.requestedByName || request?.requested_by_name || request?.requestedBy,
+                      'Admin',
+                    )}
+                  />
+                ))}
                 {assignedRequests.length === 0 ? (
                   <div className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4 text-sm text-slate-600">
-                    No assignments yet. Stay ready for new creative briefs.
+                    No assignments yet.
                   </div>
-                ) : (
-                  assignedRequests.map((request) => {
-                    const contextSubmission = contextByRequestId.get(request?.id)
-                    return (
-                      <AssignmentCard
-                        key={request?.id || request?.title}
-                        title={safeString(request?.title, 'Untitled request')}
-                        priority={safeString(request?.priority, 'Medium')}
-                        description={safeString(request?.description, 'No brief added yet.')}
-                        status={safeString(request?.status, 'Open')}
-                        referenceLabel={
-                          contextSubmission
-                            ? safeString(
-                                contextSubmission?.submission_url ||
-                                  contextSubmission?.submissionUrl ||
-                                  contextSubmission?.notes,
-                              )
-                            : ''
-                        }
-                        referenceUrl={
-                          contextSubmission?.submission_url ||
-                          contextSubmission?.submissionUrl ||
-                          ''
-                        }
-                        active={activeRequestId === request?.id}
-                        onClick={() => setActiveRequestId(request?.id ?? null)}
-                        dueLabel={
-                          request?.dueAt || request?.due_at
-                            ? formatDateInManila(
-                                request?.dueAt || request?.due_at,
-                                {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric',
-                                },
-                              )
-                            : 'TBD'
-                        }
-                        requestedBy={safeString(
-                          request?.requestedByName ||
-                            request?.requested_by_name ||
-                            request?.requestedBy,
-                          'Admin',
-                        )}
-                      />
-                    )
-                  })
-                )}
+                ) : null}
               </div>
-            </div>
+            </section>
+          ) : null}
 
+          {showWorkPanel ? (
+            <section
+              id="assignments"
+              className={`mt-2 grid gap-6 ${
+                activeSection === 'assignments' ? 'lg:grid-cols-1' : 'lg:grid-cols-[1.4fr_1fr]'
+              }`}
+            >
+              <div className="rounded-3xl border border-rose-100 bg-white/90 p-6 shadow-lg shadow-rose-100">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="font-display text-2xl font-semibold text-slate-900">
+                      My Assignments
+                    </h2>
+                    <p className="mt-2 text-sm text-slate-600">
+                      Tasks assigned by admin with scope, priority, and due dates.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-rose-50 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-rose-500">
+                      {loading ? 'Loading' : `${filteredAssignments.length} tasks`}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setAssignmentFiltersOpen((prev) => !prev)}
+                      className={`rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] transition ${
+                        assignmentFiltersOpen
+                          ? 'border-rose-400 bg-rose-500 text-white'
+                          : 'border-rose-200 text-rose-500 hover:bg-rose-50'
+                      }`}
+                    >
+                      {assignmentFiltersOpen ? 'Hide Filters' : 'Filters'}
+                    </button>
+                  </div>
+                </div>
+
+                <div
+                  className={`overflow-hidden transition-all duration-300 ${
+                    assignmentFiltersOpen
+                      ? 'mt-4 max-h-80 opacity-100'
+                      : 'max-h-0 opacity-0 pointer-events-none'
+                  }`}
+                >
+                  <div className="space-y-3 rounded-2xl border border-rose-100 bg-rose-50/60 p-4">
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <label className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                        Task Group
+                        <select
+                          value={requestGroupFilter}
+                          onChange={(event) => setRequestGroupFilter(event.target.value)}
+                          className="mt-2 w-full rounded-full border border-rose-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-600"
+                        >
+                          <option value="active">Open Tasks</option>
+                          <option value="history">Task History</option>
+                          <option value="all">All Tasks</option>
+                        </select>
+                      </label>
+                      <label className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                        Status
+                        <select
+                          value={requestFilter}
+                          onChange={(event) => setRequestFilter(event.target.value)}
+                          className="mt-2 w-full rounded-full border border-rose-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-600"
+                        >
+                          {statusFilterOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                        Priority
+                        <select
+                          value={priorityFilter}
+                          onChange={(event) => setPriorityFilter(event.target.value)}
+                          className="mt-2 w-full rounded-full border border-rose-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-600"
+                        >
+                          <option value="all">All Priority</option>
+                          <option value="high">High</option>
+                          <option value="medium">Medium</option>
+                          <option value="low">Low</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRequestGroupFilter('active')
+                          setRequestFilter('all')
+                          setPriorityFilter('all')
+                        }}
+                        className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500"
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 grid gap-4">
+                  {filteredAssignments.length === 0 ? (
+                    <div className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4 text-sm text-slate-600">
+                      No assignments yet. Stay ready for new creative briefs.
+                    </div>
+                  ) : (
+                    filteredAssignments.map((request) => (
+                        <AssignmentCard
+                          key={request?.id || request?.title}
+                          title={safeString(request?.title, 'Untitled request')}
+                          priority={safeString(request?.priority, 'Medium')}
+                          description={safeString(request?.description, 'No brief added yet.')}
+                          status={safeString(request?.status, 'Open')}
+                          referenceLabel={
+                            request?.submission_url || request?.submission_notes
+                              ? safeString(
+                                  request?.submission_url || request?.submission_notes,
+                                )
+                              : ''
+                          }
+                          referenceUrl={
+                            request?.submission_url || ''
+                          }
+                          active={activeRequestId === request?.id}
+                          onClick={() => {
+                            setActiveRequestId(request?.id ?? null)
+                            if (lockSubmissionStatus(request?.status)) {
+                              return
+                            }
+                            setSubmissionMode('new')
+                            setRequestLocked(true)
+                            setSelectedRequestTitle(String(request?.title || 'Untitled request'))
+                            setSubmissionForm((prev) => ({
+                              ...prev,
+                              requestId: String(request?.id ?? ''),
+                              title: String(request?.title || ''),
+                              submissionUrl: String(request?.submission_url || ''),
+                              notes: String(request?.submission_notes || ''),
+                            }))
+                            setSubmissionFeedback({ type: '', message: '' })
+                            setSubmissionModalOpen(true)
+                          }}
+                          dueLabel={
+                            request?.dueAt || request?.due_at
+                              ? formatDateInManila(
+                                  request?.dueAt || request?.due_at,
+                                  {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                  },
+                                )
+                              : 'TBD'
+                          }
+                          requestedBy={safeString(
+                            request?.requestedByName ||
+                              request?.requested_by_name ||
+                              request?.requestedBy,
+                            'Admin',
+                          )}
+                        />
+                    ))
+                  )}
+                </div>
+              </div>
+
+            {activeSection !== 'assignments' ? (
             <div className="space-y-6">
               <section
                 id="scope"
@@ -636,8 +906,11 @@ const CreativeStaff = () => {
                 </div>
               </section>
             </div>
+            ) : null}
           </section>
+          ) : null}
 
+          {activeSection === 'submissions' ? (
           <section
             id="submissions"
             className="mt-2 rounded-3xl border border-rose-100 bg-white/90 p-6 shadow-lg shadow-rose-100"
@@ -651,45 +924,211 @@ const CreativeStaff = () => {
                   Track deliverables submitted to admin for review.
                 </p>
               </div>
-              <span className="rounded-full bg-rose-50 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-rose-500">
-                {loading ? 'Loading' : `${mySubmissions.length} submissions`}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-rose-50 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-rose-500">
+                  {loading ? 'Loading' : `${filteredSubmissions.length} submissions`}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSubmissionFiltersOpen((prev) => !prev)}
+                  className={`rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] transition ${
+                    submissionFiltersOpen
+                      ? 'border-rose-400 bg-rose-500 text-white'
+                      : 'border-rose-200 text-rose-500 hover:bg-rose-50'
+                  }`}
+                >
+                  {submissionFiltersOpen ? 'Hide Filters' : 'Filters'}
+                </button>
+              </div>
+            </div>
+
+            <div
+              className={`overflow-hidden transition-all duration-300 ${
+                submissionFiltersOpen
+                  ? 'mt-4 max-h-48 opacity-100'
+                  : 'max-h-0 opacity-0 pointer-events-none'
+              }`}
+            >
+              <div className="space-y-3 rounded-2xl border border-rose-100 bg-rose-50/60 p-4">
+                <label className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Submission Status
+                  <select
+                    value={submissionFilter}
+                    onChange={(event) => setSubmissionFilter(event.target.value)}
+                    className="mt-2 w-full max-w-xs rounded-full border border-rose-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-600"
+                  >
+                    <option value="all">All</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="accepted">Accepted</option>
+                    <option value="declined">Declined</option>
+                    <option value="revision">Revision</option>
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setSubmissionFilter('all')}
+                  className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500"
+                >
+                  Clear All
+                </button>
+              </div>
             </div>
 
             <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.2fr]">
-              <SubmitWorkForm
-                assignedRequests={assignedRequests}
-                submissionForm={submissionForm}
-                submissionFeedback={submissionFeedback}
-                submitting={submitting}
-                onChange={handleSubmissionChange}
-                onSubmit={handleSubmitWork}
-              />
+              <div className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4">
+                <h3 className="text-sm font-semibold uppercase tracking-[0.25em] text-rose-500">
+                  Assignment Preview
+                </h3>
+                <p className="mt-2 text-xs text-slate-600">
+                  Select an assignment from the list above to open the submission modal.
+                </p>
+                <div className="mt-4">
+                  {activeRequestId ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const activeRequest = assignedRequests.find(
+                          (item) => String(item?.id) === String(activeRequestId),
+                        )
+                        if (lockSubmissionStatus(activeRequest?.status)) {
+                          return
+                        }
+                        setSubmissionMode('new')
+                        setRequestLocked(true)
+                        setSubmissionModalOpen(true)
+                      }}
+                      disabled={(() => {
+                        const activeRequest = assignedRequests.find(
+                          (item) => String(item?.id) === String(activeRequestId),
+                        )
+                        return lockSubmissionStatus(activeRequest?.status)
+                      })()}
+                      className="rounded-2xl bg-rose-500 px-4 py-3 text-xs font-semibold uppercase tracking-[0.25em] text-white shadow-lg shadow-rose-200 transition hover:-translate-y-0.5"
+                    >
+                      Open Submission Modal
+                    </button>
+                  ) : (
+                    <p className="text-xs text-slate-500">
+                      No assignment selected yet.
+                    </p>
+                  )}
+                </div>
+              </div>
 
-              {mySubmissions.length === 0 ? (
+              {filteredSubmissions.length === 0 ? (
                 <div className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4 text-sm text-slate-600">
                   No submissions logged yet. Send your first draft when ready.
                 </div>
               ) : (
-                mySubmissions.map((submission) => (
-                  <SubmissionCard
-                    key={submission?.id || submission?.title}
-                    title={safeString(submission?.title, 'Untitled submission')}
-                    status={safeString(submission?.status, 'Pending review')}
-                    notes={safeString(submission?.notes, 'Awaiting admin feedback.')}
-                    active={activeSubmissionId === submission?.id}
-                    onClick={() => setActiveSubmissionId(submission?.id ?? null)}
-                    linkLabel={safeString(
-                      submission?.submissionUrl || submission?.submission_url,
-                    )}
-                    requestLabel={safeString(
-                      submission?.requestId || submission?.request_id,
-                    )}
-                  />
+                filteredSubmissions.map((submission) => (
+                  <div key={submission?.id || submission?.title} className="space-y-2">
+                    <SubmissionCard
+                      title={safeString(
+                        submission?.submission_title || submission?.title,
+                        'Untitled submission',
+                      )}
+                      status={safeString(submission?.status, 'Submitted').replace(/_/g, ' ')}
+                      notes={safeString(
+                        submission?.submission_notes || submission?.review_note,
+                        'Awaiting admin feedback.',
+                      )}
+                      active={activeSubmissionId === submission?.id}
+                      onClick={() => setActiveSubmissionId(submission?.id ?? null)}
+                      linkLabel={safeString(submission?.submission_url || '')}
+                      requestLabel={safeString(submission?.id)}
+                    />
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={lockSubmissionStatus(submission?.status)}
+                        onClick={() => {
+                          setSubmissionMode('edit')
+                          setRequestLocked(true)
+                          setSelectedRequestTitle(
+                            String(submission?.title || 'Untitled request'),
+                          )
+                          setSubmissionForm({
+                            title: String(
+                              submission?.submission_title || submission?.title || '',
+                            ),
+                            requestId: String(submission?.id || ''),
+                            submissionUrl: String(submission?.submission_url || ''),
+                            notes: String(submission?.submission_notes || ''),
+                          })
+                          setSubmissionFeedback({ type: '', message: '' })
+                          setSubmissionModalOpen(true)
+                        }}
+                        className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        disabled={lockSubmissionStatus(submission?.status)}
+                        onClick={() => {
+                          setSubmissionMode('resubmit')
+                          setRequestLocked(true)
+                          setSelectedRequestTitle(
+                            String(submission?.title || 'Untitled request'),
+                          )
+                          setSubmissionForm({
+                            title: String(
+                              submission?.submission_title || submission?.title || '',
+                            ),
+                            requestId: String(submission?.id || ''),
+                            submissionUrl: String(submission?.submission_url || ''),
+                            notes: String(submission?.submission_notes || ''),
+                          })
+                          setSubmissionFeedback({ type: '', message: '' })
+                          setSubmissionModalOpen(true)
+                        }}
+                        className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Resubmit
+                      </button>
+                      {lockSubmissionStatus(submission?.status) ? (
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                          Submitted/declined items are locked
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
                 ))
               )}
             </div>
           </section>
+          ) : null}
+
+          <AppModal
+            open={submissionModalOpen}
+            onClose={() => {
+              setSubmissionModalOpen(false)
+              setSubmissionMode('new')
+              setRequestLocked(false)
+              setSelectedRequestTitle('')
+            }}
+            eyebrow="Submit Work"
+            title="Send Assignment to Admin"
+          >
+            <SubmitWorkForm
+              assignedRequests={assignedRequests}
+              submissionForm={submissionForm}
+              submissionFeedback={submissionFeedback}
+              submitting={submitting}
+              onChange={handleSubmissionChange}
+              onSubmit={handleSubmitWork}
+              formId="creative-submit-modal"
+              requestLocked={requestLocked}
+              selectedRequestLabel={selectedRequestTitle}
+              submitLabel={
+                submissionMode === 'edit'
+                  ? 'Save Changes'
+                  : submissionMode === 'resubmit'
+                    ? 'Resubmit Work'
+                    : 'Submit Work'
+              }
+            />
+          </AppModal>
 
           <AppModal
             open={logoutConfirmOpen}

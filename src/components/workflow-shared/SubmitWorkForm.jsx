@@ -9,10 +9,12 @@ const SubmitWorkForm = memo(
     onChange,
     onSubmit,
     formId,
+    requestLocked = false,
+    selectedRequestLabel = '',
+    submitLabel = 'Submit Work',
   }) => (
-    <form
+    <section
       id={formId}
-      onSubmit={onSubmit}
       className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4"
     >
       <h3 className="text-sm font-semibold uppercase tracking-[0.25em] text-rose-500">
@@ -38,15 +40,22 @@ const SubmitWorkForm = memo(
           <select
             value={submissionForm.requestId}
             onChange={(event) => onChange('requestId', event.target.value)}
+            required
+            disabled={requestLocked}
             className="mt-1 w-full rounded-2xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700"
           >
-            <option value="">No linked request</option>
+            <option value="">Select request</option>
             {assignedRequests.map((request) => (
               <option key={request?.id} value={request?.id || ''}>
                 {request?.title || 'Untitled request'}
               </option>
             ))}
           </select>
+          {requestLocked ? (
+            <span className="mt-1 block text-[11px] normal-case tracking-normal text-slate-500">
+              Locked to: {selectedRequestLabel || 'Selected assignment'}
+            </span>
+          ) : null}
         </label>
         <label className="space-y-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
           Submission Link
@@ -80,14 +89,19 @@ const SubmitWorkForm = memo(
           </div>
         ) : null}
         <button
-          type="submit"
+          type="button"
+          onClick={(event) => {
+            event.preventDefault()
+            event.stopPropagation()
+            onSubmit?.(event)
+          }}
           disabled={submitting}
           className="rounded-2xl bg-rose-500 px-4 py-3 text-xs font-semibold uppercase tracking-[0.25em] text-white shadow-lg shadow-rose-200 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {submitting ? 'Submitting...' : 'Submit Work'}
+          {submitting ? 'Submitting...' : submitLabel}
         </button>
       </div>
-    </form>
+    </section>
   ),
 )
 

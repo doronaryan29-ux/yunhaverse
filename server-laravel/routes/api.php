@@ -37,6 +37,7 @@ Route::post('/admin/settings', [AdminDataController::class, 'updateAppSettings']
 Route::get('/admin/upcoming-events', [AdminDataController::class, 'upcomingEvents']);
 Route::get('/admin/members-creative', [AdminDataController::class, 'membersCreativeStaff']);
 Route::get('/admin/creative-requests', [AdminDataController::class, 'creativeRequests']);
+Route::get('/admin/creative-requests/{id}', [AdminDataController::class, 'creativeRequestById']);
 Route::get('/admin/creative-submissions', [AdminDataController::class, 'creativeSubmissions']);
 Route::post('/admin/creative-requests', [AdminDataController::class, 'storeCreativeRequest']);
 Route::post('/admin/creative-requests/{id}', [AdminDataController::class, 'updateCreativeRequest']);

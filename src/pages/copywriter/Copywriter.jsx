@@ -73,7 +73,6 @@ const Copywriter = () => {
   const profileRole = normalizeRole(user?.role)
   const requesterRole = isCreativeRole(user?.role) ? 'copywriter' : profileRole || 'copywriter'
   const stage = 'copywriter'
-  const contextStage = 'creative'
   const apiBase = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000'
 
   const [loading, setLoading] = useState(true)
@@ -84,8 +83,6 @@ const Copywriter = () => {
     auditSettings: null,
   })
   const [requests, setRequests] = useState([])
-  const [submissions, setSubmissions] = useState([])
-  const [contextSubmissions, setContextSubmissions] = useState([])
   const [teamMembers, setTeamMembers] = useState([])
   const [error, setError] = useState('')
   const [notifications, setNotifications] = useState([])
@@ -104,24 +101,6 @@ const Copywriter = () => {
     message: '',
   })
   const [submitting, setSubmitting] = useState(false)
-
-  const fetchSubmissions = async () => {
-    const params = new URLSearchParams({
-      requesterRole,
-      limit: '60',
-      stage,
-    })
-    const submissionsRes = await fetch(
-      `${apiBase}/admin/creative-submissions?${params.toString()}`,
-    )
-    const submissionsData = await submissionsRes.json()
-    if (!submissionsRes.ok) {
-      throw new Error(submissionsData?.message || 'Failed to load submissions.')
-    }
-    setSubmissions(
-      Array.isArray(submissionsData.items) ? submissionsData.items : [],
-    )
-  }
 
   const fetchNotifications = async () => {
     if (!user?.id) return
@@ -161,24 +140,14 @@ const Copywriter = () => {
           stage,
           assignedTo: user?.id ? String(user.id) : '',
         })
-        const submissionsParams = new URLSearchParams({
-          requesterRole,
-          limit: '60',
-          stage,
-        })
-        const [settingsRes, requestsRes, submissionsRes, membersRes] =
-          await Promise.all([
-            fetch(`${apiBase}/admin/settings?${settingsParams.toString()}`),
-            fetch(`${apiBase}/admin/creative-requests?${requestsParams.toString()}`),
-            fetch(
-              `${apiBase}/admin/creative-submissions?${submissionsParams.toString()}`,
-            ),
-            fetch(`${apiBase}/admin/members-creative?${requestsParams.toString()}`),
-          ])
+        const [settingsRes, requestsRes, membersRes] = await Promise.all([
+          fetch(`${apiBase}/admin/settings?${settingsParams.toString()}`),
+          fetch(`${apiBase}/admin/creative-requests?${requestsParams.toString()}`),
+          fetch(`${apiBase}/admin/members-creative?${requestsParams.toString()}`),
+        ])
 
         const settingsData = await settingsRes.json()
         const requestsData = await requestsRes.json()
-        const submissionsData = await submissionsRes.json()
         const membersData = await membersRes.json()
 
         if (!settingsRes.ok) {
@@ -186,9 +155,6 @@ const Copywriter = () => {
         }
         if (!requestsRes.ok) {
           throw new Error(requestsData?.message || 'Failed to load requests.')
-        }
-        if (!submissionsRes.ok) {
-          throw new Error(submissionsData?.message || 'Failed to load submissions.')
         }
         if (!membersRes.ok) {
           throw new Error(membersData?.message || 'Failed to load team roster.')
@@ -205,25 +171,6 @@ const Copywriter = () => {
               : null,
         })
         setRequests(Array.isArray(requestsData.items) ? requestsData.items : [])
-        setSubmissions(
-          Array.isArray(submissionsData.items) ? submissionsData.items : [],
-        )
-        if (contextStage) {
-          const contextParams = new URLSearchParams({
-            requesterRole,
-            limit: '60',
-            stage: contextStage,
-          })
-          const contextRes = await fetch(
-            `${apiBase}/admin/creative-submissions?${contextParams.toString()}`,
-          )
-          const contextData = await contextRes.json()
-          if (contextRes.ok && isMounted) {
-            setContextSubmissions(
-              Array.isArray(contextData.items) ? contextData.items : [],
-            )
-          }
-        }
         setTeamMembers(
           Array.isArray(membersData.items) ? membersData.items : [],
         )
@@ -279,29 +226,28 @@ const Copywriter = () => {
   }
 
   const handleSubmitWork = async (event) => {
-    event.preventDefault()
+    event?.preventDefault?.()
     if (!user) return
     setSubmitting(true)
     setSubmissionFeedback({ type: '', message: '' })
     try {
+      if (!submissionForm.requestId) {
+        throw new Error('Select a linked request before submitting work.')
+      }
       const response = await fetch(
-        `${apiBase}/admin/creative-submissions?requesterRole=${encodeURIComponent(
-          requesterRole,
-        )}`,
+        `${apiBase}/admin/creative-requests/${Number(
+          submissionForm.requestId,
+        )}?requesterRole=${encodeURIComponent(requesterRole)}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             requesterRole,
-            title: submissionForm.title.trim(),
-            requestId: submissionForm.requestId
-              ? Number(submissionForm.requestId)
-              : null,
-            submittedBy: user.id ? Number(user.id) : null,
+            submissionTitle: submissionForm.title.trim(),
             submissionUrl: submissionForm.submissionUrl.trim() || null,
-            notes: submissionForm.notes.trim() || null,
-            stage,
-            status: 'Pending_Review',
+            submissionNotes: submissionForm.notes.trim() || null,
+            submittedBy: user.id ? Number(user.id) : null,
+            status: 'submitted',
           }),
         },
       )
@@ -315,7 +261,21 @@ const Copywriter = () => {
         submissionUrl: '',
         notes: '',
       })
-      await fetchSubmissions()
+      setRequests((prev) =>
+        prev.map((item) =>
+          String(item.id) === String(submissionForm.requestId)
+            ? {
+                ...item,
+                submission_title: submissionForm.title.trim(),
+                submission_url: submissionForm.submissionUrl.trim() || null,
+                submission_notes: submissionForm.notes.trim() || null,
+                submitted_by: user.id ? Number(user.id) : null,
+                submitted_at: new Date().toISOString(),
+                status: 'submitted',
+              }
+            : item,
+        ),
+      )
       setSubmissionFeedback({
         type: 'success',
         message: 'Submission sent for review.',
@@ -358,27 +318,13 @@ const Copywriter = () => {
   const mySubmissions = useMemo(() => {
     const userId = resolveId(user?.id)
     if (!userId) return []
-    return submissions.filter((submission) => {
+    return requests.filter((request) => {
       const submittedId = resolveId(
-        submission?.submittedBy ??
-          submission?.submitted_by ??
-          submission?.submitted_user,
+        request?.submitted_by ?? request?.submittedBy,
       )
       return submittedId === userId
     })
-  }, [submissions, user])
-
-  const contextByRequestId = useMemo(() => {
-    if (!contextStage) return new Map()
-    const map = new Map()
-    contextSubmissions.forEach((item) => {
-      if (!item?.request_id) return
-      if (!map.has(item.request_id)) {
-        map.set(item.request_id, item)
-      }
-    })
-    return map
-  }, [contextStage, contextSubmissions])
+  }, [requests, user])
 
   const openTasks = assignedRequests.filter((request) =>
     ['open', 'in_progress', 'blocked'].includes(
@@ -395,8 +341,8 @@ const Copywriter = () => {
     return diffDays >= 0 && diffDays <= 7
   }).length
 
-  const pendingReviewCount = mySubmissions.filter((submission) =>
-    String(submission?.status || '').toLowerCase().includes('pending'),
+  const pendingReviewCount = mySubmissions.filter(
+    (submission) => String(submission?.status || '').toLowerCase() === 'submitted',
   ).length
 
   if (!user) return null
@@ -504,32 +450,26 @@ const Copywriter = () => {
                   No assignments yet. Stay ready for new caption briefs.
                 </div>
               ) : (
-                assignedRequests.map((request) => {
-                  const contextSubmission = contextByRequestId.get(request?.id)
-                  return (
-                  <AssignmentCard
-                    key={request?.id || request?.title}
-                    title={safeString(request?.title, 'Untitled request')}
-                    priority={safeString(request?.priority, 'Medium')}
-                    description={safeString(request?.description, 'No brief added yet.')}
-                    status={safeString(request?.status, 'Open')}
-                    referenceLabel={
-                      contextSubmission
-                        ? safeString(
-                            contextSubmission?.submission_url ||
-                              contextSubmission?.submissionUrl ||
-                              contextSubmission?.notes,
-                          )
-                        : ''
-                    }
-                    referenceUrl={
-                      contextSubmission?.submission_url ||
-                      contextSubmission?.submissionUrl ||
-                      ''
-                    }
-                    active={activeRequestId === request?.id}
-                    onClick={() => setActiveRequestId(request?.id ?? null)}
-                    dueLabel={
+                  assignedRequests.map((request) => (
+                      <AssignmentCard
+                        key={request?.id || request?.title}
+                        title={safeString(request?.title, 'Untitled request')}
+                        priority={safeString(request?.priority, 'Medium')}
+                        description={safeString(request?.description, 'No brief added yet.')}
+                        status={safeString(request?.status, 'Open')}
+                        referenceLabel={
+                          request?.submission_url || request?.submission_notes
+                            ? safeString(
+                                request?.submission_url || request?.submission_notes,
+                              )
+                            : ''
+                        }
+                        referenceUrl={
+                          request?.submission_url || ''
+                        }
+                        active={activeRequestId === request?.id}
+                        onClick={() => setActiveRequestId(request?.id ?? null)}
+                        dueLabel={
                       request?.dueAt || request?.due_at
                         ? formatDateInManila(
                             request?.dueAt || request?.due_at,
@@ -541,16 +481,15 @@ const Copywriter = () => {
                           )
                         : 'TBD'
                     }
-                    requestedBy={safeString(
-                      request?.requestedByName ||
-                        request?.requested_by_name ||
-                        request?.requestedBy,
-                      'Admin',
-                    )}
-                  />
-                  )
-                })
-              )}
+                        requestedBy={safeString(
+                          request?.requestedByName ||
+                            request?.requested_by_name ||
+                            request?.requestedBy,
+                          'Admin',
+                        )}
+                      />
+                  ))
+                )}
             </div>
           </div>
 
@@ -671,23 +610,25 @@ const Copywriter = () => {
                 No submissions logged yet. Send your first draft when ready.
               </div>
             ) : (
-              mySubmissions.map((submission) => (
-                <SubmissionCard
-                  key={submission?.id || submission?.title}
-                  title={safeString(submission?.title, 'Untitled submission')}
-                  status={safeString(submission?.status, 'Pending review')}
-                  notes={safeString(submission?.notes, 'Awaiting admin feedback.')}
-                  active={activeSubmissionId === submission?.id}
-                  onClick={() => setActiveSubmissionId(submission?.id ?? null)}
-                  linkLabel={safeString(
-                    submission?.submissionUrl || submission?.submission_url,
-                  )}
-                  requestLabel={safeString(
-                    submission?.requestId || submission?.request_id,
-                  )}
-                />
-              ))
-            )}
+                mySubmissions.map((submission) => (
+                  <SubmissionCard
+                    key={submission?.id || submission?.title}
+                    title={safeString(
+                      submission?.submission_title || submission?.title,
+                      'Untitled submission',
+                    )}
+                    status={safeString(submission?.status, 'Submitted').replace(/_/g, ' ')}
+                    notes={safeString(
+                      submission?.submission_notes || submission?.review_note,
+                      'Awaiting admin feedback.',
+                    )}
+                    active={activeSubmissionId === submission?.id}
+                    onClick={() => setActiveSubmissionId(submission?.id ?? null)}
+                    linkLabel={safeString(submission?.submission_url || '')}
+                    requestLabel={safeString(submission?.id)}
+                  />
+                ))
+              )}
           </div>
         </section>
 

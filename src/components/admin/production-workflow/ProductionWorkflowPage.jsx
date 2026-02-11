@@ -5,9 +5,8 @@ import RequestFormModal from './RequestFormModal'
 import RequestHistoryModal from './RequestHistoryModal'
 import RequestsSection from './RequestsSection'
 import StatusModal from './StatusModal'
-import SubmissionFormModal from './SubmissionFormModal'
-import SubmissionsSection from './SubmissionsSection'
 import WorkflowCreatePanel from './WorkflowCreatePanel'
+import ReviewActionModal from './ReviewActionModal'
 
 const ProductionWorkflowPage = ({
   apiBase,
@@ -15,13 +14,10 @@ const ProductionWorkflowPage = ({
   userId,
   members = [],
   requests = [],
-  submissions = [],
   loadingRequests = false,
-  loadingSubmissions = false,
   onRefresh,
 }) => {
   const requestItems = Array.isArray(requests) ? requests : []
-  const submissionItems = Array.isArray(submissions) ? submissions : []
   const memberOptions = Array.isArray(members) ? members : []
   const [requestForm, setRequestForm] = useState({
     title: '',
@@ -30,22 +26,11 @@ const ProductionWorkflowPage = ({
     assignedTo: '',
     stage: 'creative',
     priority: 'Medium',
-    status: 'Open',
+    status: 'open',
     dueAt: '',
   })
-  const [submissionForm, setSubmissionForm] = useState({
-    title: '',
-    requestId: '',
-    submittedBy: '',
-    submissionUrl: '',
-    notes: '',
-    stage: 'creative',
-    status: 'Pending_review',
-  })
   const [requestEdits, setRequestEdits] = useState({})
-  const [submissionEdits, setSubmissionEdits] = useState({})
   const [requestModalOpen, setRequestModalOpen] = useState(false)
-  const [submissionModalOpen, setSubmissionModalOpen] = useState(false)
   const [deleteModal, setDeleteModal] = useState(null)
   const [formStatus, setFormStatus] = useState({ type: '', message: '' })
   const [statusModal, setStatusModal] = useState(null)
@@ -53,11 +38,15 @@ const ProductionWorkflowPage = ({
   const [historyItems, setHistoryItems] = useState([])
   const [historyLoading, setHistoryLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [reviewModal, setReviewModal] = useState(null)
+  const [reviewNote, setReviewNote] = useState('')
+  const [reviewAssignee, setReviewAssignee] = useState('')
+  const [requestStatusFilter, setRequestStatusFilter] = useState('all')
+  const [requestSubmissionFilter, setRequestSubmissionFilter] = useState('all')
 
   const normalizedApiBase = apiBase || ''
   const canSubmit = Boolean(normalizedApiBase && requesterRole)
   const requestCount = requestItems.length
-  const submissionCount = submissionItems.length
 
   const clearFormStatus = () => setFormStatus({ type: '', message: '' })
   const openStatusModal = ({ type, title, message }) => {
@@ -103,7 +92,7 @@ const ProductionWorkflowPage = ({
         assignedTo: '',
         stage: 'creative',
         priority: 'Medium',
-        status: 'Open',
+        status: 'open',
         dueAt: '',
       })
       setFormStatus({ type: 'success', message: 'Request created.' })
@@ -126,65 +115,6 @@ const ProductionWorkflowPage = ({
     }
   }
 
-  const handleCreateSubmission = async (event) => {
-    event.preventDefault()
-    if (!canSubmit) return
-    clearFormStatus()
-    setSubmitting(true)
-    try {
-      const response = await fetch(
-        `${normalizedApiBase}/admin/creative-submissions?requesterRole=${encodeURIComponent(
-          requesterRole,
-        )}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            requesterRole,
-            title: submissionForm.title.trim(),
-            requestId: submissionForm.requestId ? Number(submissionForm.requestId) : null,
-            submittedBy: submissionForm.submittedBy
-              ? Number(submissionForm.submittedBy)
-              : null,
-            submissionUrl: submissionForm.submissionUrl.trim() || null,
-            notes: submissionForm.notes.trim() || null,
-            stage: submissionForm.stage,
-            status: submissionForm.status,
-          }),
-        },
-      )
-      const data = await response.json()
-      if (!response.ok) {
-        throw new Error(data?.message || 'Failed to create submission.')
-      }
-      setSubmissionForm({
-        title: '',
-        requestId: '',
-        submittedBy: '',
-        submissionUrl: '',
-        notes: '',
-        stage: 'creative',
-        status: 'Pending_Review',
-      })
-      setFormStatus({ type: 'success', message: 'Submission created.' })
-      setSubmissionModalOpen(false)
-      openStatusModal({
-        type: 'success',
-        title: 'Submission created',
-        message: 'The submission has been logged for review.',
-      })
-      onRefresh?.()
-    } catch (error) {
-      setFormStatus({ type: 'error', message: error.message })
-      openStatusModal({
-        type: 'error',
-        title: 'Submission failed',
-        message: error.message || 'Failed to create submission.',
-      })
-    } finally {
-      setSubmitting(false)
-    }
-  }
 
   const updateRequest = async (id, payload) => {
     if (!canSubmit) return
@@ -261,43 +191,6 @@ const ProductionWorkflowPage = ({
     }
   }
 
-  const updateSubmission = async (id, payload) => {
-    if (!canSubmit) return
-    clearFormStatus()
-    setSubmitting(true)
-    try {
-      const response = await fetch(
-        `${normalizedApiBase}/admin/creative-submissions/${id}?requesterRole=${encodeURIComponent(
-          requesterRole,
-        )}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ requesterRole, ...payload }),
-        },
-      )
-      const data = await response.json()
-      if (!response.ok) {
-        throw new Error(data?.message || 'Failed to update submission.')
-      }
-      setFormStatus({ type: 'success', message: 'Submission updated.' })
-      openStatusModal({
-        type: 'success',
-        title: 'Submission updated',
-        message: 'The submission status was saved.',
-      })
-      onRefresh?.()
-    } catch (error) {
-      setFormStatus({ type: 'error', message: error.message })
-      openStatusModal({
-        type: 'error',
-        title: 'Update failed',
-        message: error.message || 'Failed to update submission.',
-      })
-    } finally {
-      setSubmitting(false)
-    }
-  }
 
   const fetchHistory = async (requestId) => {
     if (!canSubmit || !requestId) return
@@ -325,45 +218,17 @@ const ProductionWorkflowPage = ({
     }
   }
 
-  const deleteSubmission = async (id) => {
-    if (!canSubmit) return
-    clearFormStatus()
-    setSubmitting(true)
-    try {
-      const response = await fetch(
-        `${normalizedApiBase}/admin/creative-submissions/${id}/delete?requesterRole=${encodeURIComponent(
-          requesterRole,
-        )}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-        },
-      )
-      const data = await response.json()
-      if (!response.ok) {
-        throw new Error(data?.message || 'Failed to delete submission.')
-      }
-      setFormStatus({ type: 'success', message: 'Submission deleted.' })
-      openStatusModal({
-        type: 'success',
-        title: 'Submission deleted',
-        message: 'The submission has been removed.',
-      })
-      onRefresh?.()
-    } catch (error) {
-      setFormStatus({ type: 'error', message: error.message })
-      openStatusModal({
-        type: 'error',
-        title: 'Delete failed',
-        message: error.message || 'Failed to delete submission.',
-      })
-    } finally {
-      setSubmitting(false)
-    }
-  }
 
   const statusOptions = useMemo(
-    () => ['Open', 'In_Progress', 'Blocked', 'Complete'],
+    () => [
+      'open',
+      'in_progress',
+      'blocked',
+      'submitted',
+      'revision_requested',
+      'declined',
+      'completed',
+    ],
     [],
   )
   const stageOptions = useMemo(
@@ -373,10 +238,6 @@ const ProductionWorkflowPage = ({
       { value: 'sns', label: 'SNS Updater' },
       { value: 'done', label: 'Done' },
     ],
-    [],
-  )
-  const submissionStatusOptions = useMemo(
-    () => ['Pending_Review', 'Approved', 'Needs_Revisions', 'Rejected'],
     [],
   )
   const priorityOptions = useMemo(() => ['Low', 'Medium', 'High'], [])
@@ -401,31 +262,81 @@ const ProductionWorkflowPage = ({
     return match ? resolveMemberName(match) : ''
   }
 
+  const normalizeStatus = (value) =>
+    String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '_')
+
   const getRequestEdit = (item) => {
     const current = requestEdits[item.id]
     return (
       current || {
         assignedTo: item.assigned_to || '',
         stage: item.stage || 'creative',
-        status: item.status || 'Open',
+        status: normalizeStatus(item.status) || 'open',
         priority: item.priority || 'Medium',
+        reviewNote: item.review_note || '',
       }
     )
-  }
-
-  const getSubmissionEdit = (item) => {
-    const current = submissionEdits[item.id]
-    return current || { status: item.status || 'Pending_Review' }
   }
 
   const isRequestDirty = (item, edit) =>
     String(edit.assignedTo || '') !== String(item.assigned_to || '') ||
     String(edit.stage || '') !== String(item.stage || '') ||
     String(edit.status || '') !== String(item.status || '') ||
-    String(edit.priority || '') !== String(item.priority || '')
+    String(edit.priority || '') !== String(item.priority || '') ||
+    String(edit.reviewNote || '') !== String(item.review_note || '')
 
-  const isSubmissionDirty = (item, edit) =>
-    String(edit.status || '') !== String(item.status || '')
+  const deleteRequestsBulk = async (ids) => {
+    if (!canSubmit) return
+    const uniqueIds = Array.from(new Set((ids || []).filter(Boolean)))
+    if (uniqueIds.length === 0) return
+    clearFormStatus()
+    setSubmitting(true)
+    try {
+      const results = await Promise.all(
+        uniqueIds.map(async (id) => {
+          const response = await fetch(
+            `${normalizedApiBase}/admin/creative-requests/${id}/delete?requesterRole=${encodeURIComponent(
+              requesterRole,
+            )}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+            },
+          )
+          const data = await response.json().catch(() => ({}))
+          return { ok: response.ok, id, message: data?.message || '' }
+        }),
+      )
+      const failed = results.filter((item) => !item.ok)
+      if (failed.length > 0) {
+        throw new Error(
+          `Deleted ${uniqueIds.length - failed.length}/${uniqueIds.length}. Some requests failed to delete.`,
+        )
+      }
+      setFormStatus({
+        type: 'success',
+        message: `${uniqueIds.length} request(s) deleted.`,
+      })
+      openStatusModal({
+        type: 'success',
+        title: 'Requests deleted',
+        message: `${uniqueIds.length} request(s) were removed from archive.`,
+      })
+      onRefresh?.()
+    } catch (error) {
+      setFormStatus({ type: 'error', message: error.message })
+      openStatusModal({
+        type: 'error',
+        title: 'Bulk delete failed',
+        message: error.message || 'Failed to delete selected requests.',
+      })
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   const getMembersForStage = (stage) => {
     const normalizedStage = String(stage || '').toLowerCase()
@@ -455,18 +366,86 @@ const ProductionWorkflowPage = ({
     return index >= 0 && index < sequence.length - 1 ? sequence[index + 1] : null
   }
 
+  const getStatusBucket = (status) => {
+    const normalized = normalizeStatus(status)
+    if (['open', 'in_progress', 'blocked'].includes(normalized)) return 'open'
+    if (normalized === 'submitted') return 'submitted'
+    if (normalized === 'declined') return 'declined'
+    if (normalized === 'revision_requested') return 'revision'
+    if (['completed', 'approved', 'done'].includes(normalized)) {
+      return 'accepted'
+    }
+    return 'open'
+  }
+
+  const filteredRequestItems = useMemo(() => {
+    return requestItems.filter((item) => {
+      const statusPass =
+        requestStatusFilter === 'all' ||
+        getStatusBucket(item?.status) === requestStatusFilter
+      if (!statusPass) return false
+
+      if (requestSubmissionFilter === 'all') return true
+      const hasSubmission = Boolean(
+        item?.submission_title || item?.submission_url || item?.submission_notes,
+      )
+      if (requestSubmissionFilter === 'with_submission') return hasSubmission
+      if (requestSubmissionFilter === 'no_submission') return !hasSubmission
+      return true
+    })
+  }, [requestItems, requestStatusFilter, requestSubmissionFilter])
+
+  const queueRequestItems = useMemo(() => {
+    const priorityRank = { high: 0, medium: 1, low: 2 }
+    const statusRank = {
+      open: 0,
+      submitted: 1,
+      revision: 2,
+      accepted: 3,
+    }
+    return filteredRequestItems
+      .filter((item) => getStatusBucket(item?.status) !== 'declined')
+      .sort((a, b) => {
+        const aStatus = statusRank[getStatusBucket(a?.status)] ?? 99
+        const bStatus = statusRank[getStatusBucket(b?.status)] ?? 99
+        if (aStatus !== bStatus) return aStatus - bStatus
+
+        const aPriority = priorityRank[String(a?.priority || '').toLowerCase()] ?? 99
+        const bPriority = priorityRank[String(b?.priority || '').toLowerCase()] ?? 99
+        if (aPriority !== bPriority) return aPriority - bPriority
+
+        const aDue = new Date(a?.due_at || 0).getTime()
+        const bDue = new Date(b?.due_at || 0).getTime()
+        if (Number.isFinite(aDue) && Number.isFinite(bDue) && aDue !== bDue) {
+          return aDue - bDue
+        }
+        return String(a?.title || '').localeCompare(String(b?.title || ''))
+      })
+  }, [filteredRequestItems])
+
+  const archivedRequestItems = useMemo(
+    () =>
+      filteredRequestItems
+        .filter((item) => getStatusBucket(item?.status) === 'declined')
+        .sort((a, b) => {
+          const aUpdated = new Date(a?.updated_at || a?.created_at || 0).getTime()
+          const bUpdated = new Date(b?.updated_at || b?.created_at || 0).getTime()
+          return bUpdated - aUpdated
+        }),
+    [filteredRequestItems],
+  )
+
   return (
     <section className="space-y-6">
-      <ProductionWorkflowHeader total={requestCount + submissionCount} />
+      <ProductionWorkflowHeader total={requestCount} />
       <WorkflowCreatePanel
         onOpenRequest={() => setRequestModalOpen(true)}
-        onOpenSubmission={() => setSubmissionModalOpen(true)}
         requestModalOpen={requestModalOpen}
-        submissionModalOpen={submissionModalOpen}
         formStatus={formStatus}
       />
       <RequestsSection
-        requestItems={requestItems}
+        requestItems={queueRequestItems}
+        archivedItems={archivedRequestItems}
         loadingRequests={loadingRequests}
         getRequestEdit={getRequestEdit}
         isRequestDirty={isRequestDirty}
@@ -485,18 +464,15 @@ const ProductionWorkflowPage = ({
         fetchHistory={fetchHistory}
         openStatusModal={openStatusModal}
         getNextStage={getNextStage}
-      />
-      <SubmissionsSection
-        submissionItems={submissionItems}
-        loadingSubmissions={loadingSubmissions}
-        getSubmissionEdit={getSubmissionEdit}
-        isSubmissionDirty={isSubmissionDirty}
-        setSubmissionEdits={setSubmissionEdits}
-        submissionStatusOptions={submissionStatusOptions}
-        canSubmit={canSubmit}
-        submitting={submitting}
-        updateSubmission={updateSubmission}
-        setDeleteModal={setDeleteModal}
+        requestStatusFilter={requestStatusFilter}
+        setRequestStatusFilter={setRequestStatusFilter}
+        requestSubmissionFilter={requestSubmissionFilter}
+        setRequestSubmissionFilter={setRequestSubmissionFilter}
+        onOpenReview={(payload) => {
+          setReviewModal(payload)
+          setReviewNote(payload?.defaultNote || '')
+          setReviewAssignee(payload?.defaultAssignee || '')
+        }}
       />
       <RequestFormModal
         open={requestModalOpen}
@@ -513,19 +489,62 @@ const ProductionWorkflowPage = ({
         canSubmit={canSubmit}
         onSubmit={handleCreateRequest}
       />
-      <SubmissionFormModal
-        open={submissionModalOpen}
-        onClose={() => setSubmissionModalOpen(false)}
-        submissionForm={submissionForm}
-        setSubmissionForm={setSubmissionForm}
-        requestItems={requestItems}
-        memberOptions={memberOptions}
+      <ReviewActionModal
+        reviewModal={reviewModal}
+        onClose={() => {
+          setReviewModal(null)
+          setReviewNote('')
+          setReviewAssignee('')
+        }}
+        reviewNote={reviewNote}
+        setReviewNote={setReviewNote}
+        reviewAssignee={reviewAssignee}
+        setReviewAssignee={setReviewAssignee}
+        getMembersForStage={getMembersForStage}
         resolveMemberLabel={resolveMemberLabel}
-        stageOptions={stageOptions}
-        submissionStatusOptions={submissionStatusOptions}
         submitting={submitting}
-        canSubmit={canSubmit}
-        onSubmit={handleCreateSubmission}
+        onConfirm={() => {
+          if (!reviewModal) return
+          const { request, action, nextStage } = reviewModal
+          if (!request?.id) return
+          if (action === 'approve') {
+            if (!nextStage) {
+              openStatusModal({
+                type: 'error',
+                title: 'No next stage',
+                message: 'This request is already at the final stage.',
+              })
+              return
+            }
+            if (!reviewAssignee) {
+              openStatusModal({
+                type: 'error',
+                title: 'Assignee required',
+                message: 'Pick a team member for the next stage.',
+              })
+              return
+            }
+            updateRequest(request.id, {
+              assignedTo: Number(reviewAssignee),
+              stage: nextStage,
+              status: 'open',
+              reviewNote: reviewNote.trim() || null,
+            })
+          } else if (action === 'revise') {
+            updateRequest(request.id, {
+              status: 'revision_requested',
+              reviewNote: reviewNote.trim() || null,
+            })
+          } else if (action === 'decline') {
+            updateRequest(request.id, {
+              status: 'declined',
+              reviewNote: reviewNote.trim() || null,
+            })
+          }
+          setReviewModal(null)
+          setReviewNote('')
+          setReviewAssignee('')
+        }}
       />
       <DeleteConfirmModal
         deleteModal={deleteModal}
@@ -533,10 +552,12 @@ const ProductionWorkflowPage = ({
         submitting={submitting}
         onConfirm={(payload) => {
           if (!payload) return
+          if (Array.isArray(payload.ids) && payload.ids.length > 0) {
+            deleteRequestsBulk(payload.ids)
+            return
+          }
           if (payload.type === 'request') {
             deleteRequest(payload.id)
-          } else {
-            deleteSubmission(payload.id)
           }
         }}
       />

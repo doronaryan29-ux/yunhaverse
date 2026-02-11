@@ -341,10 +341,17 @@ class AdminDataController extends Controller
         $query = DB::table('creative_requests as cr')
             ->leftJoin('users as requester', 'cr.requested_by', '=', 'requester.id')
             ->leftJoin('users as assignee', 'cr.assigned_to', '=', 'assignee.id')
+            ->leftJoin('users as submitter', 'cr.submitted_by', '=', 'submitter.id')
             ->select([
                 'cr.id',
                 'cr.title',
                 'cr.description',
+                'cr.submission_title',
+                'cr.submission_url',
+                'cr.submission_notes',
+                'cr.submitted_by',
+                'cr.submitted_at',
+                'cr.review_note',
                 'cr.requested_by',
                 'cr.assigned_to',
                 'cr.stage',
@@ -361,6 +368,10 @@ class AdminDataController extends Controller
                 'assignee.first_name as assignee_first_name',
                 'assignee.last_name as assignee_last_name',
                 'assignee.full_name as assignee_full_name',
+                'submitter.email as submitter_email',
+                'submitter.first_name as submitter_first_name',
+                'submitter.last_name as submitter_last_name',
+                'submitter.full_name as submitter_full_name',
             ])
             ->orderByDesc('cr.created_at');
 
@@ -393,10 +404,25 @@ class AdminDataController extends Controller
                 $assigneeName = (string) ($row->assignee_email ?? '');
             }
 
+            $submitterName = trim((string) ($row->submitter_full_name ?? ''));
+            if (!$submitterName) {
+                $submitterName = trim((string) ($row->submitter_first_name ?? '') . ' ' . (string) ($row->submitter_last_name ?? ''));
+            }
+            if (!$submitterName) {
+                $submitterName = (string) ($row->submitter_email ?? '');
+            }
+
             return [
                 'id' => $row->id,
                 'title' => $row->title,
                 'description' => $row->description,
+                'submission_title' => $row->submission_title,
+                'submission_url' => $row->submission_url,
+                'submission_notes' => $row->submission_notes,
+                'submitted_by' => $row->submitted_by,
+                'submitted_by_name' => $submitterName,
+                'submitted_at' => $row->submitted_at,
+                'review_note' => $row->review_note,
                 'requested_by' => $row->requested_by,
                 'requested_by_name' => $requesterName,
                 'assigned_to' => $row->assigned_to,
@@ -411,6 +437,113 @@ class AdminDataController extends Controller
         })->values();
 
         return response()->json(['items' => $items]);
+    }
+
+    public function creativeRequestById(int $id, Request $request)
+    {
+        $accessError = $this->ensureAdminOrCreative($request);
+        if ($accessError) {
+            return $accessError;
+        }
+
+        if (!$request->expectsJson()) {
+            return redirect('/#/staff');
+        }
+
+        if (!Schema::hasTable('creative_requests')) {
+            return response()->json(['message' => 'creative_requests table is missing.'], 500);
+        }
+
+        $row = DB::table('creative_requests as cr')
+            ->leftJoin('users as requester', 'cr.requested_by', '=', 'requester.id')
+            ->leftJoin('users as assignee', 'cr.assigned_to', '=', 'assignee.id')
+            ->leftJoin('users as submitter', 'cr.submitted_by', '=', 'submitter.id')
+            ->select([
+                'cr.id',
+                'cr.title',
+                'cr.description',
+                'cr.submission_title',
+                'cr.submission_url',
+                'cr.submission_notes',
+                'cr.submitted_by',
+                'cr.submitted_at',
+                'cr.review_note',
+                'cr.requested_by',
+                'cr.assigned_to',
+                'cr.stage',
+                'cr.status',
+                'cr.priority',
+                'cr.due_at',
+                'cr.created_at',
+                'cr.updated_at',
+                'requester.email as requester_email',
+                'requester.first_name as requester_first_name',
+                'requester.last_name as requester_last_name',
+                'requester.full_name as requester_full_name',
+                'assignee.email as assignee_email',
+                'assignee.first_name as assignee_first_name',
+                'assignee.last_name as assignee_last_name',
+                'assignee.full_name as assignee_full_name',
+                'submitter.email as submitter_email',
+                'submitter.first_name as submitter_first_name',
+                'submitter.last_name as submitter_last_name',
+                'submitter.full_name as submitter_full_name',
+            ])
+            ->where('cr.id', $id)
+            ->first();
+
+        if (!$row) {
+            return response()->json(['message' => 'Request not found.'], 404);
+        }
+
+        $requesterName = trim((string) ($row->requester_full_name ?? ''));
+        if (!$requesterName) {
+            $requesterName = trim((string) ($row->requester_first_name ?? '') . ' ' . (string) ($row->requester_last_name ?? ''));
+        }
+        if (!$requesterName) {
+            $requesterName = (string) ($row->requester_email ?? 'Unknown');
+        }
+
+        $assigneeName = trim((string) ($row->assignee_full_name ?? ''));
+        if (!$assigneeName) {
+            $assigneeName = trim((string) ($row->assignee_first_name ?? '') . ' ' . (string) ($row->assignee_last_name ?? ''));
+        }
+        if (!$assigneeName) {
+            $assigneeName = (string) ($row->assignee_email ?? '');
+        }
+
+        $submitterName = trim((string) ($row->submitter_full_name ?? ''));
+        if (!$submitterName) {
+            $submitterName = trim((string) ($row->submitter_first_name ?? '') . ' ' . (string) ($row->submitter_last_name ?? ''));
+        }
+        if (!$submitterName) {
+            $submitterName = (string) ($row->submitter_email ?? '');
+        }
+
+        return response()->json([
+            'item' => [
+                'id' => $row->id,
+                'title' => $row->title,
+                'description' => $row->description,
+                'submission_title' => $row->submission_title,
+                'submission_url' => $row->submission_url,
+                'submission_notes' => $row->submission_notes,
+                'submitted_by' => $row->submitted_by,
+                'submitted_by_name' => $submitterName,
+                'submitted_at' => $row->submitted_at,
+                'review_note' => $row->review_note,
+                'requested_by' => $row->requested_by,
+                'requested_by_name' => $requesterName,
+                'assigned_to' => $row->assigned_to,
+                'assigned_to_name' => $assigneeName,
+                'stage' => $row->stage ?? 'creative',
+                'status' => $row->status,
+                'priority' => $row->priority,
+                'due_at' => $row->due_at,
+                'created_at' => $row->created_at,
+                'updated_at' => $row->updated_at,
+            ],
+        ]);
     }
 
     public function creativeSubmissions(Request $request)
@@ -617,9 +750,9 @@ class AdminDataController extends Controller
 
     public function updateCreativeRequest(int $id, Request $request)
     {
-        $adminError = $this->ensureAdmin($request);
-        if ($adminError) {
-            return $adminError;
+        $accessError = $this->ensureAdminOrCreative($request);
+        if ($accessError) {
+            return $accessError;
         }
 
         if (!Schema::hasTable('creative_requests')) {
@@ -636,6 +769,12 @@ class AdminDataController extends Controller
             'priority' => ['nullable', 'string', 'max:20'],
             'dueAt' => ['nullable', 'date'],
             'updatedBy' => ['nullable', 'integer'],
+            'submissionTitle' => ['nullable', 'string', 'max:190'],
+            'submissionUrl' => ['nullable', 'string', 'max:255'],
+            'submissionNotes' => ['nullable', 'string'],
+            'submittedBy' => ['nullable', 'integer'],
+            'submittedAt' => ['nullable', 'date'],
+            'reviewNote' => ['nullable', 'string'],
         ]);
 
         $payload = [];
@@ -648,12 +787,44 @@ class AdminDataController extends Controller
             'status' => 'status',
             'priority' => 'priority',
             'dueAt' => 'due_at',
+            'submissionTitle' => 'submission_title',
+            'submissionUrl' => 'submission_url',
+            'submissionNotes' => 'submission_notes',
+            'submittedBy' => 'submitted_by',
+            'submittedAt' => 'submitted_at',
+            'reviewNote' => 'review_note',
         ];
 
         foreach ($fieldMap as $inputKey => $column) {
             if (array_key_exists($inputKey, $validated)) {
                 $payload[$column] = $validated[$inputKey];
             }
+        }
+
+        $requesterRole = strtolower(trim((string) $request->input('requesterRole', $request->query('requesterRole', ''))));
+        $isAdmin = $requesterRole === 'admin' || str_contains($requesterRole, 'admin');
+        if (!$isAdmin) {
+            $allowedKeys = [
+                'submission_title',
+                'submission_url',
+                'submission_notes',
+                'submitted_by',
+                'submitted_at',
+                'status',
+            ];
+            $payload = array_intersect_key($payload, array_flip($allowedKeys));
+            $statusValue = strtolower(trim((string) ($payload['status'] ?? 'submitted')));
+            $payload['status'] = $statusValue === 'submitted' ? 'submitted' : 'submitted';
+            if (empty($payload['submitted_at'])) {
+                $payload['submitted_at'] = now();
+            }
+        }
+
+        if (array_key_exists('submitted_at', $payload) && !empty($payload['submitted_at'])) {
+            $timestamp = strtotime((string) $payload['submitted_at']);
+            $payload['submitted_at'] = $timestamp
+                ? date('Y-m-d H:i:s', $timestamp)
+                : now()->toDateTimeString();
         }
 
         if (empty($payload)) {
@@ -677,16 +848,32 @@ class AdminDataController extends Controller
             $statusChanged = $nextStatus !== null && $nextStatus !== $existing->status;
 
             if ($stageChanged || $assigneeChanged || $statusChanged) {
+                $action = 'request.updated';
+                $normalizedStatus = strtolower(trim((string) ($nextStatus ?? '')));
+                if ($stageChanged) {
+                    $action = 'request.handoff';
+                } elseif ($statusChanged) {
+                    if ($normalizedStatus === 'submitted') {
+                        $action = 'submission.created';
+                    } elseif ($normalizedStatus === 'revision_requested') {
+                        $action = 'review.revision';
+                    } elseif ($normalizedStatus === 'declined') {
+                        $action = 'review.decline';
+                    } elseif ($normalizedStatus === 'completed') {
+                        $action = 'request.completed';
+                    }
+                }
+
                 $this->logCreativeRequestHistory($id, [
-                    'action' => $stageChanged ? 'request.handoff' : 'request.updated',
+                    'action' => $action,
                     'from_stage' => $existing->stage ?? null,
                     'to_stage' => $nextStage ?? $existing->stage,
                     'from_assigned_to' => $existing->assigned_to ?? null,
                     'to_assigned_to' => $assigneeChanged ? $nextAssignee : $existing->assigned_to,
                     'from_status' => $existing->status ?? null,
                     'to_status' => $nextStatus ?? $existing->status,
-                    'actor_user_id' => $validated['updatedBy'] ?? null,
-                    'notes' => $payload['description'] ?? null,
+                    'actor_user_id' => $validated['updatedBy'] ?? $validated['submittedBy'] ?? null,
+                    'notes' => $payload['review_note'] ?? $payload['submission_notes'] ?? $payload['description'] ?? null,
                 ]);
             }
         }
