@@ -249,8 +249,9 @@ class AdminDataController extends Controller
             return $accessError;
         }
 
-        $limit = max(1, min((int) $request->query('limit', 8), 30));
-        $rows = DB::table('users')
+        $requesterRole = strtolower(trim((string) $request->input('requesterRole', $request->query('requesterRole', ''))));
+        $limit = max(1, min((int) $request->query('limit', 50), 300));
+        $query = DB::table('users')
             ->select([
                 'id',
                 'email',
@@ -262,10 +263,17 @@ class AdminDataController extends Controller
                 'created_at',
                 'last_login_at',
             ])
-            ->whereRaw('LOWER(COALESCE(role, "")) IN (?, ?, ?, ?, ?)', ['member', 'creative', 'copywriter', 'sns_updater', 'sns updater'])
-            ->orderByDesc('created_at')
-            ->limit($limit)
-            ->get();
+            ->orderByDesc('created_at');
+
+        // Admin directory should show all users; staff views stay scoped.
+        if ($requesterRole !== 'admin') {
+            $query->whereRaw(
+                'LOWER(COALESCE(role, "")) IN (?, ?, ?, ?, ?)',
+                ['member', 'creative', 'copywriter', 'sns_updater', 'sns updater']
+            );
+        }
+
+        $rows = $query->limit($limit)->get();
 
         $lastLoginById = [];
         if (Schema::hasTable('audit_logs')) {
