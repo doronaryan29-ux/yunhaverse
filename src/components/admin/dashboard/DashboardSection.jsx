@@ -23,6 +23,7 @@ const DashboardSection = ({
   auditFlags,
   auditFlagsLoading,
   onResolveFlag,
+  donationSummary,
 }) => (
   <>
     <header className="rounded-3xl border border-rose-100 bg-white/90 p-6 shadow-lg shadow-rose-100">
@@ -66,7 +67,7 @@ const DashboardSection = ({
       onResolveFlag={onResolveFlag}
     />
 
-    <DonationTrackingSection />
+    <DonationTrackingSection donationSummary={donationSummary} />
   </>
 )
 

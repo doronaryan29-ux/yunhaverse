@@ -102,7 +102,15 @@ const Admin = () => {
       value: adminData.stats.creativeStaff ?? '--',
       trend: 'Live from database',
     },
-    { label: 'Donations (Monthly)', value: '$4,920', trend: '+12.4%' },
+    {
+      label: 'Donations (Monthly)',
+      value: new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0,
+      }).format(Number(adminData.donationSummary.totalThisMonth || 0)),
+      trend: 'Live from database',
+    },
     {
       label: 'Open Audit Flags',
       value: adminData.stats.openAuditFlags ?? '--',
@@ -240,6 +248,7 @@ const Admin = () => {
               auditFlags={adminData.auditFlags}
               auditFlagsLoading={adminData.auditFlagsLoading}
               onResolveFlag={adminData.handleResolveFlag}
+              donationSummary={adminData.donationSummary}
             />
           )}
         </section>

@@ -26,6 +26,12 @@ export const useAdminData = ({
   const [eventsLoading, setEventsLoading] = useState(false)
   const [donations, setDonations] = useState([])
   const [donationsLoading, setDonationsLoading] = useState(false)
+  const [donationSummary, setDonationSummary] = useState({
+    totalThisMonth: 0,
+    totalToday: 0,
+    pendingCount: 0,
+    goalProgress: 0,
+  })
   const [auditFlags, setAuditFlags] = useState([])
   const [auditFlagsLoading, setAuditFlagsLoading] = useState(false)
   const [stats, setStats] = useState({
@@ -189,9 +195,64 @@ export const useAdminData = ({
       if (!response.ok) {
         throw new Error(data?.message || 'Failed to load donations.')
       }
-      setDonations(Array.isArray(data.items) ? data.items : [])
+      const items = Array.isArray(data.items) ? data.items : []
+      setDonations(items)
+
+      const now = new Date()
+      const toNumber = (value) => {
+        const parsed = Number(value)
+        return Number.isFinite(parsed) ? parsed : 0
+      }
+      const isSameDay = (input) => {
+        const date = new Date(input)
+        return (
+          !Number.isNaN(date.getTime()) &&
+          date.getFullYear() === now.getFullYear() &&
+          date.getMonth() === now.getMonth() &&
+          date.getDate() === now.getDate()
+        )
+      }
+      const isSameMonth = (input) => {
+        const date = new Date(input)
+        return (
+          !Number.isNaN(date.getTime()) &&
+          date.getFullYear() === now.getFullYear() &&
+          date.getMonth() === now.getMonth()
+        )
+      }
+
+      const completedThisMonth = items.filter((item) => {
+        const status = String(item?.status || '').trim().toLowerCase()
+        return (status === '' || status === 'completed' || status === 'paid') && isSameMonth(item?.created_at)
+      })
+      const completedToday = items.filter((item) => {
+        const status = String(item?.status || '').trim().toLowerCase()
+        return (status === '' || status === 'completed' || status === 'paid') && isSameDay(item?.created_at)
+      })
+      const pendingCount = items.filter((item) => {
+        const status = String(item?.status || '').trim().toLowerCase()
+        return status === 'pending' || status === 'processing'
+      }).length
+
+      const totalThisMonth = completedThisMonth.reduce((sum, item) => sum + toNumber(item?.amount), 0)
+      const totalToday = completedToday.reduce((sum, item) => sum + toNumber(item?.amount), 0)
+      const monthlyGoal = 10000
+      const goalProgress = Math.min(100, Math.round((totalThisMonth / monthlyGoal) * 100))
+
+      setDonationSummary({
+        totalThisMonth,
+        totalToday,
+        pendingCount,
+        goalProgress: Number.isFinite(goalProgress) ? goalProgress : 0,
+      })
     } catch {
       setDonations([])
+      setDonationSummary({
+        totalThisMonth: 0,
+        totalToday: 0,
+        pendingCount: 0,
+        goalProgress: 0,
+      })
     } finally {
       setDonationsLoading(false)
     }
@@ -317,6 +378,7 @@ export const useAdminData = ({
     fetchAuditFlags()
     fetchMembersCreative()
     fetchUpcomingEvents()
+    fetchDonations()
     const intervalId = window.setInterval(fetchNotifications, 30000)
     return () => window.clearInterval(intervalId)
   }, [
@@ -326,6 +388,7 @@ export const useAdminData = ({
     fetchAuditFlags,
     fetchMembersCreative,
     fetchUpcomingEvents,
+    fetchDonations,
   ])
 
   useEffect(() => {
@@ -377,6 +440,7 @@ export const useAdminData = ({
     fetchEvents,
     donations,
     donationsLoading,
+    donationSummary,
     fetchDonations,
     auditFlags,
     auditFlagsLoading,
