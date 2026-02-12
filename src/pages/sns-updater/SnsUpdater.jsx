@@ -355,7 +355,7 @@ const SnsUpdater = () => {
         <div className="absolute right-0 top-72 h-96 w-96 rounded-full bg-amber-200/40 blur-3xl" />
       </div>
 
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-8 lg:flex-row lg:gap-6">
+      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-3 py-6 sm:px-4 sm:py-8 lg:flex-row lg:gap-6">
         <StaffSidebar
           navItems={navItems}
           activeItem={activeSection}
@@ -370,7 +370,7 @@ const SnsUpdater = () => {
               <p className="text-xs font-semibold uppercase tracking-[0.4em] text-rose-500">
               SNS Updater Portal
               </p>
-              <h1 className="mt-2 font-display text-3xl font-semibold text-slate-900">
+              <h1 className="mt-2 font-display text-2xl font-semibold text-slate-900 sm:text-3xl">
               Welcome back, {profileName || user?.email || 'SNS Updater'}
               </h1>
               <p className="mt-2 text-sm text-slate-600">

@@ -525,7 +525,7 @@ const CreativeStaff = () => {
         <div className="absolute right-0 top-72 h-96 w-96 rounded-full bg-amber-200/40 blur-3xl" />
       </div>
 
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-8 lg:flex-row lg:gap-6">
+      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-3 py-6 sm:px-4 sm:py-8 lg:flex-row lg:gap-6">
         <StaffSidebar
           navItems={navItems}
           activeItem={activeSection}
@@ -540,7 +540,7 @@ const CreativeStaff = () => {
               <p className="text-xs font-semibold uppercase tracking-[0.4em] text-rose-500">
                 Creative Staff Portal
               </p>
-              <h1 className="mt-2 font-display text-3xl font-semibold text-slate-900">
+              <h1 className="mt-2 font-display text-2xl font-semibold text-slate-900 sm:text-3xl">
                 Welcome back, {profileName || user?.email || 'Creative'}
               </h1>
               <p className="mt-2 text-sm text-slate-600">
@@ -1006,7 +1006,10 @@ const CreativeStaff = () => {
                       })()}
                       className="rounded-2xl bg-rose-500 px-4 py-3 text-xs font-semibold uppercase tracking-[0.25em] text-white shadow-lg shadow-rose-200 transition hover:-translate-y-0.5"
                     >
-                      Open Submission Modal
+                      <span className="inline-flex items-center gap-1">
+                        <i className="fas fa-paper-plane" aria-hidden="true" />
+                        Open Submission Modal
+                      </span>
                     </button>
                   ) : (
                     <p className="text-xs text-slate-500">
@@ -1061,7 +1064,10 @@ const CreativeStaff = () => {
                         }}
                         className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        Edit
+                        <span className="inline-flex items-center gap-1">
+                          <i className="fas fa-pen" aria-hidden="true" />
+                          Edit
+                        </span>
                       </button>
                       <button
                         type="button"
@@ -1085,7 +1091,10 @@ const CreativeStaff = () => {
                         }}
                         className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        Resubmit
+                        <span className="inline-flex items-center gap-1">
+                          <i className="fas fa-rotate-right" aria-hidden="true" />
+                          Resubmit
+                        </span>
                       </button>
                       {lockSubmissionStatus(submission?.status) ? (
                         <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">

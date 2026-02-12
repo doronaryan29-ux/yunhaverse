@@ -85,13 +85,13 @@ const Login = () => {
   return (
     <>
       <main className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-100">
-        <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 py-10">
+        <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-6 sm:px-6 sm:py-10">
           <AuthHeader onBack={() => window.location.replace('/#/')} />
 
           <div className="mt-10 grid gap-10 lg:grid-cols-[1.1fr_1fr]">
             <BenefitsPanel headline={headline} benefits={benefits} />
 
-            <section className="rounded-[32px] border border-rose-100 bg-white p-8 shadow-2xl shadow-rose-100">
+            <section className="rounded-[28px] border border-rose-100 bg-white p-5 shadow-2xl shadow-rose-100 sm:rounded-[32px] sm:p-8">
               <AuthCardHeader
                 isOtpRoute={isOtpRoute}
                 mode={mode}

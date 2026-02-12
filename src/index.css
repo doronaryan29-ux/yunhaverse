@@ -2,8 +2,23 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@300..800&family=Playfair+Display:wght@600..800&display=swap");
 
 @layer base {
+  html,
+  body,
+  #root {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
   body {
     @apply font-sans antialiased;
+  }
+
+  img,
+  video,
+  canvas,
+  svg {
+    max-width: 100%;
+    height: auto;
   }
 }
 
@@ -46,3 +61,19 @@
 
 .focus\\:border-rose-300:focus { border-color: var(--brand-300) !important; }
 .focus\\:border-rose-400:focus { border-color: var(--brand-400) !important; }
+
+@media (max-width: 640px) {
+  .uppercase[class*="tracking-["] {
+    letter-spacing: 0.12em !important;
+  }
+
+  .font-display.text-4xl {
+    font-size: 2rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .font-display.text-3xl {
+    font-size: 1.625rem !important;
+    line-height: 1.25 !important;
+  }
+}

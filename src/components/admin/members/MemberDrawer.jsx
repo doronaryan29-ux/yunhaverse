@@ -16,7 +16,7 @@ const MemberDrawer = ({
   return (
     <div className="fixed inset-0 z-40 flex">
       <div className="flex-1 bg-slate-900/40" onClick={onClose} />
-      <aside className="w-full max-w-lg bg-white p-6 shadow-2xl">
+      <aside className="h-full w-full max-w-lg overflow-y-auto bg-white p-5 shadow-2xl sm:p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-rose-500">

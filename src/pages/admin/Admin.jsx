@@ -153,7 +153,7 @@ const Admin = () => {
         <div className="absolute right-0 top-72 h-96 w-96 rounded-full bg-amber-200/40 blur-3xl" />
       </div>
 
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-8 lg:flex-row lg:gap-6">
+      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-3 py-6 sm:px-4 sm:py-8 lg:flex-row lg:gap-6">
         <SidebarNav navItems={navItems} activeItem={activeNavItem} />
 
         <section className="mt-8 flex-1 space-y-6 lg:mt-0">

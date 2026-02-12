@@ -45,13 +45,13 @@ const Member = () => {
         <div className="absolute right-0 top-72 h-96 w-96 rounded-full bg-amber-200/40 blur-3xl" />
       </div>
 
-      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 py-10">
+      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-6 sm:px-6 sm:py-10">
         <header className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.4em] text-rose-500">
               Member Portal
             </p>
-            <h1 className="mt-2 font-display text-3xl font-semibold text-slate-900">
+            <h1 className="mt-2 font-display text-2xl font-semibold text-slate-900 sm:text-3xl">
               Welcome, {profileName || 'Member'}
             </h1>
           </div>
