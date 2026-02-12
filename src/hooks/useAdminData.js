@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { fetchJsonWithFallback } from '../utils/fetchJsonWithFallback'
 
 export const useAdminData = ({
   apiBase,
@@ -42,8 +43,10 @@ export const useAdminData = ({
         role: profileRoleNormalized || 'member',
         limit: '8',
       })
-      const response = await fetch(`${apiBase}/notifications?${params.toString()}`)
-      const data = await response.json()
+      const { response, data } = await fetchJsonWithFallback(
+        apiBase,
+        `/notifications?${params.toString()}`,
+      )
       if (!response.ok) {
         throw new Error(data?.message || 'Failed to load notifications.')
       }
@@ -62,8 +65,10 @@ export const useAdminData = ({
       const params = new URLSearchParams({
         requesterRole: profileRoleNormalized,
       })
-      const response = await fetch(`${apiBase}/admin/stats?${params.toString()}`)
-      const data = await response.json()
+      const { response, data } = await fetchJsonWithFallback(
+        apiBase,
+        `/admin/stats?${params.toString()}`,
+      )
       if (!response.ok) {
         throw new Error(data?.message || 'Failed to load stats.')
       }
@@ -89,10 +94,10 @@ export const useAdminData = ({
           requesterRole: profileRoleNormalized,
           limit: String(limit),
         })
-        const response = await fetch(
-          `${apiBase}/admin/audit-logs?${params.toString()}`,
+        const { response, data } = await fetchJsonWithFallback(
+          apiBase,
+          `/admin/audit-logs?${params.toString()}`,
         )
-        const data = await response.json()
         if (!response.ok) {
           throw new Error(data?.message || 'Failed to load audit logs.')
         }
@@ -112,10 +117,10 @@ export const useAdminData = ({
         requesterRole: profileRoleNormalized,
         limit: '6',
       })
-      const response = await fetch(
-        `${apiBase}/admin/members-creative?${params.toString()}`,
+      const { response, data } = await fetchJsonWithFallback(
+        apiBase,
+        `/admin/members-creative?${params.toString()}`,
       )
-      const data = await response.json()
       if (!response.ok) {
         throw new Error(data?.message || 'Failed to load members.')
       }
@@ -132,10 +137,10 @@ export const useAdminData = ({
         requesterRole: profileRoleNormalized,
         limit: '200',
       })
-      const response = await fetch(
-        `${apiBase}/admin/members-creative?${params.toString()}`,
+      const { response, data } = await fetchJsonWithFallback(
+        apiBase,
+        `/admin/members-creative?${params.toString()}`,
       )
-      const data = await response.json()
       if (!response.ok) {
         throw new Error(data?.message || 'Failed to load members.')
       }
@@ -154,10 +159,10 @@ export const useAdminData = ({
         requesterRole: profileRoleNormalized,
         limit: '50',
       })
-      const response = await fetch(
-        `${apiBase}/admin/creative-requests?${params.toString()}`,
+      const { response, data } = await fetchJsonWithFallback(
+        apiBase,
+        `/admin/creative-requests?${params.toString()}`,
       )
-      const data = await response.json()
       if (!response.ok) {
         throw new Error(data?.message || 'Failed to load creative requests.')
       }
@@ -177,8 +182,10 @@ export const useAdminData = ({
         requesterRole: profileRoleNormalized,
         limit: '100',
       })
-      const response = await fetch(`${apiBase}/admin/donations?${params.toString()}`)
-      const data = await response.json()
+      const { response, data } = await fetchJsonWithFallback(
+        apiBase,
+        `/admin/donations?${params.toString()}`,
+      )
       if (!response.ok) {
         throw new Error(data?.message || 'Failed to load donations.')
       }
@@ -197,8 +204,10 @@ export const useAdminData = ({
         requesterRole: profileRoleNormalized,
         limit: '100',
       })
-      const response = await fetch(`${apiBase}/admin/events?${params.toString()}`)
-      const data = await response.json()
+      const { response, data } = await fetchJsonWithFallback(
+        apiBase,
+        `/admin/events?${params.toString()}`,
+      )
       if (!response.ok) {
         throw new Error(data?.message || 'Failed to load events.')
       }
@@ -216,10 +225,10 @@ export const useAdminData = ({
         requesterRole: profileRoleNormalized,
         limit: '6',
       })
-      const response = await fetch(
-        `${apiBase}/admin/upcoming-events?${params.toString()}`,
+      const { response, data } = await fetchJsonWithFallback(
+        apiBase,
+        `/admin/upcoming-events?${params.toString()}`,
       )
-      const data = await response.json()
       if (!response.ok) {
         throw new Error(data?.message || 'Failed to load events.')
       }
@@ -237,8 +246,10 @@ export const useAdminData = ({
         status: 'open',
         limit: '12',
       })
-      const response = await fetch(`${apiBase}/admin/audit-flags?${params.toString()}`)
-      const data = await response.json()
+      const { response, data } = await fetchJsonWithFallback(
+        apiBase,
+        `/admin/audit-flags?${params.toString()}`,
+      )
       if (!response.ok) {
         throw new Error(data?.message || 'Failed to load audit flags.')
       }
@@ -254,7 +265,7 @@ export const useAdminData = ({
     async (notificationId) => {
       if (!userId) return
       try {
-        await fetch(`${apiBase}/notifications/${notificationId}/read`, {
+        await fetchJsonWithFallback(apiBase, `/notifications/${notificationId}/read`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId }),
@@ -275,15 +286,18 @@ export const useAdminData = ({
     async (flagId) => {
       if (!flagId) return
       try {
-        const response = await fetch(`${apiBase}/admin/audit-flags/${flagId}/resolve`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            requesterRole: profileRoleNormalized,
-            resolvedBy: userId || null,
-          }),
-        })
-        const data = await response.json()
+        const { response, data } = await fetchJsonWithFallback(
+          apiBase,
+          `/admin/audit-flags/${flagId}/resolve`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              requesterRole: profileRoleNormalized,
+              resolvedBy: userId || null,
+            }),
+          },
+        )
         if (!response.ok) {
           throw new Error(data?.message || 'Failed to resolve audit flag.')
         }
