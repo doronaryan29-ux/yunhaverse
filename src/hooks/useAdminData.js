@@ -84,11 +84,59 @@ export const useAdminData = ({
         openAuditFlags: Number(data.openAuditFlags || 0),
       })
     } catch {
-      setStats({
-        activeMembers: null,
-        creativeStaff: null,
-        openAuditFlags: null,
-      })
+      try {
+        const memberParams = new URLSearchParams({
+          requesterRole: profileRoleNormalized,
+          limit: '300',
+        })
+        const [{ response: membersResp, data: membersData }, { response: flagsResp, data: flagsData }] =
+          await Promise.all([
+            fetchJsonWithFallback(apiBase, `/admin/members-creative?${memberParams.toString()}`),
+            fetchJsonWithFallback(
+              apiBase,
+              `/admin/audit-flags?${new URLSearchParams({
+                requesterRole: profileRoleNormalized,
+                status: 'open',
+                limit: '300',
+              }).toString()}`,
+            ),
+          ])
+
+        if (!membersResp.ok) {
+          throw new Error(membersData?.message || 'Failed to load members for stats.')
+        }
+        if (!flagsResp.ok) {
+          throw new Error(flagsData?.message || 'Failed to load audit flags for stats.')
+        }
+
+        const members = Array.isArray(membersData?.items) ? membersData.items : []
+        const activeMembers = members.filter((member) => {
+          const role = String(member?.role || '').trim().toLowerCase()
+          const status = String(member?.status || '').trim().toLowerCase()
+          return role === 'member' && (status === '' || status === 'active')
+        }).length
+        const creativeStaff = members.filter((member) => {
+          const role = String(member?.role || '').trim().toLowerCase()
+          const status = String(member?.status || '').trim().toLowerCase()
+          return (
+            (role.includes('creative') || role.includes('copywriter') || role.includes('sns')) &&
+            (status === '' || status === 'active')
+          )
+        }).length
+        const openAuditFlags = Array.isArray(flagsData?.items) ? flagsData.items.length : 0
+
+        setStats({
+          activeMembers,
+          creativeStaff,
+          openAuditFlags,
+        })
+      } catch {
+        setStats({
+          activeMembers: 0,
+          creativeStaff: 0,
+          openAuditFlags: 0,
+        })
+      }
     }
   }, [apiBase, profileRoleNormalized])
 
