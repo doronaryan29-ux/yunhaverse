@@ -8,12 +8,20 @@ use Symfony\Component\HttpFoundation\Response;
 
 class Cors
 {
+    private function normalizeOrigin(string $origin): string
+    {
+        return rtrim(trim($origin), '/');
+    }
+
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
-        $requestOrigin = (string) $request->headers->get('Origin', '');
+        $requestOrigin = $this->normalizeOrigin((string) $request->headers->get('Origin', ''));
         $rawAllowedOrigins = (string) env('CLIENT_ORIGIN', '*');
-        $allowedOrigins = array_values(array_filter(array_map('trim', explode(',', $rawAllowedOrigins))));
+        $allowedOrigins = array_values(array_filter(array_map(
+            fn ($origin) => $this->normalizeOrigin((string) $origin),
+            explode(',', $rawAllowedOrigins)
+        )));
         $origin = '*';
 
         if (!in_array('*', $allowedOrigins, true) && $requestOrigin !== '') {
