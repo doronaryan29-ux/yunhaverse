@@ -72,7 +72,10 @@ const RequestsSection = ({
                 : 'border-rose-200 text-rose-500 hover:bg-rose-50'
             }`}
           >
-            {filtersOpen ? 'Hide Filters' : 'Filters'}
+            <span className="inline-flex items-center gap-1">
+              <i className="fas fa-sliders" aria-hidden="true" />
+              {filtersOpen ? 'Hide Filters' : 'Filters'}
+            </span>
           </button>
         </div>
       </div>
@@ -285,10 +288,7 @@ const RequestsSection = ({
                     onClick={() => setActionsRequestId(item.id)}
                     className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:opacity-60"
                   >
-                    <span className="inline-flex items-center gap-1">
-                      <i className="fas fa-sliders" aria-hidden="true" />
-                      Actions
-                    </span>
+                    Actions
                   </button>
                   <button
                     type="button"
@@ -406,10 +406,7 @@ const RequestsSection = ({
                       onClick={() => setActionsRequestId(item.id)}
                       className="rounded-full border border-slate-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-600 disabled:opacity-60"
                     >
-                      <span className="inline-flex items-center gap-1">
-                        <i className="fas fa-sliders" aria-hidden="true" />
-                        Actions
-                      </span>
+                      Actions
                     </button>
                     <button
                       type="button"
