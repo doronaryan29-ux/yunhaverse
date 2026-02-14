@@ -14,6 +14,33 @@ use App\Support\AuditFlag;
 
 class AuthController extends Controller
 {
+    private function normalizeOrigin(string $origin): string
+    {
+        return rtrim(trim($origin), '/');
+    }
+
+    private function resolveClientRedirectOrigin(): string
+    {
+        $fallback = 'http://localhost:5173';
+        $explicitRedirectOrigin = $this->normalizeOrigin((string) env('CLIENT_REDIRECT_ORIGIN', ''));
+
+        if ($explicitRedirectOrigin !== '') {
+            return $explicitRedirectOrigin;
+        }
+
+        $rawAllowedOrigins = (string) env('CLIENT_ORIGIN', $fallback);
+        $allowedOrigins = array_values(array_filter(array_map(
+            fn ($origin) => $this->normalizeOrigin((string) $origin),
+            explode(',', $rawAllowedOrigins)
+        )));
+
+        if (!empty($allowedOrigins)) {
+            return $allowedOrigins[0];
+        }
+
+        return $fallback;
+    }
+
     private function registerFailedLoginAttempt(
         ?string $email,
         ?int $userId,
@@ -747,7 +774,7 @@ class AuthController extends Controller
             $request
         );
         $profileComplete = (bool) ($user->first_name && $user->last_name && $user->birthdate);
-        $clientOrigin = rtrim((string) env('CLIENT_ORIGIN', 'http://localhost:5173'), '/');
+        $clientOrigin = $this->resolveClientRedirectOrigin();
         $payload = rtrim(strtr(base64_encode(json_encode([
             'id' => $user->id,
             'email' => $user->email,

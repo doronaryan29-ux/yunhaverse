@@ -26,7 +26,7 @@ class NotificationController extends Controller
 
         $creativeStaff = DB::table('users')
             ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
-            ->whereRaw('LOWER(COALESCE(role, "")) IN (?, ?, ?)', ['creative', 'creator', 'staff'])
+            ->whereRaw('LOWER(COALESCE(role, "")) IN (?, ?, ?, ?, ?, ?)', ['creative', 'creator', 'staff', 'copywriter', 'sns_updater', 'sns updater'])
             ->count();
 
         $openAuditFlags = 0;
@@ -58,8 +58,15 @@ class NotificationController extends Controller
         }
 
         $baseQuery = DB::table('notifications')
-            ->whereIn('audience', $audiences)
             ->where('status', 'published')
+            ->where(function ($query) use ($audiences, $userId) {
+                $query->where(function ($subQuery) use ($audiences) {
+                    $subQuery->whereNull('user_id')->whereIn('audience', $audiences);
+                });
+                if ($userId > 0) {
+                    $query->orWhere('user_id', $userId);
+                }
+            })
             ->where(function ($query) use ($now) {
                 $query->whereNull('publish_at')->orWhere('publish_at', '<=', $now);
             })
@@ -135,6 +142,7 @@ class NotificationController extends Controller
             'publishAt' => ['nullable', 'date'],
             'expiresAt' => ['nullable', 'date'],
             'createdBy' => ['nullable', 'integer'],
+            'userId' => ['nullable', 'integer'],
         ]);
         if ($validator->fails()) {
             $flagId = AuditFlag::open(
@@ -174,6 +182,7 @@ class NotificationController extends Controller
                 'publish_at' => $validated['publishAt'] ?? null,
                 'expires_at' => $validated['expiresAt'] ?? null,
                 'created_by' => $validated['createdBy'] ?? null,
+                'user_id' => $validated['userId'] ?? null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

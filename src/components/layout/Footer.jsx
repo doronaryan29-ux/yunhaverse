@@ -1,6 +1,11 @@
-const Footer = () => (
-  <footer className="border-t border-pink-100 bg-white/80 py-10">
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 text-center">
+import { useAppSettings } from '../../hooks/useAppSettings'
+
+const Footer = () => {
+  const { settings } = useAppSettings()
+
+  return (
+    <footer className="border-t border-pink-100 bg-white/80 py-10">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 text-center">
       <div className="flex justify-center gap-4 text-xl text-rose-500">
         <a
           href="https://www.facebook.com/yunhaverseph"
@@ -51,12 +56,13 @@ const Footer = () => (
         </a>
       </div>
 
-      <div className="text-xs text-slate-400">
-        <p>&copy; 2026 YUNHAverse PH. All rights reserved.</p>
-        <p>Made with ❤️ by the YUNHAverse PH Team</p>
+        <div className="text-xs text-slate-400">
+          <p>&copy; 2026 {settings.appName}. All rights reserved.</p>
+          <p>Made with ❤️ by the {settings.appName} Team</p>
+        </div>
       </div>
-    </div>
-  </footer>
-)
+    </footer>
+  )
+}
 
 export default Footer

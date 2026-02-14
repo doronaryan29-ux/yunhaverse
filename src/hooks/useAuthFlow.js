@@ -51,6 +51,25 @@ const getJustLoggedInAt = () => {
 }
 
 const useAuthFlow = ({ apiBase, isAdminRole }) => {
+  const parseJsonSafe = async (response) => {
+    const raw = await response.text()
+    if (!raw) return {}
+    try {
+      return JSON.parse(raw)
+    } catch {
+      return { message: raw.slice(0, 200) }
+    }
+  }
+
+  const fetchAuthEndpoint = async (path, options) => {
+    const primaryUrl = `${apiBase}${path}`
+    let response = await fetch(primaryUrl, options)
+    if (response.status === 404 && !path.startsWith('/api/')) {
+      response = await fetch(`${apiBase}/api${path}`, options)
+    }
+    return response
+  }
+
   const [mode, setMode] = useState('login')
   const [email, setEmail] = useState('')
   const [otp, setOtp] = useState('')
@@ -287,7 +306,7 @@ const useAuthFlow = ({ apiBase, isAdminRole }) => {
     setFeedback({ type: '', message: '' })
     setLoading(true)
     try {
-      const response = await fetch(`${apiBase}/auth/send-otp`, {
+      const response = await fetchAuthEndpoint('/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -299,7 +318,7 @@ const useAuthFlow = ({ apiBase, isAdminRole }) => {
           birthdate: mode === 'signup' ? birthdate : undefined,
         }),
       })
-      const data = await response.json()
+      const data = await parseJsonSafe(response)
       if (!response.ok) {
         throw new Error(data?.message || 'Failed to send OTP.')
       }
@@ -365,7 +384,7 @@ const useAuthFlow = ({ apiBase, isAdminRole }) => {
     try {
       let response
       if (mode === 'login' && !isOtpRoute) {
-        response = await fetch(`${apiBase}/auth/login`, {
+        response = await fetchAuthEndpoint('/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password }),
@@ -373,13 +392,13 @@ const useAuthFlow = ({ apiBase, isAdminRole }) => {
       } else {
         const otpValue = otpDigits.join('')
         const otpEmail = pendingOtp?.email || email
-        response = await fetch(`${apiBase}/auth/verify-otp`, {
+        response = await fetchAuthEndpoint('/auth/verify-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: otpEmail, otp: otpValue || otp }),
         })
       }
-      const data = await response.json()
+      const data = await parseJsonSafe(response)
       if (!response.ok) {
         throw new Error(data?.message || 'Verification failed.')
       }

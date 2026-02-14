@@ -153,47 +153,34 @@ const CalendarSection = () => {
         }`}
       >
         <div className="flex flex-col gap-3 rounded-3xl border border-rose-100 bg-white/80 p-4 shadow-sm">
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            {[
-              { id: 'all', label: 'All Events' },
-              { id: 'cupsleeve', label: 'Cupsleeve' },
-              { id: 'streaming', label: 'Streaming' },
-              { id: 'projects', label: 'Projects' },
-            ].map((filter) => (
-              <button
-                key={filter.id}
-                type="button"
-                onClick={() => setEventFilter(filter.id)}
-                className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] transition ${
-                  eventFilter === filter.id
-                    ? 'border-rose-500 bg-rose-500 text-white shadow-lg shadow-rose-200'
-                    : 'border-rose-200 bg-white text-rose-500 hover:-translate-y-0.5'
-                }`}
+          <div className="grid gap-3 md:grid-cols-2">
+            <label className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+              Event Type
+              <select
+                value={eventFilter}
+                onChange={(event) => setEventFilter(event.target.value)}
+                className="mt-2 w-full rounded-full border border-rose-100 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600"
               >
-                {filter.label}
-              </button>
-            ))}
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            {[
-              { id: 'month', label: 'This Month' },
-              { id: 'all', label: 'All Dates' },
-            ].map((scope) => (
-              <button
-                key={scope.id}
-                type="button"
-                onClick={() => setEventScope(scope.id)}
-                className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] transition ${
-                  eventScope === scope.id
-                    ? 'border-slate-700 bg-slate-800 text-white shadow-lg shadow-slate-200'
-                    : 'border-slate-200 bg-white text-slate-600 hover:-translate-y-0.5'
-                }`}
+                <option value="all">All Events</option>
+                <option value="cupsleeve">Cupsleeve</option>
+                <option value="streaming">Streaming</option>
+                <option value="projects">Projects</option>
+              </select>
+            </label>
+            <label className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+              Date Scope
+              <select
+                value={eventScope}
+                onChange={(event) => setEventScope(event.target.value)}
+                className="mt-2 w-full rounded-full border border-rose-100 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600"
               >
-                {scope.label}
-              </button>
-            ))}
+                <option value="month">This Month</option>
+                <option value="selected">Selected Date</option>
+                <option value="all">All Dates</option>
+              </select>
+            </label>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-3 md:justify-start">
             <div className="relative w-full max-w-xs">
               <input
                 type="text"
@@ -216,6 +203,18 @@ const CalendarSection = () => {
               <option value="title-asc">Name (A-Z)</option>
               <option value="title-desc">Name (Z-A)</option>
             </select>
+            <button
+              type="button"
+              onClick={() => {
+                setEventFilter('all')
+                setEventScope('month')
+                setEventSort('date-asc')
+                setEventQuery('')
+              }}
+              className="rounded-full border border-rose-200 bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-rose-500 transition hover:-translate-y-0.5"
+            >
+              Clear All
+            </button>
           </div>
         </div>
       </div>

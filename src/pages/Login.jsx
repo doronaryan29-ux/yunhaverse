@@ -6,6 +6,7 @@ import ErrorModal from '../components/auth/ErrorModal'
 import ResetPasswordModal from '../components/auth/ResetPasswordModal'
 import ToastBanner from '../components/auth/ToastBanner'
 import useAuthFlow from '../hooks/useAuthFlow'
+import { API_BASE } from '../utils/apiBase'
 
 const benefits = [
   'Early access to ticket drops and preregistration slots.',
@@ -16,7 +17,7 @@ const benefits = [
 const isAdminRole = (role) => String(role || '').trim().toLowerCase() === 'admin'
 
 const Login = () => {
-  const apiBase = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000'
+  const apiBase = API_BASE
   const {
     mode,
     email,
@@ -84,13 +85,13 @@ const Login = () => {
   return (
     <>
       <main className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-100">
-        <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 py-10">
+        <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-6 sm:px-6 sm:py-10">
           <AuthHeader onBack={() => window.location.replace('/#/')} />
 
           <div className="mt-10 grid gap-10 lg:grid-cols-[1.1fr_1fr]">
             <BenefitsPanel headline={headline} benefits={benefits} />
 
-            <section className="rounded-[32px] border border-rose-100 bg-white p-8 shadow-2xl shadow-rose-100">
+            <section className="rounded-[28px] border border-rose-100 bg-white p-5 shadow-2xl shadow-rose-100 sm:rounded-[32px] sm:p-8">
               <AuthCardHeader
                 isOtpRoute={isOtpRoute}
                 mode={mode}
