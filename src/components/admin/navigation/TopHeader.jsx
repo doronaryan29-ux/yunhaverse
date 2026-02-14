@@ -2,21 +2,14 @@ import { memo } from 'react'
 import NotificationsMenu from './NotificationsMenu'
 
 const TopHeader = ({
-  profileName,
-  profileRole,
   isProfileRoute,
   notificationsOpen,
-  profileMenuOpen,
   notificationsLoading,
   notifications,
   unreadCount,
-  profileMenuRef,
   onToggleNotifications,
-  onToggleProfile,
   onCloseNotifications,
-  onGoProfile,
   onGoHome,
-  onLogout,
   onMarkNotificationRead,
 }) => (
   <header
@@ -58,48 +51,6 @@ const TopHeader = ({
             </span>
           )}
         </button>
-
-        <div className="relative" ref={profileMenuRef}>
-          <button
-            type="button"
-            onClick={onToggleProfile}
-            className="rounded-xl border border-rose-100 bg-white px-3 py-2 text-left transition hover:bg-rose-50"
-          >
-            <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-100 text-rose-500">
-                <i className="fas fa-user text-xs" />
-              </span>
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                  Profile
-                </p>
-                <p className="text-sm font-semibold text-slate-800">{profileName}</p>
-                <p className="text-[11px] uppercase tracking-[0.18em] text-rose-500">
-                  {profileRole}
-                </p>
-              </div>
-            </div>
-          </button>
-
-          {profileMenuOpen && (
-            <div className="absolute right-0 top-14 z-30 w-44 rounded-2xl border border-rose-100 bg-white p-2 shadow-xl">
-              <button
-                type="button"
-                onClick={onGoProfile}
-                className="flex w-full items-center rounded-xl px-3 py-2 text-left text-sm font-semibold text-slate-700 transition hover:bg-rose-50"
-              >
-                My Profile
-              </button>
-              <button
-                type="button"
-                onClick={onLogout}
-                className="mt-1 flex w-full items-center rounded-xl px-3 py-2 text-left text-sm font-semibold text-rose-500 transition hover:bg-rose-50"
-              >
-                Logout
-              </button>
-            </div>
-          )}
-        </div>
 
         {notificationsOpen && (
           <NotificationsMenu

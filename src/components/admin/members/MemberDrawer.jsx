@@ -1,5 +1,6 @@
 import { memo } from 'react'
 import { formatDateInManila, formatDateTimeInManila } from '../../../utils/date'
+import { AppModal } from '../../common'
 
 const MemberDrawer = ({
   member,
@@ -13,64 +14,57 @@ const MemberDrawer = ({
 }) => {
   if (!member) return null
 
+  const memberName =
+    member.full_name ||
+    member.name ||
+    [member.first_name, member.last_name].filter(Boolean).join(' ') ||
+    [member.firstName, member.lastName].filter(Boolean).join(' ') ||
+    member.email ||
+    'Unknown'
+
   return (
-    <div className="fixed inset-0 z-40 flex">
-      <div className="flex-1 bg-slate-900/40" onClick={onClose} />
-      <aside className="h-full w-full max-w-lg overflow-y-auto bg-white p-5 shadow-2xl sm:p-6">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-rose-500">
-              Member Detail
+    <AppModal
+      open={Boolean(member)}
+      onClose={onClose}
+      variant="drawer-right"
+      eyebrow="Member Detail"
+      title={memberName}
+    >
+      <div className="space-y-4">
+        <section className="rounded-2xl border border-rose-100 bg-white p-4 text-sm text-slate-600">
+          <div className="grid gap-2 sm:grid-cols-2">
+            <p>
+              <span className="font-semibold text-slate-900">Email:</span>{' '}
+              {member.email || '-'}
             </p>
-            <h4 className="mt-2 font-display text-2xl font-semibold text-slate-900">
-              {member.full_name ||
-                member.name ||
-                [member.first_name, member.last_name].filter(Boolean).join(' ') ||
-                [member.firstName, member.lastName].filter(Boolean).join(' ') ||
-                member.email ||
-                'Unknown'}
-            </h4>
+            <p>
+              <span className="font-semibold text-slate-900">Role:</span>{' '}
+              {member.role || 'member'}
+            </p>
+            <p>
+              <span className="font-semibold text-slate-900">Status:</span>{' '}
+              {member.status || 'active'}
+            </p>
+            <p>
+              <span className="font-semibold text-slate-900">Joined:</span>{' '}
+              {member.created_at || member.joinedAt
+                ? formatDateInManila(member.created_at || member.joinedAt)
+                : '-'}
+            </p>
+            <p className="sm:col-span-2">
+              <span className="font-semibold text-slate-900">Last Login:</span>{' '}
+              {member.last_login_at
+                ? formatDateTimeInManila(member.last_login_at)
+                : '-'}
+            </p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 hover:text-slate-600"
-          >
-            Close
-          </button>
-        </div>
+        </section>
 
-        <div className="mt-6 space-y-3 text-sm text-slate-600">
-          <p>
-            <span className="font-semibold text-slate-900">Email:</span> {member.email || '—'}
-          </p>
-          <p>
-            <span className="font-semibold text-slate-900">Role:</span>{' '}
-            {member.role || 'member'}
-          </p>
-          <p>
-            <span className="font-semibold text-slate-900">Status:</span>{' '}
-            {member.status || 'active'}
-          </p>
-          <p>
-            <span className="font-semibold text-slate-900">Joined:</span>{' '}
-            {member.created_at || member.joinedAt
-              ? formatDateInManila(member.created_at || member.joinedAt)
-              : '—'}
-          </p>
-          <p>
-            <span className="font-semibold text-slate-900">Last Login:</span>{' '}
-            {member.last_login_at
-              ? formatDateTimeInManila(member.last_login_at)
-              : '—'}
-          </p>
-        </div>
-
-        <div className="mt-6 space-y-3">
+        <section className="rounded-2xl border border-rose-100 bg-white p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
             Actions
           </p>
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
             <button
               type="button"
               disabled={!canAdmin}
@@ -100,13 +94,13 @@ const MemberDrawer = ({
               Resend Verification
             </button>
           </div>
-        </div>
+        </section>
 
-        <div className="mt-6 space-y-3">
+        <section className="rounded-2xl border border-rose-100 bg-white p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
             Notes / Flags
           </p>
-          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+          <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
             Internal Note
             <textarea
               value={notes}
@@ -118,13 +112,13 @@ const MemberDrawer = ({
           <button
             type="button"
             onClick={onToggleFlag}
-            className="rounded-xl border border-rose-200 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50"
+            className="mt-3 rounded-xl border border-rose-200 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50"
           >
             {flagged ? 'Remove Flag' : 'Flag Member'}
           </button>
-        </div>
-      </aside>
-    </div>
+        </section>
+      </div>
+    </AppModal>
   )
 }
 

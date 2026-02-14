@@ -16,7 +16,13 @@ const RequestFormModal = ({
   canSubmit,
   onSubmit,
 }) => (
-  <AppModal open={open} onClose={onClose} eyebrow="Creative Request" title="New Request">
+  <AppModal
+    open={open}
+    onClose={onClose}
+    variant="drawer-right"
+    eyebrow="Creative Request"
+    title="New Request"
+  >
     <form className="space-y-4" onSubmit={onSubmit}>
       <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
         Title
@@ -56,7 +62,7 @@ const RequestFormModal = ({
                 requestedBy: event.target.value,
               }))
             }
-            className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 pr-8 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
           >
             <option value="">Select user</option>
             {memberOptions.map((member) => (
@@ -76,7 +82,7 @@ const RequestFormModal = ({
                 assignedTo: event.target.value,
               }))
             }
-            className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 pr-8 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
           >
             <option value="">Unassigned</option>
             {getMembersForStage(requestForm.stage).map((member) => (
@@ -87,7 +93,7 @@ const RequestFormModal = ({
           </select>
         </label>
       </div>
-      <div className="grid gap-3 sm:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
           Stage
           <select
@@ -98,7 +104,7 @@ const RequestFormModal = ({
                 stage: event.target.value,
               }))
             }
-            className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 pr-8 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
           >
             {stageOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -117,7 +123,7 @@ const RequestFormModal = ({
                 priority: event.target.value,
               }))
             }
-            className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 pr-8 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
           >
             {priorityOptions.map((option) => (
               <option key={option} value={option}>
@@ -136,7 +142,7 @@ const RequestFormModal = ({
                 status: event.target.value,
               }))
             }
-            className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 pr-8 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
           >
             {statusOptions.map((option) => (
               <option key={option} value={option}>

@@ -3,7 +3,7 @@ import { memo } from 'react'
 const formatMoney = (amount) =>
   new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'PHP',
     maximumFractionDigits: 0,
   }).format(Number(amount || 0))
 

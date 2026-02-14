@@ -72,8 +72,8 @@ const RequestsSection = ({
                 : 'border-rose-200 text-rose-500 hover:bg-rose-50'
             }`}
           >
-            <span className="inline-flex items-center gap-1">
-              <i className="fas fa-sliders" aria-hidden="true" />
+            <span className="inline-flex items-center gap-2">
+              <i className="fas fa-filter text-[10px]" aria-hidden="true" />
               {filtersOpen ? 'Hide Filters' : 'Filters'}
             </span>
           </button>
@@ -433,6 +433,7 @@ const RequestsSection = ({
       <AppModal
         open={Boolean(actionsRequestId)}
         onClose={() => setActionsRequestId(null)}
+        variant="drawer-right"
         eyebrow="Request Actions"
         title={actionRequest?.title || 'Request'}
       >
@@ -442,7 +443,7 @@ const RequestsSection = ({
               Manage this request with grouped actions.
             </p>
             <div className="grid gap-3 md:grid-cols-2">
-              <label className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+              <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                 Assignee
                 <select
                   value={actionEdit.assignedTo}
@@ -455,7 +456,7 @@ const RequestsSection = ({
                       },
                     }))
                   }
-                  className="mt-1 w-full rounded-full border border-rose-200 bg-white px-3 py-2 text-[11px] text-slate-600"
+                  className="mt-1 w-full rounded-xl border border-rose-200 bg-white px-3 py-2 pr-8 text-sm text-slate-700"
                 >
                   <option value="">Unassigned</option>
                   {getMembersForStage(actionEdit.stage).map((member) => (
@@ -465,7 +466,7 @@ const RequestsSection = ({
                   ))}
                 </select>
               </label>
-              <label className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+              <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                 Stage
                 <select
                   value={actionEdit.stage}
@@ -475,7 +476,7 @@ const RequestsSection = ({
                       [actionRequest.id]: { ...actionEdit, stage: event.target.value },
                     }))
                   }
-                  className="mt-1 w-full rounded-full border border-rose-200 bg-white px-3 py-2 text-[11px] text-slate-600"
+                  className="mt-1 w-full rounded-xl border border-rose-200 bg-white px-3 py-2 pr-8 text-sm text-slate-700"
                 >
                   {stageOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -484,7 +485,7 @@ const RequestsSection = ({
                   ))}
                 </select>
               </label>
-              <label className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+              <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                 Status
                 <select
                   value={actionEdit.status}
@@ -494,7 +495,7 @@ const RequestsSection = ({
                       [actionRequest.id]: { ...actionEdit, status: event.target.value },
                     }))
                   }
-                  className="mt-1 w-full rounded-full border border-rose-200 bg-white px-3 py-2 text-[11px] text-slate-600"
+                  className="mt-1 w-full rounded-xl border border-rose-200 bg-white px-3 py-2 pr-8 text-sm text-slate-700"
                 >
                   {statusOptions
                     .filter((option) => String(option) !== 'blocked')
@@ -505,7 +506,7 @@ const RequestsSection = ({
                     ))}
                 </select>
               </label>
-              <label className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+              <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                 Priority
                 <select
                   value={actionEdit.priority}
@@ -515,7 +516,7 @@ const RequestsSection = ({
                       [actionRequest.id]: { ...actionEdit, priority: event.target.value },
                     }))
                   }
-                  className="mt-1 w-full rounded-full border border-rose-200 bg-white px-3 py-2 text-[11px] text-slate-600"
+                  className="mt-1 w-full rounded-xl border border-rose-200 bg-white px-3 py-2 pr-8 text-sm text-slate-700"
                 >
                   {priorityOptions.map((option) => (
                     <option key={option} value={option}>

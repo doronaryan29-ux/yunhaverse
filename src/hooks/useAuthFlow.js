@@ -39,6 +39,16 @@ const getValidSessionUser = () => {
 
 const JUST_LOGGED_IN_KEY = 'justLoggedInAt'
 const JUST_LOGGED_IN_WINDOW_MS = 2 * 60 * 1000
+const normalizeRole = (role) => String(role || '').trim().toLowerCase()
+
+const resolveRoleRoute = (role, isAdminRole) => {
+  const normalized = normalizeRole(role).replace(/[_-]+/g, ' ')
+  if (isAdminRole(role)) return '/#/admin'
+  if (normalized.includes('copywriter')) return '/#/copywriter'
+  if (normalized.includes('sns')) return '/#/sns'
+  if (normalized.includes('creative')) return '/#/staff'
+  return '/#/member'
+}
 
 const getJustLoggedInAt = () => {
   const raw = Number(sessionStorage.getItem(JUST_LOGGED_IN_KEY) || 0)
@@ -144,7 +154,7 @@ const useAuthFlow = ({ apiBase, isAdminRole }) => {
     if (justLoggedInAt) {
       sessionStorage.removeItem(JUST_LOGGED_IN_KEY)
     }
-    window.location.replace(isAdminRole(user.role) ? '/#/admin' : '/#/member')
+    window.location.replace(resolveRoleRoute(user.role, isAdminRole))
   }, [route, isOtpRoute, forceLogin])
 
   useEffect(() => {
@@ -353,10 +363,12 @@ const useAuthFlow = ({ apiBase, isAdminRole }) => {
   }
 
   const handleCancelOtp = async () => {
-    await cancelSignup(otpEmail)
+    if ((pendingOtp?.mode || mode) === 'signup') {
+      await cancelSignup(otpEmail)
+    }
     resetOtpFlow()
     resetAllFields()
-    setMode('signup')
+    setMode(pendingOtp?.mode || 'signup')
     window.location.hash = forceLogin ? '#/login?force=1' : '#/login'
   }
 
@@ -421,9 +433,7 @@ const useAuthFlow = ({ apiBase, isAdminRole }) => {
           message: 'Signed in. Redirecting...',
         })
         window.setTimeout(() => {
-          window.location.replace(
-            isAdminRole(responseUser.role) ? '/#/admin' : '/#/member',
-          )
+          window.location.replace(resolveRoleRoute(responseUser.role, isAdminRole))
         }, 600)
       } else if (mode !== 'login') {
         openToast({

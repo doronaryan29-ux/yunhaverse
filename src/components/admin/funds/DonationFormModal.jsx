@@ -23,6 +23,7 @@ const DonationFormModal = ({
       onReset()
       onClose()
     }}
+    variant="drawer-right"
     eyebrow="Donations"
     title="Add Donation"
   >

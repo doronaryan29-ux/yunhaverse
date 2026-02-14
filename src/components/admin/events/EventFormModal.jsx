@@ -19,6 +19,7 @@ const EventFormModal = ({
       onReset()
       onClose()
     }}
+    variant="drawer-right"
     eyebrow="Events"
     title="Add Event"
   >

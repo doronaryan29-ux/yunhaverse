@@ -6,6 +6,7 @@ const RequestHistoryModal = ({ historyModal, historyItems, historyLoading, onClo
   <AppModal
     open={Boolean(historyModal)}
     onClose={onClose}
+    variant="drawer-right"
     eyebrow="Request History"
     title={historyModal ? historyModal.title : 'History'}
   >

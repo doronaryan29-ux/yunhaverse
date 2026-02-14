@@ -1075,10 +1075,54 @@ class AdminDataController extends Controller
         }
 
         if (!Schema::hasTable('donations')) {
-            return response()->json(['items' => []]);
+            return response()->json([
+                'items' => [],
+                'summary' => [
+                    'total_this_month' => 0,
+                    'total_today' => 0,
+                    'pending_count' => 0,
+                    'monthly_goal' => 10000,
+                    'goal_progress' => 0,
+                ],
+            ]);
         }
 
         $limit = max(1, min((int) $request->query('limit', 50), 200));
+        $monthlyGoal = 10000;
+        $now = now();
+        $successfulStatuses = ['completed', 'paid', 'success', 'succeeded'];
+
+        $totalThisMonth = (float) DB::table('donations')
+            ->where(function ($query) use ($successfulStatuses) {
+                $query->whereNull('status')
+                    ->orWhereRaw(
+                        'LOWER(TRIM(COALESCE(status, ""))) IN (?, ?, ?, ?)',
+                        $successfulStatuses
+                    );
+            })
+            ->whereYear('created_at', $now->year)
+            ->whereMonth('created_at', $now->month)
+            ->sum('amount');
+
+        $totalToday = (float) DB::table('donations')
+            ->where(function ($query) use ($successfulStatuses) {
+                $query->whereNull('status')
+                    ->orWhereRaw(
+                        'LOWER(TRIM(COALESCE(status, ""))) IN (?, ?, ?, ?)',
+                        $successfulStatuses
+                    );
+            })
+            ->whereDate('created_at', $now->toDateString())
+            ->sum('amount');
+
+        $pendingCount = (int) DB::table('donations')
+            ->whereRaw('LOWER(TRIM(COALESCE(status, ""))) IN (?, ?)', ['pending', 'processing'])
+            ->count();
+
+        $goalProgress = $monthlyGoal > 0
+            ? min(100, (int) round(($totalThisMonth / $monthlyGoal) * 100))
+            : 0;
+
         $rows = DB::table('donations as d')
             ->leftJoin('users as u', 'd.user_id', '=', 'u.id')
             ->select([
@@ -1119,7 +1163,16 @@ class AdminDataController extends Controller
             ];
         })->values();
 
-        return response()->json(['items' => $items]);
+        return response()->json([
+            'items' => $items,
+            'summary' => [
+                'total_this_month' => $totalThisMonth,
+                'total_today' => $totalToday,
+                'pending_count' => $pendingCount,
+                'monthly_goal' => $monthlyGoal,
+                'goal_progress' => $goalProgress,
+            ],
+        ]);
     }
 
     public function events(Request $request)

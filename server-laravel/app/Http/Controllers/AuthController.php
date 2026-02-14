@@ -193,6 +193,8 @@ class AuthController extends Controller
 
         if ($existing) {
             $nextStatus = ($mode === 'signup' && !$existing->email_verified_at) ? 'pending' : $existing->status;
+            $existingCancelledAt = property_exists($existing, 'cancelled_at') ? $existing->cancelled_at : null;
+            $nextCancelledAt = ($mode === 'signup' && !$existing->email_verified_at) ? null : $existingCancelledAt;
             DB::table('users')->where('id', $existing->id)->update([
                 'otp_code' => $otpHash,
                 'otp_expires_at' => $expiresAt,
@@ -202,6 +204,7 @@ class AuthController extends Controller
                 'birthdate' => $birthdate ?: $existing->birthdate,
                 'password_hash' => $passwordHash ?: $existing->password_hash,
                 'status' => $nextStatus,
+                'cancelled_at' => $nextCancelledAt,
                 'updated_at' => now(),
             ]);
         } else {
@@ -216,6 +219,7 @@ class AuthController extends Controller
                 'otp_attempts' => 0,
                 'role' => 'member',
                 'status' => 'pending',
+                'cancelled_at' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -443,6 +447,7 @@ class AuthController extends Controller
             'email_verified_at' => $user->email_verified_at ?: now(),
             'last_login_at' => now(),
             'status' => 'active',
+            'cancelled_at' => null,
             'updated_at' => now(),
         ]);
 
@@ -480,9 +485,16 @@ class AuthController extends Controller
         DB::table('users')
             ->where('email', $email)
             ->whereNull('email_verified_at')
-            ->delete();
+            ->update([
+                'otp_code' => null,
+                'otp_expires_at' => null,
+                'otp_attempts' => 0,
+                'status' => 'pending',
+                'cancelled_at' => now(),
+                'updated_at' => now(),
+            ]);
 
-        return response()->json(['message' => 'Signup cancelled.']);
+        return response()->json(['message' => 'Signup cancelled. You can request a new OTP anytime.']);
     }
 
     public function sendPasswordResetOtp(Request $request)
@@ -740,6 +752,7 @@ class AuthController extends Controller
                 'email_verified_at' => $existing->email_verified_at ?: now(),
                 'last_login_at' => now(),
                 'status' => 'active',
+                'cancelled_at' => null,
                 'updated_at' => now(),
             ]);
         } else {
@@ -756,6 +769,7 @@ class AuthController extends Controller
                 'status' => 'active',
                 'email_verified_at' => now(),
                 'last_login_at' => now(),
+                'cancelled_at' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

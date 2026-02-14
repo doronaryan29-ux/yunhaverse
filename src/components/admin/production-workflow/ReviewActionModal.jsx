@@ -35,6 +35,7 @@ const ReviewActionModal = ({
     <AppModal
       open
       onClose={onClose}
+      variant="drawer-right"
       eyebrow="Admin Review"
       title={titleMap[action] || 'Review Submission'}
     >
@@ -68,7 +69,7 @@ const ReviewActionModal = ({
           <select
             value={reviewAssignee}
             onChange={(event) => setReviewAssignee(event.target.value)}
-            className="mt-2 w-full rounded-2xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700"
+            className="mt-2 w-full rounded-2xl border border-rose-100 bg-white px-3 py-2 pr-8 text-sm text-slate-700"
           >
             <option value="">Select assignee</option>
             {availableMembers.map((member) => (

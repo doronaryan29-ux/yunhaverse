@@ -246,11 +246,31 @@ export const useAdminData = ({
       const items = Array.isArray(data.items) ? data.items : []
       setDonations(items)
 
-      const now = new Date()
       const toNumber = (value) => {
         const parsed = Number(value)
         return Number.isFinite(parsed) ? parsed : 0
       }
+      const apiSummary = data?.summary
+      if (apiSummary && typeof apiSummary === 'object') {
+        const totalThisMonth = toNumber(apiSummary.total_this_month)
+        const totalToday = toNumber(apiSummary.total_today)
+        const pendingCount = Math.max(0, Math.trunc(toNumber(apiSummary.pending_count)))
+        const monthlyGoal = toNumber(apiSummary.monthly_goal) || 10000
+        const apiGoalProgress = toNumber(apiSummary.goal_progress)
+        const goalProgress = Number.isFinite(apiGoalProgress) && apiGoalProgress >= 0
+          ? Math.min(100, Math.round(apiGoalProgress))
+          : Math.min(100, Math.round((totalThisMonth / monthlyGoal) * 100))
+
+        setDonationSummary({
+          totalThisMonth,
+          totalToday,
+          pendingCount,
+          goalProgress: Number.isFinite(goalProgress) ? goalProgress : 0,
+        })
+        return
+      }
+
+      const now = new Date()
       const isSameDay = (input) => {
         const date = new Date(input)
         return (
@@ -271,11 +291,23 @@ export const useAdminData = ({
 
       const completedThisMonth = items.filter((item) => {
         const status = String(item?.status || '').trim().toLowerCase()
-        return (status === '' || status === 'completed' || status === 'paid') && isSameMonth(item?.created_at)
+        return (
+          status === '' ||
+          status === 'completed' ||
+          status === 'paid' ||
+          status === 'success' ||
+          status === 'succeeded'
+        ) && isSameMonth(item?.created_at)
       })
       const completedToday = items.filter((item) => {
         const status = String(item?.status || '').trim().toLowerCase()
-        return (status === '' || status === 'completed' || status === 'paid') && isSameDay(item?.created_at)
+        return (
+          status === '' ||
+          status === 'completed' ||
+          status === 'paid' ||
+          status === 'success' ||
+          status === 'succeeded'
+        ) && isSameDay(item?.created_at)
       })
       const pendingCount = items.filter((item) => {
         const status = String(item?.status || '').trim().toLowerCase()

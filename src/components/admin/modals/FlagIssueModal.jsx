@@ -14,6 +14,7 @@ const FlagIssueModal = ({
     <AppModal
       open={open}
       onClose={onClose}
+      variant="drawer-right"
       eyebrow="Audit Flags"
       title="Flag an Issue"
     >

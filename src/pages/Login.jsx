@@ -46,7 +46,6 @@ const Login = () => {
     otpInputRefs,
     authFormRef,
     otpReady,
-                setExistingSession,
     resetOpen,
     resetStep,
     setResetStep,

@@ -18,6 +18,7 @@ const SubmissionFormModal = ({
   <AppModal
     open={open}
     onClose={onClose}
+    variant="drawer-right"
     eyebrow="Creative Submission"
     title="New Submission"
   >

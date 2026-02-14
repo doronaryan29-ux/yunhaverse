@@ -1,5 +1,6 @@
 import { memo, useState } from 'react'
 import NotificationForm from './NotificationForm'
+import { AppModal } from '../../common'
 
 const QuickActionsSection = ({
   notificationTypes,
@@ -12,6 +13,7 @@ const QuickActionsSection = ({
   onOpenFlagModal,
 }) => {
   const [activeAction, setActiveAction] = useState(null)
+  const [actionModal, setActionModal] = useState(null)
 
   const baseButton =
     'flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-xs font-semibold uppercase tracking-[0.22em] transition hover:-translate-y-0.5'
@@ -21,18 +23,25 @@ const QuickActionsSection = ({
   const handleAction = (key, payload) => {
     setActiveAction(key)
     if (payload) onQuickAction(payload)
+    if (key === 'broadcast' || key === 'discord' || key === 'donation') {
+      setActionModal(key)
+    }
   }
 
   return (
     <section className="rounded-3xl border border-rose-100 bg-white/90 p-6 shadow-lg shadow-rose-100">
       <div className="flex items-center justify-between gap-3">
         <h3 className="font-display text-2xl font-semibold text-slate-900">
-          Quick Admin Actions
+          Action Center
         </h3>
         <span className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
-          Primary tasks
+          Fast execution
         </span>
       </div>
+
+      <p className="mt-2 text-sm text-slate-600">
+        Run high-frequency admin tasks without leaving this page.
+      </p>
 
     <div className="mt-5 grid gap-3 sm:grid-cols-2">
       <button
@@ -98,7 +107,15 @@ const QuickActionsSection = ({
         </button>
     </div>
 
-    <NotificationForm
+    <AppModal
+      open={actionModal === 'broadcast' || actionModal === 'discord'}
+      onClose={() => setActionModal(null)}
+      variant="drawer-right"
+      eyebrow="Quick Action"
+      title={actionModal === 'discord' ? 'Post Discord Notice' : 'Broadcast Email'}
+      subtitle="Fill this form to publish the notice."
+    >
+      <NotificationForm
         notificationTypes={notificationTypes}
         notificationForm={notificationForm}
         formFeedback={formFeedback}
@@ -106,6 +123,26 @@ const QuickActionsSection = ({
         onNotificationFormChange={onNotificationFormChange}
         onSubmitNotification={onSubmitNotification}
       />
+    </AppModal>
+
+    <AppModal
+      open={actionModal === 'donation'}
+      onClose={() => setActionModal(null)}
+      variant="drawer-right"
+      eyebrow="Quick Action"
+      title="Add Donation Record"
+      subtitle="Open the funds page to create or manage donations."
+    >
+      <div className="flex items-center justify-end">
+        <button
+          type="button"
+          onClick={() => window.location.replace('/#/admin/funds')}
+          className="rounded-2xl bg-rose-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white shadow-lg shadow-rose-200 transition hover:-translate-y-0.5"
+        >
+          Open Funds
+        </button>
+      </div>
+    </AppModal>
     </section>
   )
 }

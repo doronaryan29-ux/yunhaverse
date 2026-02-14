@@ -31,7 +31,10 @@ const MembersFilters = ({
               : 'border-rose-200 text-rose-500 hover:bg-rose-50'
           }`}
         >
-          {filtersOpen ? 'Hide Filters' : 'Filters'}
+          <span className="inline-flex items-center gap-2">
+            <i className="fas fa-filter text-[10px]" />
+            {filtersOpen ? 'Hide Filters' : 'Filters'}
+          </span>
         </button>
         {hasActiveFilters ? (
           <span className="rounded-full bg-rose-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500">

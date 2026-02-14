@@ -79,6 +79,7 @@ const Admin = () => {
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const profileMenuRef = useRef(null)
 
   useEffect(() => {
@@ -106,7 +107,7 @@ const Admin = () => {
       label: 'Donations (Monthly)',
       value: new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'USD',
+        currency: 'PHP',
         maximumFractionDigits: 0,
       }).format(Number(adminData.donationSummary.totalThisMonth || 0)),
       trend: 'Live from database',
@@ -147,32 +148,32 @@ const Admin = () => {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-amber-50 text-slate-800">
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -left-24 top-20 h-72 w-72 rounded-full bg-pink-200/40 blur-3xl" />
-        <div className="absolute right-0 top-72 h-96 w-96 rounded-full bg-amber-200/40 blur-3xl" />
-      </div>
-
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-3 py-6 sm:px-4 sm:py-8 lg:flex-row lg:gap-6">
-        <SidebarNav navItems={navItems} activeItem={activeNavItem} />
+    <main className="min-h-screen text-slate-800">
+      <div className="mx-auto flex min-h-screen w-full max-w-none flex-col py-6 sm:py-8 lg:flex-row lg:gap-4">
+        <SidebarNav
+          navItems={navItems}
+          activeItem={activeNavItem}
+          collapsed={sidebarCollapsed}
+          profileName={profileName}
+          profileRole={profileRole}
+          profileMenuOpen={profileMenuOpen}
+          profileMenuRef={profileMenuRef}
+          onToggleProfile={handleToggleProfile}
+          onGoProfile={handleGoProfile}
+          onLogout={() => setLogoutConfirmOpen(true)}
+          onToggleSidebar={() => setSidebarCollapsed((prev) => !prev)}
+        />
 
         <section className="mt-8 flex-1 space-y-6 lg:mt-0">
           <TopHeader
-            profileName={profileName}
-            profileRole={profileRole}
             isProfileRoute={isProfileRoute}
             notificationsOpen={notificationsOpen}
-            profileMenuOpen={profileMenuOpen}
             notificationsLoading={adminData.notificationsLoading}
             notifications={adminData.notifications}
             unreadCount={adminData.unreadCount}
-            profileMenuRef={profileMenuRef}
             onGoHome={handleGoHome}
             onToggleNotifications={handleToggleNotifications}
-            onToggleProfile={handleToggleProfile}
             onCloseNotifications={handleCloseNotifications}
-            onGoProfile={handleGoProfile}
-            onLogout={() => setLogoutConfirmOpen(true)}
             onMarkNotificationRead={adminData.markNotificationRead}
           />
 
@@ -243,7 +244,6 @@ const Admin = () => {
               onQuickAction={actions.handleQuickAction}
               onOpenFlagModal={actions.handleOpenFlagModal}
               upcomingEventItems={adminData.upcomingEventItems}
-              memberItems={adminData.memberItems}
               auditItems={adminData.auditItems}
               auditFlags={adminData.auditFlags}
               auditFlagsLoading={adminData.auditFlagsLoading}
@@ -295,3 +295,4 @@ const Admin = () => {
 }
 
 export default Admin
+
