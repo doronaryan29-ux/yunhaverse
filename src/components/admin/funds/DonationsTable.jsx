@@ -4,15 +4,13 @@ import { formatDateInManila } from '../../../utils/date'
 const DonationsTable = ({
   items,
   loading,
-  formStatus,
-  onDismissStatus,
   canSubmit,
   submitting,
   getEditRow,
   isDirty,
   setRowEdits,
   updateDonation,
-  deleteDonation,
+  onRequestDelete,
 }) => (
   <section className="rounded-3xl border border-rose-100 bg-white/90 p-6 shadow-lg shadow-rose-100">
     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -23,25 +21,6 @@ const DonationsTable = ({
         {items.length} records
       </span>
     </div>
-
-    {formStatus.message && (
-      <div
-        className={`mb-4 flex items-center justify-between rounded-2xl border px-4 py-3 text-sm ${
-          formStatus.type === 'error'
-            ? 'border-rose-200 bg-rose-50 text-rose-600'
-            : 'border-emerald-200 bg-emerald-50 text-emerald-700'
-        }`}
-      >
-        <span>{formStatus.message}</span>
-        <button
-          type="button"
-          onClick={onDismissStatus}
-          className="text-xs font-semibold uppercase tracking-[0.2em]"
-        >
-          Dismiss
-        </button>
-      </div>
-    )}
 
     <div className="mt-5 overflow-hidden rounded-2xl border border-rose-100">
       <div className="grid grid-cols-[1.4fr_0.9fr_1.1fr_1fr_0.9fr] gap-3 bg-rose-50/70 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -113,10 +92,7 @@ const DonationsTable = ({
                   <button
                     type="button"
                     disabled={!canSubmit || submitting}
-                    onClick={() => {
-                      if (!window.confirm('Delete this donation?')) return
-                      deleteDonation(item.id)
-                    }}
+                    onClick={() => onRequestDelete(item)}
                     className="rounded-full border border-rose-200 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:opacity-60"
                   >
                     Delete

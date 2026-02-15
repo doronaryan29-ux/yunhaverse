@@ -1,12 +1,12 @@
+import { useEffect } from 'react'
 import AuthCardHeader from '../components/auth/AuthCardHeader'
 import AuthForm from '../components/auth/AuthForm'
 import AuthHeader from '../components/auth/AuthHeader'
 import BenefitsPanel from '../components/auth/BenefitsPanel'
-import ErrorModal from '../components/auth/ErrorModal'
 import ResetPasswordModal from '../components/auth/ResetPasswordModal'
-import ToastBanner from '../components/auth/ToastBanner'
 import useAuthFlow from '../hooks/useAuthFlow'
 import { API_BASE } from '../utils/apiBase'
+import { showStatusAlert, showStatusToast } from '../utils/sweetAlert'
 
 const benefits = [
   'Early access to ticket drops and preregistration slots.',
@@ -81,6 +81,24 @@ const Login = () => {
     passwordResetMatches,
   } = useAuthFlow({ apiBase, isAdminRole })
 
+  useEffect(() => {
+    if (!errorModal) return
+
+    showStatusAlert({
+      type: 'error',
+      title: 'Login Issue',
+      message: errorModal,
+    }).finally(() => {
+      setErrorModal('')
+    })
+  }, [errorModal, setErrorModal])
+
+  useEffect(() => {
+    if (!toast) return
+
+    showStatusToast({ type: toast.type, message: toast.message })
+  }, [toast])
+
   return (
     <>
       <main className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-100">
@@ -135,8 +153,6 @@ const Login = () => {
             </section>
           </div>
         </div>
-        <ErrorModal message={errorModal} onClose={() => setErrorModal('')} />
-        <ToastBanner toast={toast} />
       </main>
 
       <ResetPasswordModal

@@ -1,15 +1,12 @@
 import { memo, useState } from 'react'
-import EventDeleteModal from './EventDeleteModal'
 import EventFormModal from './EventFormModal'
 import EventsHeader from './EventsHeader'
-import EventsStatusBanner from './EventsStatusBanner'
 import EventsTable from './EventsTable'
+import { confirmDeleteAlert, showStatusAlert } from '../../../utils/sweetAlert'
 
 const EventsPage = ({ events = [], loading = false, apiBase, requesterRole, onRefresh }) => {
   const items = Array.isArray(events) ? events : []
   const [formOpen, setFormOpen] = useState(false)
-  const [deleteModal, setDeleteModal] = useState(null)
-  const [formStatus, setFormStatus] = useState({ type: '', message: '' })
   const [submitting, setSubmitting] = useState(false)
   const [eventForm, setEventForm] = useState({
     title: '',
@@ -27,7 +24,6 @@ const EventsPage = ({ events = [], loading = false, apiBase, requesterRole, onRe
   const [rowEdits, setRowEdits] = useState({})
   const canSubmit = Boolean(apiBase && requesterRole)
 
-  const clearFormStatus = () => setFormStatus({ type: '', message: '' })
   const resetEventForm = () => {
     setEventForm({
       title: '',
@@ -47,7 +43,6 @@ const EventsPage = ({ events = [], loading = false, apiBase, requesterRole, onRe
   const handleCreateEvent = async (event) => {
     event.preventDefault()
     if (!canSubmit) return
-    clearFormStatus()
     setSubmitting(true)
     try {
       const response = await fetch(
@@ -75,11 +70,19 @@ const EventsPage = ({ events = [], loading = false, apiBase, requesterRole, onRe
         throw new Error(data?.message || 'Failed to create event.')
       }
       resetEventForm()
-      setFormStatus({ type: 'success', message: 'Event created.' })
+      await showStatusAlert({
+        type: 'success',
+        title: 'Event Created',
+        message: 'Event created.',
+      })
       setFormOpen(false)
       onRefresh?.()
     } catch (error) {
-      setFormStatus({ type: 'error', message: error.message })
+      await showStatusAlert({
+        type: 'error',
+        title: 'Create Failed',
+        message: error.message,
+      })
     } finally {
       setSubmitting(false)
     }
@@ -87,7 +90,6 @@ const EventsPage = ({ events = [], loading = false, apiBase, requesterRole, onRe
 
   const updateEvent = async (id, payload) => {
     if (!canSubmit) return
-    clearFormStatus()
     setSubmitting(true)
     try {
       const response = await fetch(
@@ -102,10 +104,18 @@ const EventsPage = ({ events = [], loading = false, apiBase, requesterRole, onRe
       if (!response.ok) {
         throw new Error(data?.message || 'Failed to update event.')
       }
-      setFormStatus({ type: 'success', message: 'Event updated.' })
+      await showStatusAlert({
+        type: 'success',
+        title: 'Event Updated',
+        message: 'Event updated.',
+      })
       onRefresh?.()
     } catch (error) {
-      setFormStatus({ type: 'error', message: error.message })
+      await showStatusAlert({
+        type: 'error',
+        title: 'Update Failed',
+        message: error.message,
+      })
     } finally {
       setSubmitting(false)
     }
@@ -113,7 +123,6 @@ const EventsPage = ({ events = [], loading = false, apiBase, requesterRole, onRe
 
   const deleteEvent = async (id) => {
     if (!canSubmit) return
-    clearFormStatus()
     setSubmitting(true)
     try {
       const response = await fetch(
@@ -129,13 +138,31 @@ const EventsPage = ({ events = [], loading = false, apiBase, requesterRole, onRe
       if (!response.ok) {
         throw new Error(data?.message || 'Failed to delete event.')
       }
-      setFormStatus({ type: 'success', message: 'Event deleted.' })
+      await showStatusAlert({
+        type: 'success',
+        title: 'Event Deleted',
+        message: 'Event deleted.',
+      })
       onRefresh?.()
     } catch (error) {
-      setFormStatus({ type: 'error', message: error.message })
+      await showStatusAlert({
+        type: 'error',
+        title: 'Delete Failed',
+        message: error.message,
+      })
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const requestDeleteEvent = async (item) => {
+    if (!item?.id || !canSubmit || submitting) return
+    const confirmed = await confirmDeleteAlert({
+      title: 'Delete Event',
+      message: `Delete "${item.title || 'this event'}"? This cannot be undone.`,
+    })
+    if (!confirmed) return
+    await deleteEvent(item.id)
   }
 
   const getEditRow = (item) =>
@@ -157,7 +184,6 @@ const EventsPage = ({ events = [], loading = false, apiBase, requesterRole, onRe
   return (
     <section className="space-y-6">
       <EventsHeader onAdd={() => setFormOpen(true)} />
-      <EventsStatusBanner formStatus={formStatus} onDismiss={clearFormStatus} />
       <EventsTable
         items={items}
         loading={loading}
@@ -167,7 +193,7 @@ const EventsPage = ({ events = [], loading = false, apiBase, requesterRole, onRe
         isDirty={isDirty}
         setRowEdits={setRowEdits}
         updateEvent={updateEvent}
-        setDeleteModal={setDeleteModal}
+        onRequestDelete={requestDeleteEvent}
       />
       <EventFormModal
         open={formOpen}
@@ -180,12 +206,6 @@ const EventsPage = ({ events = [], loading = false, apiBase, requesterRole, onRe
         canSubmit={canSubmit}
         onSubmit={handleCreateEvent}
         onReset={resetEventForm}
-      />
-      <EventDeleteModal
-        deleteModal={deleteModal}
-        onClose={() => setDeleteModal(null)}
-        submitting={submitting}
-        onDelete={deleteEvent}
       />
     </section>
   )

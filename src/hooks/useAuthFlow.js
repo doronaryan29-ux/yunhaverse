@@ -359,6 +359,12 @@ const useAuthFlow = ({ apiBase, isAdminRole }) => {
   const handleModeSelect = (nextMode) => {
     setMode(nextMode)
     resetOtpFlow()
+    setPassword('')
+    setConfirmPassword('')
+    setShowPassword(false)
+    setShowConfirmPassword(false)
+    setFeedback({ type: '', message: '' })
+    setErrorModal('')
     window.location.hash = forceLogin ? '#/login?force=1' : '#/login'
   }
 

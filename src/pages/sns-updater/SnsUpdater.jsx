@@ -7,9 +7,9 @@ import {
   SubmitWorkForm,
   TeamMemberRow,
 } from '../../components/sns-updater'
-import { AppModal } from '../../components/common'
 import { API_BASE } from '../../utils/apiBase'
 import { formatDateInManila } from '../../utils/date'
+import { confirmActionAlert } from '../../utils/sweetAlert'
 
 const AUTH_MAX_AGE_MS = 12 * 60 * 60 * 1000
 const redirectTo = (hashRoute) => window.location.replace(`/${hashRoute}`)
@@ -96,7 +96,6 @@ const SnsUpdater = () => {
   })
   const [activeRequestId, setActiveRequestId] = useState(null)
   const [activeSubmissionId, setActiveSubmissionId] = useState(null)
-  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
   const [submissionFeedback, setSubmissionFeedback] = useState({
     type: '',
     message: '',
@@ -221,6 +220,20 @@ const SnsUpdater = () => {
     window.addEventListener('hashchange', handleHashChange)
     return () => window.removeEventListener('hashchange', handleHashChange)
   }, [])
+
+  const handleLogoutConfirm = async () => {
+    const confirmed = await confirmActionAlert({
+      title: 'Sign out of staff portal?',
+      message: 'You will be returned to the login screen.',
+      confirmText: 'Logout',
+      intent: 'danger',
+    })
+    if (confirmed) {
+      sessionStorage.removeItem('user')
+      sessionStorage.removeItem('authAt')
+      redirectTo('#/login?force=1')
+    }
+  }
 
   const handleSubmissionChange = (field, value) => {
     setSubmissionForm((prev) => ({ ...prev, [field]: value }))
@@ -381,7 +394,7 @@ const SnsUpdater = () => {
               <button
                 type="button"
                 className="rounded-full border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50"
-                onClick={() => setLogoutConfirmOpen(true)}
+                onClick={handleLogoutConfirm}
               >
                 Sign out
               </button>
@@ -471,27 +484,21 @@ const SnsUpdater = () => {
                         active={activeRequestId === request?.id}
                         onClick={() => setActiveRequestId(request?.id ?? null)}
                         dueLabel={
-                      request?.dueAt || request?.due_at
-                        ? formatDateInManila(
-                            request?.dueAt || request?.due_at,
-                            {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric',
-                            },
-                          )
-                        : 'TBD'
-                    }
-                        requestedBy={safeString(
-                          request?.requestedByName ||
-                            request?.requested_by_name ||
-                            request?.requestedBy,
-                          'Admin',
-                        )}
+                          request?.dueAt || request?.due_at
+                            ? formatDateInManila(
+                                request?.dueAt || request?.due_at,
+                                {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                },
+                              )
+                            : 'TBD'
+                        }
                       />
                   ))
                 )}
-            </div>
+              </div>
           </div>
 
           <div className="space-y-6">
@@ -633,36 +640,6 @@ const SnsUpdater = () => {
           </div>
         </section>
 
-        <AppModal
-          open={logoutConfirmOpen}
-          onClose={() => setLogoutConfirmOpen(false)}
-          eyebrow="Confirm Logout"
-          title="Sign out of staff portal?"
-        >
-          <p className="text-sm text-slate-600">
-            You will be returned to the login screen.
-          </p>
-          <div className="mt-6 flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => setLogoutConfirmOpen(false)}
-              className="rounded-xl border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                sessionStorage.removeItem('user')
-                sessionStorage.removeItem('authAt')
-                redirectTo('#/login?force=1')
-              }}
-              className="rounded-xl bg-rose-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white shadow-lg shadow-rose-200 transition hover:-translate-y-0.5"
-            >
-              Logout
-            </button>
-          </div>
-        </AppModal>
         </section>
       </div>
     </main>

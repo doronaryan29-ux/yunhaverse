@@ -3,6 +3,7 @@ import DonationFormModal from './DonationFormModal'
 import DonationsTable from './DonationsTable'
 import FundsHeader from './FundsHeader'
 import FundsStats from './FundsStats'
+import { confirmDeleteAlert, showStatusAlert } from '../../../utils/sweetAlert'
 
 const FundsDonationsPage = ({
   donations = [],
@@ -21,7 +22,6 @@ const FundsDonationsPage = ({
       maximumFractionDigits: 2,
     })}`
   const [formOpen, setFormOpen] = useState(false)
-  const [formStatus, setFormStatus] = useState({ type: '', message: '' })
   const [submitting, setSubmitting] = useState(false)
   const [donationForm, setDonationForm] = useState({
     userId: '',
@@ -36,7 +36,6 @@ const FundsDonationsPage = ({
   const [rowEdits, setRowEdits] = useState({})
   const canSubmit = Boolean(apiBase && requesterRole)
 
-  const clearFormStatus = () => setFormStatus({ type: '', message: '' })
   const resetDonationForm = () => {
     setDonationForm({
       userId: '',
@@ -84,7 +83,6 @@ const FundsDonationsPage = ({
   const handleCreateDonation = async (event) => {
     event.preventDefault()
     if (!canSubmit) return
-    clearFormStatus()
     setSubmitting(true)
     try {
       const response = await fetch(
@@ -109,11 +107,19 @@ const FundsDonationsPage = ({
         throw new Error(data?.message || 'Failed to create donation.')
       }
       resetDonationForm()
-      setFormStatus({ type: 'success', message: 'Donation created.' })
+      await showStatusAlert({
+        type: 'success',
+        title: 'Donation Created',
+        message: 'Donation created.',
+      })
       setFormOpen(false)
       onRefresh?.()
     } catch (error) {
-      setFormStatus({ type: 'error', message: error.message })
+      await showStatusAlert({
+        type: 'error',
+        title: 'Create Failed',
+        message: error.message,
+      })
     } finally {
       setSubmitting(false)
     }
@@ -121,7 +127,6 @@ const FundsDonationsPage = ({
 
   const updateDonation = async (id, payload) => {
     if (!canSubmit) return
-    clearFormStatus()
     setSubmitting(true)
     try {
       const response = await fetch(
@@ -136,10 +141,18 @@ const FundsDonationsPage = ({
       if (!response.ok) {
         throw new Error(data?.message || 'Failed to update donation.')
       }
-      setFormStatus({ type: 'success', message: 'Donation updated.' })
+      await showStatusAlert({
+        type: 'success',
+        title: 'Donation Updated',
+        message: 'Donation updated.',
+      })
       onRefresh?.()
     } catch (error) {
-      setFormStatus({ type: 'error', message: error.message })
+      await showStatusAlert({
+        type: 'error',
+        title: 'Update Failed',
+        message: error.message,
+      })
     } finally {
       setSubmitting(false)
     }
@@ -147,7 +160,6 @@ const FundsDonationsPage = ({
 
   const deleteDonation = async (id) => {
     if (!canSubmit) return
-    clearFormStatus()
     setSubmitting(true)
     try {
       const response = await fetch(
@@ -161,13 +173,31 @@ const FundsDonationsPage = ({
       if (!response.ok) {
         throw new Error(data?.message || 'Failed to delete donation.')
       }
-      setFormStatus({ type: 'success', message: 'Donation deleted.' })
+      await showStatusAlert({
+        type: 'success',
+        title: 'Donation Deleted',
+        message: 'Donation deleted.',
+      })
       onRefresh?.()
     } catch (error) {
-      setFormStatus({ type: 'error', message: error.message })
+      await showStatusAlert({
+        type: 'error',
+        title: 'Delete Failed',
+        message: error.message,
+      })
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const requestDeleteDonation = async (item) => {
+    if (!item?.id || !canSubmit || submitting) return
+    const confirmed = await confirmDeleteAlert({
+      title: 'Delete Donation',
+      message: `Delete donation from "${item.name || item.email || 'Anonymous'}"?`,
+    })
+    if (!confirmed) return
+    await deleteDonation(item.id)
   }
 
   const getEditRow = (item) =>
@@ -192,15 +222,13 @@ const FundsDonationsPage = ({
       <DonationsTable
         items={items}
         loading={loading}
-        formStatus={formStatus}
-        onDismissStatus={clearFormStatus}
         canSubmit={canSubmit}
         submitting={submitting}
         getEditRow={getEditRow}
         isDirty={isDirty}
         setRowEdits={setRowEdits}
         updateDonation={updateDonation}
-        deleteDonation={deleteDonation}
+        onRequestDelete={requestDeleteDonation}
       />
       <DonationFormModal
         open={formOpen}

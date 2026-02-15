@@ -9,7 +9,7 @@ const EventsTable = ({
   isDirty,
   setRowEdits,
   updateEvent,
-  setDeleteModal,
+  onRequestDelete,
 }) => (
   <section className="rounded-3xl border border-rose-100 bg-white/90 p-6 shadow-lg shadow-rose-100">
     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -108,12 +108,7 @@ const EventsTable = ({
                   <button
                     type="button"
                     disabled={!canSubmit || submitting}
-                    onClick={() =>
-                      setDeleteModal({
-                        id: item.id,
-                        title: item.title,
-                      })
-                    }
+                    onClick={() => onRequestDelete(item)}
                     className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:opacity-60"
                   >
                     Delete

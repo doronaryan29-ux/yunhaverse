@@ -6,7 +6,6 @@ const RequestFormModal = ({
   onClose,
   requestForm,
   setRequestForm,
-  memberOptions,
   getMembersForStage,
   resolveMemberLabel,
   stageOptions,
@@ -51,23 +50,23 @@ const RequestFormModal = ({
           placeholder="Describe the request"
         />
       </label>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="space-y-3">
         <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-          Requested By
+          Stage
           <select
-            value={requestForm.requestedBy}
+            value={requestForm.stage}
             onChange={(event) =>
               setRequestForm((prev) => ({
                 ...prev,
-                requestedBy: event.target.value,
+                stage: event.target.value,
+                assignedTo: '',
               }))
             }
             className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 pr-8 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
           >
-            <option value="">Select user</option>
-            {memberOptions.map((member) => (
-              <option key={member.id} value={member.id}>
-                {resolveMemberLabel(member)}
+            {stageOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
@@ -93,26 +92,7 @@ const RequestFormModal = ({
           </select>
         </label>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-          Stage
-          <select
-            value={requestForm.stage}
-            onChange={(event) =>
-              setRequestForm((prev) => ({
-                ...prev,
-                stage: event.target.value,
-              }))
-            }
-            className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 pr-8 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
-          >
-            {stageOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
           Priority
           <select
@@ -166,7 +146,7 @@ const RequestFormModal = ({
           />
         </label>
       </div>
-      <div className="flex items-center justify-end gap-3">
+      <div className="mt-8 flex items-center justify-end gap-3">
         <button
           type="button"
           onClick={onClose}

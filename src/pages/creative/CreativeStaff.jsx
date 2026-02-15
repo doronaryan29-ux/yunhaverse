@@ -10,6 +10,7 @@ import {
 import { AppModal } from '../../components/common'
 import { API_BASE } from '../../utils/apiBase'
 import { formatDateInManila } from '../../utils/date'
+import { confirmActionAlert } from '../../utils/sweetAlert'
 
 const AUTH_MAX_AGE_MS = 12 * 60 * 60 * 1000
 const redirectTo = (hashRoute) => window.location.replace(`/${hashRoute}`)
@@ -106,7 +107,6 @@ const CreativeStaff = () => {
   const [submissionFilter, setSubmissionFilter] = useState('all')
   const [assignmentFiltersOpen, setAssignmentFiltersOpen] = useState(false)
   const [submissionFiltersOpen, setSubmissionFiltersOpen] = useState(false)
-  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
   const [submissionFeedback, setSubmissionFeedback] = useState({
     type: '',
     message: '',
@@ -518,6 +518,20 @@ const CreativeStaff = () => {
     }
   }, [])
 
+  const handleLogoutConfirm = async () => {
+    const confirmed = await confirmActionAlert({
+      title: 'Sign out of staff portal?',
+      message: 'You will be returned to the login screen.',
+      confirmText: 'Logout',
+      intent: 'danger',
+    })
+    if (confirmed) {
+      sessionStorage.removeItem('user')
+      sessionStorage.removeItem('authAt')
+      redirectTo('#/login?force=1')
+    }
+  }
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-amber-50 text-slate-800">
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
@@ -553,7 +567,7 @@ const CreativeStaff = () => {
               <button
                 type="button"
                 className="rounded-full border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50"
-                onClick={() => setLogoutConfirmOpen(true)}
+                onClick={handleLogoutConfirm}
               >
                 Sign out
               </button>
@@ -643,10 +657,6 @@ const CreativeStaff = () => {
                           })
                         : 'TBD'
                     }
-                    requestedBy={safeString(
-                      request?.requestedByName || request?.requested_by_name || request?.requestedBy,
-                      'Admin',
-                    )}
                   />
                 ))}
                 {assignedRequests.length === 0 ? (
@@ -812,12 +822,6 @@ const CreativeStaff = () => {
                                 )
                               : 'TBD'
                           }
-                          requestedBy={safeString(
-                            request?.requestedByName ||
-                              request?.requested_by_name ||
-                              request?.requestedBy,
-                            'Admin',
-                          )}
                         />
                     ))
                   )}
@@ -1140,36 +1144,6 @@ const CreativeStaff = () => {
             />
           </AppModal>
 
-          <AppModal
-            open={logoutConfirmOpen}
-            onClose={() => setLogoutConfirmOpen(false)}
-            eyebrow="Confirm Logout"
-            title="Sign out of staff portal?"
-          >
-            <p className="text-sm text-slate-600">
-              You will be returned to the login screen.
-            </p>
-            <div className="mt-6 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setLogoutConfirmOpen(false)}
-                className="rounded-xl border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  sessionStorage.removeItem('user')
-                  sessionStorage.removeItem('authAt')
-                  redirectTo('#/login?force=1')
-                }}
-                className="rounded-xl bg-rose-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white shadow-lg shadow-rose-200 transition hover:-translate-y-0.5"
-              >
-                Logout
-              </button>
-            </div>
-          </AppModal>
         </section>
       </div>
     </main>

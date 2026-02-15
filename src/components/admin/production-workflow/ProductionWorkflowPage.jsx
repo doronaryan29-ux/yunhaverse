@@ -1,12 +1,11 @@
 import { memo, useMemo, useState } from 'react'
-import DeleteConfirmModal from './DeleteConfirmModal'
 import ProductionWorkflowHeader from './ProductionWorkflowHeader'
 import RequestFormModal from './RequestFormModal'
 import RequestHistoryModal from './RequestHistoryModal'
 import RequestsSection from './RequestsSection'
-import StatusModal from './StatusModal'
 import WorkflowCreatePanel from './WorkflowCreatePanel'
 import ReviewActionModal from './ReviewActionModal'
+import { confirmDeleteAlert, showStatusAlert } from '../../../utils/sweetAlert'
 
 const ProductionWorkflowPage = ({
   apiBase,
@@ -22,7 +21,6 @@ const ProductionWorkflowPage = ({
   const [requestForm, setRequestForm] = useState({
     title: '',
     description: '',
-    requestedBy: '',
     assignedTo: '',
     stage: 'creative',
     priority: 'Medium',
@@ -31,9 +29,7 @@ const ProductionWorkflowPage = ({
   })
   const [requestEdits, setRequestEdits] = useState({})
   const [requestModalOpen, setRequestModalOpen] = useState(false)
-  const [deleteModal, setDeleteModal] = useState(null)
   const [formStatus, setFormStatus] = useState({ type: '', message: '' })
-  const [statusModal, setStatusModal] = useState(null)
   const [historyModal, setHistoryModal] = useState(null)
   const [historyItems, setHistoryItems] = useState([])
   const [historyLoading, setHistoryLoading] = useState(false)
@@ -49,9 +45,8 @@ const ProductionWorkflowPage = ({
   const requestCount = requestItems.length
 
   const clearFormStatus = () => setFormStatus({ type: '', message: '' })
-  const openStatusModal = ({ type, title, message }) => {
-    setStatusModal({ type, title, message })
-  }
+  const openStatusModal = ({ type, title, message }) =>
+    showStatusAlert({ type, title, message })
 
   const handleCreateRequest = async (event) => {
     event.preventDefault()
@@ -70,9 +65,7 @@ const ProductionWorkflowPage = ({
             requesterRole,
             title: requestForm.title.trim(),
             description: requestForm.description.trim() || null,
-            requestedBy: requestForm.requestedBy
-              ? Number(requestForm.requestedBy)
-              : null,
+            requestedBy: userId ? Number(userId) : null,
             assignedTo: requestForm.assignedTo ? Number(requestForm.assignedTo) : null,
             stage: requestForm.stage,
             priority: requestForm.priority,
@@ -88,7 +81,6 @@ const ProductionWorkflowPage = ({
       setRequestForm({
         title: '',
         description: '',
-        requestedBy: '',
         assignedTo: '',
         stage: 'creative',
         priority: 'Medium',
@@ -338,6 +330,23 @@ const ProductionWorkflowPage = ({
     }
   }
 
+  const requestDelete = async (payload) => {
+    if (!payload || !canSubmit || submitting) return
+    const label = payload.title || 'this item'
+    const confirmed = await confirmDeleteAlert({
+      title: 'Confirm Delete',
+      message: `Delete "${label}"? This cannot be undone.`,
+    })
+    if (!confirmed) return
+    if (Array.isArray(payload.ids) && payload.ids.length > 0) {
+      await deleteRequestsBulk(payload.ids)
+      return
+    }
+    if (payload.type === 'request' && payload.id) {
+      await deleteRequest(payload.id)
+    }
+  }
+
   const getMembersForStage = (stage) => {
     const normalizedStage = String(stage || '').toLowerCase()
     if (!normalizedStage) return memberOptions
@@ -459,7 +468,7 @@ const ProductionWorkflowPage = ({
         resolveMemberLabel={resolveMemberLabel}
         getMemberNameById={getMemberNameById}
         updateRequest={updateRequest}
-        setDeleteModal={setDeleteModal}
+        setDeleteModal={requestDelete}
         setHistoryModal={setHistoryModal}
         fetchHistory={fetchHistory}
         openStatusModal={openStatusModal}
@@ -479,7 +488,6 @@ const ProductionWorkflowPage = ({
         onClose={() => setRequestModalOpen(false)}
         requestForm={requestForm}
         setRequestForm={setRequestForm}
-        memberOptions={memberOptions}
         getMembersForStage={getMembersForStage}
         resolveMemberLabel={resolveMemberLabel}
         stageOptions={stageOptions}
@@ -546,22 +554,6 @@ const ProductionWorkflowPage = ({
           setReviewAssignee('')
         }}
       />
-      <DeleteConfirmModal
-        deleteModal={deleteModal}
-        onClose={() => setDeleteModal(null)}
-        submitting={submitting}
-        onConfirm={(payload) => {
-          if (!payload) return
-          if (Array.isArray(payload.ids) && payload.ids.length > 0) {
-            deleteRequestsBulk(payload.ids)
-            return
-          }
-          if (payload.type === 'request') {
-            deleteRequest(payload.id)
-          }
-        }}
-      />
-      <StatusModal statusModal={statusModal} onClose={() => setStatusModal(null)} />
       <RequestHistoryModal
         historyModal={historyModal}
         historyItems={historyItems}

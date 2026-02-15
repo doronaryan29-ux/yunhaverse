@@ -143,7 +143,7 @@ const SubmissionFormModal = ({
           ))}
         </select>
       </label>
-      <div className="flex items-center justify-end gap-3">
+      <div className="mt-8 flex items-center justify-end gap-3">
         <button
           type="button"
           onClick={onClose}

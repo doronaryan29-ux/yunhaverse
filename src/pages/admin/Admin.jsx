@@ -13,7 +13,6 @@ import {
   SidebarNav,
   TopHeader,
 } from '../../components/admin'
-import { AppModal } from '../../components/common'
 
 import { navItems } from '../../constants/adminNav'
 import { notificationTypes } from '../../constants/adminNotifications'
@@ -23,6 +22,7 @@ import { useAdminProfile } from '../../hooks/useAdminProfile'
 import { useAdminRoute } from '../../hooks/useAdminRoute'
 import { API_BASE } from '../../utils/apiBase'
 import { getSessionUser } from '../../utils/sessionUser'
+import { confirmActionAlert } from '../../utils/sweetAlert'
 
 const Admin = () => {
   const user = getSessionUser()
@@ -78,7 +78,6 @@ const Admin = () => {
 
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
-  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const profileMenuRef = useRef(null)
 
@@ -91,6 +90,18 @@ const Admin = () => {
     window.addEventListener('mousedown', onPointerDown)
     return () => window.removeEventListener('mousedown', onPointerDown)
   }, [])
+
+  const handleLogoutConfirm = async () => {
+    const confirmed = await confirmActionAlert({
+      title: 'Sign out of admin?',
+      message: 'You will be returned to the login screen.',
+      confirmText: 'Logout',
+      intent: 'danger',
+    })
+    if (confirmed) {
+      actions.handleLogout()
+    }
+  }
 
   const statCards = [
     {
@@ -160,7 +171,7 @@ const Admin = () => {
           profileMenuRef={profileMenuRef}
           onToggleProfile={handleToggleProfile}
           onGoProfile={handleGoProfile}
-          onLogout={() => setLogoutConfirmOpen(true)}
+          onLogout={handleLogoutConfirm}
           onToggleSidebar={() => setSidebarCollapsed((prev) => !prev)}
         />
 
@@ -253,33 +264,6 @@ const Admin = () => {
           )}
         </section>
       </div>
-
-      <AppModal
-        open={logoutConfirmOpen}
-        onClose={() => setLogoutConfirmOpen(false)}
-        eyebrow="Confirm Logout"
-        title="Sign out of admin?"
-      >
-        <p className="text-sm text-slate-600">
-          You will be returned to the login screen.
-        </p>
-        <div className="mt-6 flex items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={() => setLogoutConfirmOpen(false)}
-            className="rounded-xl border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={() => actions.handleLogout()}
-            className="rounded-xl bg-rose-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white shadow-lg shadow-rose-200 transition hover:-translate-y-0.5"
-          >
-            Logout
-          </button>
-        </div>
-      </AppModal>
 
       <FlagIssueModal
         open={actions.flagModalOpen}

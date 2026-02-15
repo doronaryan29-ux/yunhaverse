@@ -63,12 +63,6 @@ const AssignmentsSection = ({
                     })
                   : 'TBD'
               }
-              requestedBy={safeString(
-                request?.requestedByName ||
-                  request?.requested_by_name ||
-                  request?.requestedBy,
-                'Admin',
-              )}
             />
           )
         })

@@ -119,7 +119,7 @@ const DonationFormModal = ({
           className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
         />
       </label>
-      <div className="flex items-center justify-end gap-3">
+      <div className="mt-8 flex items-center justify-end gap-3">
         <button
           type="button"
           onClick={() => {

@@ -2,6 +2,16 @@ import { memo, useMemo, useState } from 'react'
 import { AppModal } from '../../common'
 import { formatDateInManila } from '../../../utils/date'
 
+const formatStageLabel = (value) => {
+  const normalized = String(value || 'creative').replace(/[_-]+/g, ' ')
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1)
+}
+
+const formatStatusLabel = (value) => {
+  const normalized = String(value || 'open').replace(/[_-]+/g, ' ')
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1)
+}
+
 const RequestsSection = ({
   requestItems,
   archivedItems = [],
@@ -178,8 +188,7 @@ const RequestsSection = ({
                 <div>
                   <p className="text-sm font-semibold text-slate-900">{item.title}</p>
                   <p className="mt-1 text-xs text-slate-500">
-                    Requested by {item.requested_by_name || '—'}
-                    {item.due_at ? ` • Due ${formatDateInManila(item.due_at)}` : ''}
+                    {item.due_at ? `Due ${formatDateInManila(item.due_at)}` : 'No due date'}
                   </p>
                   {item.assigned_to_name || getMemberNameById(item.assigned_to) ? (
                     <p className="mt-1 text-xs text-slate-400">
@@ -189,14 +198,14 @@ const RequestsSection = ({
                   ) : null}
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500">
-                    {item.priority || 'Medium'}
+                  <span className="rounded-full border border-rose-200 bg-rose-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-rose-700">
+                    {String(item.priority || 'Medium')}
                   </span>
-                  <span className="rounded-full bg-rose-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-600">
-                    {item.stage || 'creative'}
+                  <span className="rounded-full border border-rose-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-rose-600">
+                    {formatStageLabel(item.stage)}
                   </span>
-                  <span className="rounded-full bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                    {String(item.status || 'open').replace(/_/g, ' ')}
+                  <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700">
+                    {formatStatusLabel(item.status)}
                   </span>
                 </div>
               </div>
@@ -286,9 +295,12 @@ const RequestsSection = ({
                     type="button"
                     disabled={!canSubmit}
                     onClick={() => setActionsRequestId(item.id)}
-                    className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:opacity-60"
+                    className="rounded-full border border-rose-200 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-rose-600 disabled:opacity-60"
                   >
-                    Actions
+                    <span className="inline-flex items-center gap-1.5">
+                      <i className="fas fa-sliders" aria-hidden="true" />
+                      Actions
+                    </span>
                   </button>
                   <button
                     type="button"
@@ -297,7 +309,7 @@ const RequestsSection = ({
                       setHistoryModal(item)
                       fetchHistory(item.id)
                     }}
-                    className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:opacity-60"
+                    className="rounded-full border border-rose-200 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-rose-600 disabled:opacity-60"
                   >
                     <span className="inline-flex items-center gap-1">
                       <i className="fas fa-clock-rotate-left" aria-hidden="true" />
@@ -404,9 +416,12 @@ const RequestsSection = ({
                       type="button"
                       disabled={!canSubmit}
                       onClick={() => setActionsRequestId(item.id)}
-                      className="rounded-full border border-slate-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-600 disabled:opacity-60"
+                      className="rounded-full border border-slate-200 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-slate-600 disabled:opacity-60"
                     >
-                      Actions
+                      <span className="inline-flex items-center gap-1.5">
+                        <i className="fas fa-sliders" aria-hidden="true" />
+                        Actions
+                      </span>
                     </button>
                     <button
                       type="button"
@@ -415,7 +430,7 @@ const RequestsSection = ({
                         setHistoryModal(item)
                         fetchHistory(item.id)
                       }}
-                      className="rounded-full border border-slate-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-600 disabled:opacity-60"
+                      className="rounded-full border border-slate-200 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-slate-600 disabled:opacity-60"
                     >
                       <span className="inline-flex items-center gap-1">
                         <i className="fas fa-clock-rotate-left" aria-hidden="true" />
@@ -442,7 +457,30 @@ const RequestsSection = ({
             <p className="text-xs text-slate-500">
               Manage this request with grouped actions.
             </p>
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid gap-3">
+              <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                Stage
+                <select
+                  value={actionEdit.stage}
+                  onChange={(event) =>
+                    setRequestEdits((prev) => ({
+                      ...prev,
+                      [actionRequest.id]: {
+                        ...actionEdit,
+                        stage: event.target.value,
+                        assignedTo: '',
+                      },
+                    }))
+                  }
+                  className="mt-1 w-full rounded-xl border border-rose-200 bg-white px-3 py-2 pr-8 text-sm text-slate-700"
+                >
+                  {stageOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                 Assignee
                 <select
@@ -466,25 +504,8 @@ const RequestsSection = ({
                   ))}
                 </select>
               </label>
-              <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                Stage
-                <select
-                  value={actionEdit.stage}
-                  onChange={(event) =>
-                    setRequestEdits((prev) => ({
-                      ...prev,
-                      [actionRequest.id]: { ...actionEdit, stage: event.target.value },
-                    }))
-                  }
-                  className="mt-1 w-full rounded-xl border border-rose-200 bg-white px-3 py-2 pr-8 text-sm text-slate-700"
-                >
-                  {stageOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
               <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                 Status
                 <select
@@ -503,7 +524,7 @@ const RequestsSection = ({
                       <option key={option} value={option}>
                         {option.replace('_', ' ')}
                       </option>
-                    ))}
+                  ))}
                 </select>
               </label>
               <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">

@@ -19,7 +19,6 @@ export const AssignmentCard = memo(
     description,
     status,
     dueLabel,
-    requestedBy,
     referenceLabel,
     referenceUrl,
     active,
@@ -63,9 +62,6 @@ export const AssignmentCard = memo(
         </span>
         <span>
           Due: <strong className="text-slate-700">{dueLabel}</strong>
-        </span>
-        <span>
-          Requested by: <strong className="text-slate-700">{requestedBy}</strong>
         </span>
       </div>
     </article>
