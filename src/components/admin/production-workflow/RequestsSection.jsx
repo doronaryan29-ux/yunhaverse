@@ -99,22 +99,22 @@ const RequestsSection = ({
           <div className="grid gap-3 md:grid-cols-2">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                Request Status
+                Status
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {[
-                  { value: 'all', label: 'All Status' },
+                  { value: 'all', label: 'All' },
                   { value: 'open', label: 'Open' },
                   { value: 'accepted', label: 'Accepted' },
                   { value: 'submitted', label: 'Submitted' },
                   { value: 'declined', label: 'Declined' },
-                  { value: 'revision', label: 'Revision' },
+                  { value: 'revision', label: 'Revise' },
                 ].map((option) => (
                   <button
                     key={option.value}
                     type="button"
                     onClick={() => setRequestStatusFilter(option.value)}
-                    className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] ${
+                    className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] ${
                       requestStatusFilter === option.value
                         ? 'border-rose-400 bg-rose-500 text-white'
                         : 'border-rose-200 bg-white text-rose-500 hover:bg-rose-50'
@@ -127,19 +127,19 @@ const RequestsSection = ({
             </div>
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                Submission State
+                Submission
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {[
-                  { value: 'all', label: 'All Requests' },
-                  { value: 'with_submission', label: 'With Submission' },
-                  { value: 'no_submission', label: 'No Submission' },
+                  { value: 'all', label: 'All' },
+                  { value: 'with_submission', label: 'With Sub' },
+                  { value: 'no_submission', label: 'No Sub' },
                 ].map((option) => (
                   <button
                     key={option.value}
                     type="button"
                     onClick={() => setRequestSubmissionFilter(option.value)}
-                    className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] ${
+                    className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] ${
                       requestSubmissionFilter === option.value
                         ? 'border-rose-400 bg-rose-500 text-white'
                         : 'border-rose-200 bg-white text-rose-500 hover:bg-rose-50'
@@ -157,7 +157,7 @@ const RequestsSection = ({
               setRequestStatusFilter('all')
               setRequestSubmissionFilter('all')
             }}
-            className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500"
+            className="rounded-full border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-rose-500"
           >
             <span className="inline-flex items-center gap-1">
               <i className="fas fa-rotate-left" aria-hidden="true" />

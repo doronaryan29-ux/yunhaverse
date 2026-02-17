@@ -41,7 +41,7 @@ const coerceDateInManila = (value) => {
   if (typeof value !== 'string') return new Date(value)
 
   const trimmed = value.trim()
-  const hasTimeZone = /([zZ]|[+-]\\d{2}:?\\d{2})$/.test(trimmed)
+  const hasTimeZone = /([zZ]|[+-]\d{2}:?\d{2})$/.test(trimmed)
   if (hasTimeZone) return new Date(trimmed)
 
   const isoLike = trimmed.replace(' ', 'T')

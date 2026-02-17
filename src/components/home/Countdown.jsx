@@ -1,9 +1,20 @@
 import { useMemo, useState } from 'react'
 import useCountdown from '../../hooks/useCountdown'
+import { formatDateInManila } from '../../utils/date'
 
 const Countdown = ({ events }) => {
   const [activeCountdown, setActiveCountdown] = useState(0)
   const activeEvent = useMemo(() => events[activeCountdown], [events, activeCountdown])
+  const activeEventDateLabel = useMemo(
+    () =>
+      activeEvent?.label ||
+      formatDateInManila(activeEvent?.date, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }),
+    [activeEvent],
+  )
   const timeLeft = useCountdown(activeEvent.date)
 
   return (
@@ -23,7 +34,7 @@ const Countdown = ({ events }) => {
               Next Up
             </p>
             <h3 className="text-2xl font-semibold text-slate-900">{activeEvent.title}</h3>
-            <p className="text-sm text-slate-500">{activeEvent.label}</p>
+            <p className="text-sm text-slate-500">{activeEventDateLabel}</p>
             <span
               className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
                 timeLeft.isOver

@@ -21,7 +21,7 @@ const MembersFilters = ({
 
   return (
     <div className="mt-4">
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-2">
         <button
           type="button"
           onClick={() => setFiltersOpen((prev) => !prev)}
@@ -37,7 +37,7 @@ const MembersFilters = ({
           </span>
         </button>
         {hasActiveFilters ? (
-          <span className="rounded-full bg-rose-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500">
+          <span className="rounded-full bg-rose-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-rose-500">
             Active
           </span>
         ) : null}
@@ -107,7 +107,7 @@ const MembersFilters = ({
                 setStatusFilter('all')
                 setVerifiedFilter('all')
               }}
-              className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500"
+              className="rounded-full border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-rose-500"
             >
               Clear All
             </button>

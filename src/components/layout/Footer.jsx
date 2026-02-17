@@ -2,6 +2,7 @@ import { useAppSettings } from '../../hooks/useAppSettings'
 
 const Footer = () => {
   const { settings } = useAppSettings()
+  const currentYear = new Date().getFullYear()
 
   return (
     <footer className="border-t border-pink-100 bg-white/80 py-10">
@@ -57,8 +58,8 @@ const Footer = () => {
       </div>
 
         <div className="text-xs text-slate-400">
-          <p>&copy; 2026 {settings.appName}. All rights reserved.</p>
-          <p>Made with ❤️ by the {settings.appName} Team</p>
+          <p>&copy; {currentYear} {settings.appName}. All rights reserved.</p>
+          <p>Made with love by the {settings.appName} Team</p>
         </div>
       </div>
     </footer>

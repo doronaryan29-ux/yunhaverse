@@ -55,23 +55,49 @@ export const fanartItems = [
   },
 ]
 
+const MANILA_TIME_ZONE = 'Asia/Manila'
+
+const getManilaTodayMonthDay = () => {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: MANILA_TIME_ZONE,
+    month: 'numeric',
+    day: 'numeric',
+  }).formatToParts(new Date())
+  const month = Number(parts.find((part) => part.type === 'month')?.value || 1)
+  const day = Number(parts.find((part) => part.type === 'day')?.value || 1)
+  return { month, day }
+}
+
+const getNextOccurrenceIso = (month, day) => {
+  const now = new Date()
+  const year = Number(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: MANILA_TIME_ZONE,
+      year: 'numeric',
+    }).format(now),
+  )
+  const today = getManilaTodayMonthDay()
+  const isPastThisYear = month < today.month || (month === today.month && day < today.day)
+  const nextYear = isPastThisYear ? year + 1 : year
+  const mm = String(month).padStart(2, '0')
+  const dd = String(day).padStart(2, '0')
+  return `${nextYear}-${mm}-${dd}T00:00:00+08:00`
+}
+
 export const countdownEvents = [
   {
     title: "Yunha's Birthday",
-    date: '2026-08-21T00:00:00+08:00',
+    date: '2026-02-28T00:00:00+08:00',
     icon: 'fa-birthday-cake',
-    label: 'February 28, 2026',
   },
   {
     title: 'UNIS Comeback',
-    date: '2026-07-15T00:00:00+08:00',
+    date: getNextOccurrenceIso(7, 15),
     icon: 'fa-music',
-    label: 'July 15, 2026',
   },
   {
     title: 'UNIS Fan Concert in Manila',
-    date: '2026-06-10T00:00:00+08:00',
+    date: getNextOccurrenceIso(6, 10),
     icon: 'fa-users',
-    label: 'June 10, 2026',
   },
 ]
