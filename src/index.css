@@ -9,8 +9,30 @@
     overflow-x: hidden;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply font-sans antialiased;
+    background-color: #fff0f5;
+    position: relative;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAiIGhlaWdodD0iMTYwIiB2aWV3Qm94PSIwIDAgMTYwIDE2MCI+PGZpbHRlciBpZD0ibiI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuOSIgbnVtT2N0YXZlcz0iMiIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxNjAiIGhlaWdodD0iMTYwIiBmaWx0ZXI9InVybCgjbikiIG9wYWNpdHk9IjAuOCIvPjwvc3ZnPg==");
+    background-size: 160px 160px;
+    z-index: 0;
+  }
+
+  #root {
+    position: relative;
+    z-index: 1;
   }
 
   img,
@@ -19,6 +41,16 @@
   svg {
     max-width: 100%;
     height: auto;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
   }
 }
 

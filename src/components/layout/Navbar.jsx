@@ -2,12 +2,12 @@ import { useMemo, useState } from 'react'
 import { useAppSettings } from '../../hooks/useAppSettings'
 
 const navItems = [
-  'Home',
-  'Events',
-  'Members Profile',
-  'Gallery',
-  'Blog',
-  'About',
+  { label: 'Home', href: '#home', keywords: ['start', 'top'] },
+  { label: 'Highlights', href: '#highlights', keywords: ['carousel', 'featured'] },
+  { label: 'Gallery', href: '#gallery', keywords: ['fanart', 'art'] },
+  { label: 'Countdown', href: '#countdown', keywords: ['dates', 'timer'] },
+  { label: 'Events', href: '#events', keywords: ['calendar', 'schedule'] },
+  { label: 'Contact', href: '#footer-contact', keywords: ['email', 'footer'] },
 ]
 
 const AUTH_MAX_AGE_MS = 12 * 60 * 60 * 1000
@@ -98,6 +98,12 @@ const Navbar = () => {
     }
   }, [])
   const initials = useMemo(() => getUserInitials(user), [user])
+  const navigateTo = (href) => {
+    if (!href) return
+    setMenuOpen(false)
+    setProfileOpen(false)
+    window.location.replace(`/${href}`)
+  }
 
   const handleSignOut = () => {
     sessionStorage.removeItem('user')
@@ -129,39 +135,36 @@ const Navbar = () => {
         />
       )}
       <nav className="sticky top-0 z-40 border-b border-pink-100 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
+        <div className="flex w-full items-center justify-between px-4 py-3 sm:px-6 lg:px-10">
           <div className="flex items-center gap-3">
             <img
               src={settings.logoUrl}
               alt={`${settings.appName} Logo`}
               className="h-10 w-10 rounded-full object-cover shadow"
             />
-            <span className="font-display text-lg font-semibold tracking-wide text-rose-600">
+            <span className="max-w-[180px] truncate font-display text-lg font-semibold tracking-wide text-rose-600 sm:max-w-none">
               {settings.appName}
             </span>
           </div>
-          <div className="hidden items-center gap-6 text-sm font-semibold uppercase tracking-[0.2em] text-slate-600 md:flex">
+          <div className="hidden items-center gap-8 text-sm font-semibold uppercase tracking-[0.12em] text-slate-600 lg:flex">
             {navItems.map((item, index) => (
-              <a
-                key={item}
-                href={
-                  item === 'Home'
-                    ? '#home'
-                    : `${item.toLowerCase().replace(/\s+/g, '')}.php`
-                }
+              <button
+                key={item.label}
+                type="button"
+                onClick={() => navigateTo(item.href)}
                 className={
                   index === 0
                     ? 'text-rose-500'
                     : 'transition hover:text-rose-500'
                 }
               >
-                {item}
-              </a>
+                {item.label}
+              </button>
             ))}
             {!user ? (
               <a
                 href={authLink.href}
-                className="rounded-full bg-rose-500 px-4 py-2 text-xs font-semibold tracking-[0.2em] text-white shadow-lg shadow-rose-200 transition hover:-translate-y-0.5"
+                className="rounded-full bg-rose-500 px-5 py-2 text-xs font-semibold tracking-[0.16em] text-white shadow-lg shadow-rose-200 transition hover:-translate-y-0.5"
               >
                 {authLink.label}
               </a>
@@ -219,7 +222,7 @@ const Navbar = () => {
           </div>
           <button
             type="button"
-            className="flex flex-col gap-1.5 md:hidden"
+            className="flex flex-col gap-1.5 lg:hidden"
             aria-label="Toggle menu"
             onClick={() => setMenuOpen((prev) => !prev)}
           >
@@ -229,21 +232,17 @@ const Navbar = () => {
           </button>
         </div>
         {menuOpen && (
-          <div className="border-t border-pink-100 bg-white px-4 pb-6 pt-4 md:hidden">
+          <div className="border-t border-pink-100 bg-white px-4 pb-6 pt-4 lg:hidden">
             <div className="flex flex-col gap-4 text-sm font-semibold uppercase tracking-[0.2em] text-slate-700">
               {navItems.map((item, index) => (
-                <a
-                  key={item}
-                  href={
-                    item === 'Home'
-                      ? '#home'
-                      : `${item.toLowerCase().replace(/\s+/g, '')}.php`
-                  }
-                  className={index === 0 ? 'text-rose-500' : ''}
-                  onClick={() => setMenuOpen(false)}
+                <button
+                  key={item.label}
+                  type="button"
+                  className={index === 0 ? 'text-rose-500 text-left' : 'text-left'}
+                  onClick={() => navigateTo(item.href)}
                 >
-                  {item}
-                </a>
+                  {item.label}
+                </button>
               ))}
               {!user ? (
                 <a

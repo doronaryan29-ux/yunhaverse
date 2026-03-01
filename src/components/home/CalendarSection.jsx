@@ -119,7 +119,10 @@ const CalendarSection = () => {
   }, [])
 
   return (
-    <section className="flex flex-col gap-6">
+    <section
+      id="events"
+      className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 scroll-mt-28"
+    >
       <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.5em] text-rose-500">
@@ -219,7 +222,7 @@ const CalendarSection = () => {
         </div>
       </div>
       <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr]">
-        <div className="rounded-3xl border border-pink-100 bg-white p-6 shadow-xl">
+        <div className="rounded-3xl border border-pink-100 bg-white p-4 shadow-xl sm:p-6">
           <div className="flex items-center justify-between border-b border-pink-100 pb-4">
             <button
               type="button"
@@ -264,50 +267,54 @@ const CalendarSection = () => {
               <i className="fas fa-chevron-right" />
             </button>
           </div>
-          <div className="mt-6 grid grid-cols-7 gap-y-3 text-center text-xs font-semibold uppercase text-slate-400">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-              <div key={day}>{day}</div>
-            ))}
-          </div>
-          <div className="mt-4 grid grid-cols-7 gap-2 text-center text-sm">
-            {calendarDays.map((day) => {
-              const iso = toISODate(day.date)
-              const hasEvent = Boolean(eventsByDate[iso])
-              const isToday = iso === toISODate(today)
-              const isSelected = iso === selectedISO
-              return (
-                <button
-                  key={iso}
-                  type="button"
-                  onClick={() => {
-                    setSelectedDate(day.date)
-                    setEventScope('selected')
-                  }}
-                  className={`flex flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 transition ${
-                    day.inMonth ? 'text-slate-700' : 'text-slate-300'
-                  } ${
-                    isSelected
-                      ? 'bg-rose-500 text-white shadow-lg shadow-rose-200'
-                      : 'hover:bg-rose-50'
-                  }`}
-                >
-                  <span className={isToday ? 'font-semibold' : ''}>
-                    {day.date.getDate()}
-                  </span>
-                  {hasEvent && (
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full ${
-                        isSelected ? 'bg-white' : 'bg-rose-400'
+          <div className="mt-6 overflow-x-auto pb-1">
+            <div className="min-w-[420px]">
+              <div className="grid grid-cols-7 gap-y-3 text-center text-xs font-semibold uppercase text-slate-400">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                  <div key={day}>{day}</div>
+                ))}
+              </div>
+              <div className="mt-4 grid grid-cols-7 gap-2 text-center text-sm">
+                {calendarDays.map((day) => {
+                  const iso = toISODate(day.date)
+                  const hasEvent = Boolean(eventsByDate[iso])
+                  const isToday = iso === toISODate(today)
+                  const isSelected = iso === selectedISO
+                  return (
+                    <button
+                      key={iso}
+                      type="button"
+                      onClick={() => {
+                        setSelectedDate(day.date)
+                        setEventScope('selected')
+                      }}
+                      className={`flex flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 transition ${
+                        day.inMonth ? 'text-slate-700' : 'text-slate-300'
+                      } ${
+                        isSelected
+                          ? 'bg-rose-500 text-white shadow-lg shadow-rose-200'
+                          : 'hover:bg-rose-50'
                       }`}
-                    />
-                  )}
-                </button>
-              )
-            })}
+                    >
+                      <span className={isToday ? 'font-semibold' : ''}>
+                        {day.date.getDate()}
+                      </span>
+                      {hasEvent && (
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full ${
+                            isSelected ? 'bg-white' : 'bg-rose-400'
+                          }`}
+                        />
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="rounded-3xl border border-pink-100 bg-white p-6 shadow-xl">
+        <div className="rounded-3xl border border-pink-100 bg-white p-4 shadow-xl sm:p-6">
           <h4 className="font-display text-xl font-semibold text-slate-900">
             {eventScope === 'selected'
               ? 'Events on Selected Date'
@@ -319,7 +326,7 @@ const CalendarSection = () => {
             {displayedEvents.map((event) => (
               <div
                 key={event.id ?? event.title}
-                className="flex gap-4 rounded-2xl border border-rose-100 bg-rose-50/60 p-4"
+                className="flex flex-col gap-3 rounded-2xl border border-rose-100 bg-rose-50/60 p-4 sm:flex-row sm:gap-4"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-sm font-semibold text-rose-500">
                   {formatDateInManila(event.start_at, {

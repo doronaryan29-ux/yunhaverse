@@ -41,4 +41,12 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'spotify' => [
+        'client_id' => env('SPOTIFY_CLIENT_ID'),
+        'client_secret' => env('SPOTIFY_CLIENT_SECRET'),
+        'artist_id' => env('UNIS_ARTIST_ID'),
+        'playlist_id' => env('UNIS_PLAYLIST_ID'),
+        'featured_track_id' => env('FEATURED_TRACK_ID'),
+    ],
+
 ];

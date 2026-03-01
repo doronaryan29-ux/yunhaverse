@@ -18,7 +18,10 @@ const Countdown = ({ events }) => {
   const timeLeft = useCountdown(activeEvent.date)
 
   return (
-    <section className="flex flex-col gap-8">
+    <section
+      id="countdown"
+      className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 scroll-mt-28"
+    >
       <div className="text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.5em] text-rose-500">
           Keep The Hype
@@ -27,7 +30,7 @@ const Countdown = ({ events }) => {
           Countdown to Important Dates
         </h2>
       </div>
-      <div className="rounded-3xl border border-pink-100 bg-white p-8 shadow-xl">
+      <div className="rounded-3xl border border-pink-100 bg-white p-5 shadow-xl sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-[0.4em] text-rose-500">
@@ -45,7 +48,7 @@ const Countdown = ({ events }) => {
               {timeLeft.isOver ? 'This event has passed' : 'Incoming'}
             </span>
           </div>
-          <div className="grid grid-cols-4 gap-3 text-center">
+          <div className="grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
             {[
               { label: 'Days', value: timeLeft.days },
               { label: 'Hours', value: timeLeft.hours },

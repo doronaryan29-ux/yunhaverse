@@ -4,7 +4,10 @@ const Hero = () => {
   const { settings } = useAppSettings()
 
   return (
-    <header id="home" className="flex flex-col items-center gap-6 text-center">
+    <header
+      id="home"
+      className="mx-auto flex w-full max-w-6xl flex-col items-center gap-6 px-6 text-center scroll-mt-28"
+    >
       <img
         src={settings.logoUrl}
         alt={`${settings.appName} Logo`}

@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AdminDataController;
 use App\Http\Controllers\DonationsController;
+use App\Http\Controllers\Api\SpotifyController;
 
 Route::get('/health', function () {
     return response()->json(['ok' => true]);
@@ -56,6 +57,8 @@ Route::post('/donations', [DonationsController::class, 'store']);
 Route::post('/admin/donations', [DonationsController::class, 'storeAdmin']);
 Route::post('/admin/donations/{id}', [DonationsController::class, 'updateAdmin']);
 Route::post('/admin/donations/{id}/delete', [DonationsController::class, 'deleteAdmin']);
+Route::get('/spotify/tracks', [SpotifyController::class, 'tracks']);
+Route::get('/spotify/featured', [SpotifyController::class, 'featuredTrack']);
 
 Route::options('/{any}', function () {
     return response()->noContent();

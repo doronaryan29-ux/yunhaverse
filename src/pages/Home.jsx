@@ -1,10 +1,13 @@
 import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
+import AnnouncementBanner from '../components/layout/AnnouncementBanner'
+import FloatingParticles from '../components/layout/FloatingParticles'
 import Hero from '../components/home/Hero'
 import Carousel from '../components/home/Carousel'
 import FanartShowcase from '../components/home/FanartShowcase'
 import Countdown from '../components/home/Countdown'
 import CalendarSection from '../components/home/CalendarSection'
+import PlayerBar from '../components/PlayerBar'
 import {
   carouselItems,
   countdownEvents,
@@ -12,23 +15,23 @@ import {
 } from '../data/homeData'
 
 const Home = () => (
-  <div className="min-h-screen bg-linear-to-b from-rose-50 via-pink-50 to-amber-50 text-slate-800">
-    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      <div className="absolute -left-20 top-24 h-72 w-72 rounded-full bg-pink-200/40 blur-3xl" />
-      <div className="absolute right-0 top-80 h-96 w-96 rounded-full bg-amber-200/40 blur-3xl" />
+  <div className="min-h-screen bg-[#FFF0F5] text-slate-800">
+    <FloatingParticles />
+    <div className="relative z-10 pb-28">
+      <AnnouncementBanner />
+      <Navbar />
+
+      <main className="flex w-full flex-col gap-12 pb-16 pt-8 sm:gap-16 sm:pt-10">
+        <Hero />
+        <Carousel items={carouselItems} />
+        <FanartShowcase items={fanartItems} />
+        <Countdown events={countdownEvents} />
+        <CalendarSection />
+      </main>
+
+      <Footer />
+      <PlayerBar />
     </div>
-
-    <Navbar />
-
-    <main className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-4 pb-16 pt-10">
-      <Hero />
-      <Carousel items={carouselItems} />
-      <FanartShowcase items={fanartItems} />
-      <Countdown events={countdownEvents} />
-      <CalendarSection />
-    </main>
-
-    <Footer />
   </div>
 )
 

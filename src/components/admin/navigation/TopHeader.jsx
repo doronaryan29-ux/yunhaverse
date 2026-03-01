@@ -13,7 +13,7 @@ const TopHeader = ({
   onMarkNotificationRead,
 }) => (
   <header
-    className={`sticky top-0 z-20 rounded-3xl border px-6 py-4 shadow-sm backdrop-blur ${
+    className={`sticky top-0 z-20 rounded-3xl border px-4 py-4 shadow-sm backdrop-blur sm:px-6 ${
       isProfileRoute
         ? 'border-rose-200 bg-rose-50/70 ring-1 ring-rose-200'
         : 'border-rose-100 bg-white/95'
@@ -29,11 +29,11 @@ const TopHeader = ({
         </h2>
       </div>
 
-      <div className="relative flex items-center gap-3">
+      <div className="relative flex w-full items-center justify-end gap-3 sm:w-auto">
         <button
           type="button"
           onClick={onGoHome}
-          className="flex items-center gap-2 rounded-xl border border-rose-100 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-slate-600 transition hover:-translate-y-0.5 hover:bg-rose-50"
+          className="flex items-center gap-2 rounded-xl border border-rose-100 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600 transition hover:-translate-y-0.5 hover:bg-rose-50 sm:text-xs sm:tracking-[0.22em]"
         >
           <i className="fas fa-house text-[11px] text-rose-500" />
           Home

@@ -25,7 +25,7 @@ const SidebarNav = ({
 }) => (
   <>
     {collapsed && (
-      <div className="group fixed left-0 top-0 z-40 h-screen w-14">
+      <div className="group fixed left-0 top-0 z-40 hidden h-screen w-14 lg:block">
         <div className="pointer-events-none absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-rose-200/70 via-rose-300/60 to-rose-200/70 opacity-70 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100" />
         <button
           type="button"
@@ -41,7 +41,7 @@ const SidebarNav = ({
 
     <div
       className={`relative shrink-0 overflow-hidden transition-all duration-300 ease-out ${
-        collapsed ? 'w-0 opacity-0 lg:w-0' : 'w-full opacity-100 lg:w-80'
+        collapsed ? 'w-0 opacity-0 lg:w-0 lg:opacity-0' : 'w-full opacity-100 lg:w-80'
       }`}
     >
       <aside className="w-full lg:w-80">
@@ -53,7 +53,7 @@ const SidebarNav = ({
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-rose-100 text-rose-500 transition hover:bg-rose-50"
+              className="hidden h-8 w-8 items-center justify-center rounded-full border border-rose-100 text-rose-500 transition hover:bg-rose-50 lg:flex"
               aria-label="Hide sidebar"
               title="Hide sidebar"
             >

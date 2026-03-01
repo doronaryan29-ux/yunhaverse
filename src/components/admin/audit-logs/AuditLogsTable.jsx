@@ -2,14 +2,15 @@ import { memo } from 'react'
 import { formatDateTimeInManila } from '../../../utils/date'
 
 const AuditLogsTable = ({ items, loading }) => (
-  <div className="mt-5 overflow-hidden rounded-2xl border border-rose-100">
-    <div className="grid grid-cols-[1.2fr_0.9fr_1fr_1fr] gap-3 bg-rose-50/70 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-      <span>Action</span>
-      <span>Actor</span>
-      <span>Entity</span>
-      <span>Timestamp</span>
-    </div>
-    <div className="max-h-[520px] overflow-y-auto">
+  <div className="mt-5 overflow-x-auto rounded-2xl border border-rose-100">
+    <div className="min-w-[760px]">
+      <div className="grid grid-cols-[1.2fr_0.9fr_1fr_1fr] gap-3 bg-rose-50/70 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+        <span>Action</span>
+        <span>Actor</span>
+        <span>Entity</span>
+        <span>Timestamp</span>
+      </div>
+      <div className="max-h-[520px] overflow-y-auto">
       {loading && (
         <p className="px-4 py-6 text-sm text-slate-500">Loading audit logs...</p>
       )}
@@ -53,6 +54,7 @@ const AuditLogsTable = ({ items, loading }) => (
             </div>
           </div>
         ))}
+      </div>
     </div>
   </div>
 )

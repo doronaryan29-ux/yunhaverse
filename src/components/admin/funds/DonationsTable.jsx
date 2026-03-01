@@ -22,15 +22,16 @@ const DonationsTable = ({
       </span>
     </div>
 
-    <div className="mt-5 overflow-hidden rounded-2xl border border-rose-100">
-      <div className="grid grid-cols-[1.4fr_0.9fr_1.1fr_1fr_0.9fr] gap-3 bg-rose-50/70 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-        <span>Donor</span>
-        <span>Amount</span>
-        <span>Status</span>
-        <span>Channel</span>
-        <span>Date</span>
-      </div>
-      <div className="max-h-96 overflow-y-auto">
+    <div className="mt-5 overflow-x-auto rounded-2xl border border-rose-100">
+      <div className="min-w-[860px]">
+        <div className="grid grid-cols-[1.4fr_0.9fr_1.1fr_1fr_0.9fr] gap-3 bg-rose-50/70 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+          <span>Donor</span>
+          <span>Amount</span>
+          <span>Status</span>
+          <span>Channel</span>
+          <span>Date</span>
+        </div>
+        <div className="max-h-96 overflow-y-auto">
         {loading && <p className="px-4 py-6 text-sm text-slate-500">Loading donations...</p>}
         {!loading && items.length === 0 && (
           <p className="px-4 py-6 text-sm text-slate-500">No donations yet.</p>
@@ -101,6 +102,7 @@ const DonationsTable = ({
               </div>
             )
           })}
+        </div>
       </div>
     </div>
   </section>

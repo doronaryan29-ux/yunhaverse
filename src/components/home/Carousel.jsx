@@ -12,7 +12,10 @@ const Carousel = ({ items }) => {
   }, [items.length])
 
   return (
-    <section className="flex flex-col gap-6">
+    <section
+      id="highlights"
+      className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 scroll-mt-28"
+    >
       <div className="relative overflow-hidden rounded-3xl border border-pink-100 bg-white shadow-xl">
         <div
           className="flex transition-transform duration-700"

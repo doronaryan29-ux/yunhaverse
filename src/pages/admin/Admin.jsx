@@ -160,7 +160,7 @@ const Admin = () => {
 
   return (
     <main className="min-h-screen text-slate-800">
-      <div className="mx-auto flex min-h-screen w-full max-w-none flex-col py-6 sm:py-8 lg:flex-row lg:gap-4">
+      <div className="mx-auto flex min-h-screen w-full max-w-none flex-col px-3 py-5 sm:px-4 sm:py-8 lg:flex-row lg:gap-4 lg:px-6">
         <SidebarNav
           navItems={navItems}
           activeItem={activeNavItem}
@@ -175,7 +175,7 @@ const Admin = () => {
           onToggleSidebar={() => setSidebarCollapsed((prev) => !prev)}
         />
 
-        <section className="mt-8 flex-1 space-y-6 lg:mt-0">
+        <section className="mt-6 flex-1 space-y-6 lg:mt-0">
           <TopHeader
             isProfileRoute={isProfileRoute}
             notificationsOpen={notificationsOpen}

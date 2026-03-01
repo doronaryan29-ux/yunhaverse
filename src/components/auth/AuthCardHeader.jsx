@@ -1,6 +1,6 @@
 const AuthCardHeader = ({ isOtpRoute, mode, onSelectMode }) => (
-  <div className="flex items-center justify-between gap-4">
-    <div>
+  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="w-full sm:w-auto">
       <p className="text-xs font-semibold uppercase tracking-[0.4em] text-rose-500">
         {isOtpRoute
           ? 'OTP Verification'
