@@ -23,11 +23,12 @@ const Carousel = ({ items }) => {
         >
           {items.map((item) => (
             <div key={item.alt} className="min-w-full">
-              <div className="relative h-64 w-full sm:h-80">
+              <div className="relative h-96 w-full sm:h-[28rem] md:h-[32rem]">
                 <img
                   src={item.src}
                   alt={item.alt}
                   className="h-full w-full object-cover"
+                  style={{ objectPosition: item.objectPosition || '50% 20%' }}
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-slate-900/60 via-transparent to-transparent" />
                 <div className="absolute bottom-6 left-6 text-white">

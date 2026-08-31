@@ -3,16 +3,19 @@ export const carouselItems = [
     src: '/image/hbdyunha.png',
     alt: 'Happy Birthday Yunha',
     caption: 'Happy Birthday Yunha',
+    objectPosition: '50% 28%',
   },
   {
     src: '/image/yunha28days.png',
     alt: 'Yunha 28 Days',
     caption: 'Yunha 28 Days',
+    objectPosition: '50% 55%',
   },
   {
     src: '/image/yunhacse.png',
     alt: 'Yunha CSE',
     caption: 'Yunha CSE',
+    objectPosition: '50% 20%',
   },
 ]
 

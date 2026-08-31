@@ -57,12 +57,12 @@ const Countdown = ({ events }) => {
             ].map((item) => (
               <div
                 key={item.label}
-                className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3"
+                className="rounded-2xl border border-rose-100 bg-rose-50 px-3 py-2.5"
               >
-                <div className="text-2xl font-semibold text-slate-900">
+                <div className="font-display text-2xl font-bold leading-none tracking-tight text-slate-900 tabular-nums sm:text-3xl">
                   {String(item.value).padStart(2, '0')}
                 </div>
-                <div className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                <div className="mt-1.5 text-[10px] uppercase tracking-[0.2em] text-slate-500 sm:text-xs">
                   {item.label}
                 </div>
               </div>

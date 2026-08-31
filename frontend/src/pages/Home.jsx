@@ -1,13 +1,11 @@
 import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
-import AnnouncementBanner from '../components/layout/AnnouncementBanner'
 import FloatingParticles from '../components/layout/FloatingParticles'
 import Hero from '../components/home/Hero'
 import Carousel from '../components/home/Carousel'
 import FanartShowcase from '../components/home/FanartShowcase'
 import Countdown from '../components/home/Countdown'
 import CalendarSection from '../components/home/CalendarSection'
-import PlayerBar from '../components/PlayerBar'
 import {
   carouselItems,
   countdownEvents,
@@ -15,13 +13,12 @@ import {
 } from '../data/homeData'
 
 const Home = () => (
-  <div className="min-h-screen bg-[#FFF0F5] text-slate-800">
+  <div className="min-h-screen bg-[#FFF9FB] text-slate-800">
     <FloatingParticles />
-    <div className="relative z-10 pb-28">
-      <AnnouncementBanner />
+    <div className="relative z-10">
       <Navbar />
 
-      <main className="flex w-full flex-col gap-12 pb-16 pt-8 sm:gap-16 sm:pt-10">
+      <main className="flex w-full flex-col gap-20 pb-20 pt-14 sm:gap-24 sm:pt-20">
         <Hero />
         <Carousel items={carouselItems} />
         <FanartShowcase items={fanartItems} />
@@ -30,7 +27,6 @@ const Home = () => (
       </main>
 
       <Footer />
-      <PlayerBar />
     </div>
   </div>
 )
