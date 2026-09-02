@@ -9,7 +9,7 @@ const DEFAULT_SETTINGS = {
   appName: 'YunhaVerse',
   logoUrl: '',
   homepageHeadline: 'Welcome to YunhaVerse',
-  homepageSubheadline: 'A place for creators to thrive.',
+  homepageSubheadline: 'The official Filipino fanbase celebrating and supporting UNIS’ Bang Yunha.',
   primaryColor: '#0f172a',
 }
 
@@ -150,10 +150,11 @@ const SettingsPage = ({ apiBase, requesterRole, userId, onSaved }) => {
     setRoles((prev) =>
       prev.map((role) => {
         if (role.id !== roleId) return role
-        const hasPermission = role.permissions.includes(permissionId)
+        const currentPermissions = role.permissions || []
+        const hasPermission = currentPermissions.includes(permissionId)
         const nextPermissions = hasPermission
-          ? role.permissions.filter((permission) => permission !== permissionId)
-          : [...role.permissions, permissionId]
+          ? currentPermissions.filter((permission) => permission !== permissionId)
+          : [...currentPermissions, permissionId]
         return { ...role, permissions: nextPermissions }
       }),
     )

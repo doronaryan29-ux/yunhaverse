@@ -32,7 +32,7 @@ const RequestFormModal = ({
           onChange={(event) =>
             setRequestForm((prev) => ({ ...prev, title: event.target.value }))
           }
-          className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+          className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
           placeholder="Request title"
         />
       </label>
@@ -46,7 +46,7 @@ const RequestFormModal = ({
               description: event.target.value,
             }))
           }
-          className="mt-1 h-24 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+          className="mt-1 h-24 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
           placeholder="Describe the request"
         />
       </label>
@@ -62,7 +62,7 @@ const RequestFormModal = ({
                 assignedTo: '',
               }))
             }
-            className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 pr-8 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
           >
             {stageOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -81,7 +81,7 @@ const RequestFormModal = ({
                 assignedTo: event.target.value,
               }))
             }
-            className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 pr-8 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
           >
             <option value="">Unassigned</option>
             {getMembersForStage(requestForm.stage).map((member) => (
@@ -103,7 +103,7 @@ const RequestFormModal = ({
                 priority: event.target.value,
               }))
             }
-            className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 pr-8 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
           >
             {priorityOptions.map((option) => (
               <option key={option} value={option}>
@@ -122,7 +122,7 @@ const RequestFormModal = ({
                 status: event.target.value,
               }))
             }
-            className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 pr-8 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
           >
             {statusOptions.map((option) => (
               <option key={option} value={option}>
@@ -142,7 +142,7 @@ const RequestFormModal = ({
                 dueAt: event.target.value,
               }))
             }
-            className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
           />
         </label>
       </div>
@@ -150,14 +150,14 @@ const RequestFormModal = ({
         <button
           type="button"
           onClick={onClose}
-          className="rounded-xl border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50"
+          className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-slate-600 transition motion-safe:active:scale-[0.97] hover:bg-slate-50"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={!canSubmit || submitting}
-          className="rounded-xl bg-rose-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white shadow-lg shadow-rose-200 transition hover:-translate-y-0.5 disabled:opacity-70"
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white transition motion-safe:active:scale-[0.97] hover:bg-indigo-700 disabled:opacity-70"
         >
           {submitting ? 'Saving...' : 'Create Request'}
         </button>

@@ -226,7 +226,7 @@ class AdminDataController extends Controller
         }
 
         if (in_array('status', $columns, true)) {
-            $query->whereRaw('LOWER(COALESCE(status, "")) IN (?, ?)', ['published', 'active']);
+            $query->whereRaw("LOWER(COALESCE(status, '')) IN (?, ?)", ['published', 'active']);
         }
 
         $rows = $query->limit($limit)->get();
@@ -268,7 +268,7 @@ class AdminDataController extends Controller
         // Admin directory should show all users; staff views stay scoped.
         if ($requesterRole !== 'admin') {
             $query->whereRaw(
-                'LOWER(COALESCE(role, "")) IN (?, ?, ?, ?, ?)',
+                "LOWER(COALESCE(role, '')) IN (?, ?, ?, ?, ?)",
                 ['member', 'creative', 'copywriter', 'sns_updater', 'sns updater']
             );
         }
@@ -384,10 +384,10 @@ class AdminDataController extends Controller
             ->orderByDesc('cr.created_at');
 
         if ($status) {
-            $query->whereRaw('LOWER(COALESCE(cr.status, "")) = ?', [$status]);
+            $query->whereRaw("LOWER(COALESCE(cr.status, '')) = ?", [$status]);
         }
         if ($stage) {
-            $query->whereRaw('LOWER(COALESCE(cr.stage, "")) = ?', [$stage]);
+            $query->whereRaw("LOWER(COALESCE(cr.stage, '')) = ?", [$stage]);
         }
         if ($assignedTo !== null && $assignedTo !== '') {
             $query->where('cr.assigned_to', (int) $assignedTo);
@@ -593,10 +593,10 @@ class AdminDataController extends Controller
             ->orderByDesc('cs.created_at');
 
         if ($status) {
-            $query->whereRaw('LOWER(COALESCE(cs.status, "")) = ?', [$status]);
+            $query->whereRaw("LOWER(COALESCE(cs.status, '')) = ?", [$status]);
         }
         if ($stage) {
-            $query->whereRaw('LOWER(COALESCE(cs.stage, "")) = ?', [$stage]);
+            $query->whereRaw("LOWER(COALESCE(cs.stage, '')) = ?", [$stage]);
         }
         if ($requestId !== null && $requestId !== '') {
             $query->where('cs.request_id', (int) $requestId);
@@ -1096,7 +1096,7 @@ class AdminDataController extends Controller
             ->where(function ($query) use ($successfulStatuses) {
                 $query->whereNull('status')
                     ->orWhereRaw(
-                        'LOWER(TRIM(COALESCE(status, ""))) IN (?, ?, ?, ?)',
+                        "LOWER(TRIM(COALESCE(status, ''))) IN (?, ?, ?, ?)",
                         $successfulStatuses
                     );
             })
@@ -1108,7 +1108,7 @@ class AdminDataController extends Controller
             ->where(function ($query) use ($successfulStatuses) {
                 $query->whereNull('status')
                     ->orWhereRaw(
-                        'LOWER(TRIM(COALESCE(status, ""))) IN (?, ?, ?, ?)',
+                        "LOWER(TRIM(COALESCE(status, ''))) IN (?, ?, ?, ?)",
                         $successfulStatuses
                     );
             })
@@ -1116,7 +1116,7 @@ class AdminDataController extends Controller
             ->sum('amount');
 
         $pendingCount = (int) DB::table('donations')
-            ->whereRaw('LOWER(TRIM(COALESCE(status, ""))) IN (?, ?)', ['pending', 'processing'])
+            ->whereRaw("LOWER(TRIM(COALESCE(status, ''))) IN (?, ?)", ['pending', 'processing'])
             ->count();
 
         $goalProgress = $monthlyGoal > 0
@@ -1256,7 +1256,7 @@ class AdminDataController extends Controller
 
         $query = DB::table('events')->select($selectColumns);
         if (in_array('status', $columns, true)) {
-            $query->whereRaw('LOWER(COALESCE(status, "")) IN (?, ?)', ['published', 'active']);
+            $query->whereRaw("LOWER(COALESCE(status, '')) IN (?, ?)", ['published', 'active']);
         }
 
         $rows = $query

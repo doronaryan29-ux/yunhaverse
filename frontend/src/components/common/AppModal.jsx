@@ -1,5 +1,15 @@
 import { memo, useEffect, useState } from 'react'
 
+// iOS-style drawer curve (Ionic Framework) — confident deceleration, no overshoot.
+// Written as one complete literal class string: Tailwind's build-time scanner
+// only picks up arbitrary values that appear whole in the source, not ones
+// assembled from separate interpolated fragments.
+const DRAWER_EASING_CLASS = 'ease-[cubic-bezier(0.32,0.72,0,1)]'
+
+const ENTER_MS = 300
+const EXIT_MS = 200
+const BACKDROP_MS = 300
+
 const AppModal = ({
   open,
   onClose,
@@ -9,30 +19,63 @@ const AppModal = ({
   children,
   footer,
   variant = 'center',
+  panelClassName,
 }) => {
   const [shouldRender, setShouldRender] = useState(open)
-  const [isVisible, setIsVisible] = useState(false)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(
+    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  )
 
   const isDrawer = variant === 'drawer-right'
-  const panelTransitionMs = 300
-  const backdropTransitionMs = 360
 
   useEffect(() => {
+    const mql = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const handleChange = (event) => setPrefersReducedMotion(event.matches)
+    mql.addEventListener('change', handleChange)
+    return () => mql.removeEventListener('change', handleChange)
+  }, [])
+
+  // Mount immediately on open; delay unmount on close so the exit
+  // transition can finish playing before the node leaves the DOM.
+  useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- synchronizing mount state with the `open` prop is the point of this effect.
       setShouldRender(true)
-      const frame = window.requestAnimationFrame(() => setIsVisible(true))
-      return () => window.cancelAnimationFrame(frame)
+      return undefined
     }
 
-    setIsVisible(false)
-    const timeout = window.setTimeout(
-      () => setShouldRender(false),
-      backdropTransitionMs,
-    )
+    const unmountDelay = prefersReducedMotion ? 0 : Math.max(EXIT_MS, BACKDROP_MS)
+    const timeout = window.setTimeout(() => setShouldRender(false), unmountDelay)
     return () => window.clearTimeout(timeout)
-  }, [open])
+  }, [open, prefersReducedMotion])
 
   if (!shouldRender) return null
+
+  // `@starting-style` (Tailwind's `starting:` variant) supplies the closed
+  // look for the element's very first paint after mount, so the browser
+  // animates it in natively — no JS-driven "flip a flag after rAF" race
+  // that can get coalesced into a single frame and skip the animation.
+  const backdropClassName = `absolute inset-0 bg-slate-900/50 transition-opacity duration-300 ease-out motion-reduce:transition-none ${
+    open ? 'opacity-100' : 'opacity-0'
+  }`
+
+  const drawerPanelClassName = [
+    'relative h-full w-full overflow-y-auto border-l border-slate-200 bg-white p-5 shadow-2xl sm:p-6',
+    panelClassName || 'max-w-2xl',
+    'transition-[transform,opacity]',
+    DRAWER_EASING_CLASS,
+    'starting:translate-x-full starting:opacity-0',
+    'motion-reduce:transition-none motion-reduce:translate-x-0 motion-reduce:starting:translate-x-0',
+    open ? 'translate-x-0 opacity-100 duration-300' : 'translate-x-full opacity-0 duration-200',
+  ].join(' ')
+
+  const centerPanelClassName = [
+    'relative w-full max-w-lg rounded-xl border border-slate-200 bg-white p-5 shadow-2xl sm:p-6',
+    'transition-[transform,opacity] ease-out',
+    'starting:translate-y-2 starting:opacity-0',
+    'motion-reduce:transition-none motion-reduce:translate-y-0 motion-reduce:starting:translate-y-0',
+    open ? 'translate-y-0 opacity-100 duration-300' : 'translate-y-2 opacity-0 duration-200',
+  ].join(' ')
 
   return (
     <div
@@ -42,13 +85,7 @@ const AppModal = ({
           : 'flex items-center justify-center overflow-y-auto px-4 py-6'
       }`}
     >
-      <div
-        className="absolute inset-0 bg-slate-900/50 transition-opacity ease-out"
-        style={{
-          opacity: isVisible ? 1 : 0,
-          transitionDuration: `${backdropTransitionMs}ms`,
-        }}
-      />
+      <div className={backdropClassName} />
       {onClose ? (
         <button
           type="button"
@@ -57,32 +94,15 @@ const AppModal = ({
           className="absolute inset-0 h-full w-full cursor-default"
         />
       ) : null}
-      <div
-        className={`relative ${
-          isDrawer
-            ? 'h-full w-full max-w-2xl overflow-y-auto border-l border-rose-100 bg-rose-50/95 p-5 shadow-2xl backdrop-blur-sm sm:p-6'
-            : 'w-full max-w-lg rounded-3xl border border-rose-100 bg-white p-5 shadow-2xl sm:p-6'
-        } transition-all duration-300 ease-out`}
-        style={{
-          opacity: isVisible ? 1 : 0,
-          transform: isDrawer
-            ? isVisible
-              ? 'translateX(0)'
-              : 'translateX(24px)'
-            : isVisible
-              ? 'translateY(0) scale(1)'
-              : 'translateY(8px) scale(0.99)',
-          transitionDuration: `${panelTransitionMs}ms`,
-        }}
-      >
+      <div className={isDrawer ? drawerPanelClassName : centerPanelClassName}>
         <div className="flex items-start justify-between gap-3">
           <div>
             {eyebrow ? (
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-rose-500">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                 {eyebrow}
               </p>
             ) : null}
-            <h4 className="mt-2 font-display text-2xl font-semibold text-slate-900">
+            <h4 className="mt-2 text-2xl font-semibold text-slate-900">
               {title}
             </h4>
             {subtitle ? (

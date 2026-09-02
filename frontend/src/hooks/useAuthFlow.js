@@ -39,6 +39,11 @@ const getValidSessionUser = () => {
 
 const JUST_LOGGED_IN_KEY = 'justLoggedInAt'
 const JUST_LOGGED_IN_WINDOW_MS = 2 * 60 * 1000
+const DEFAULT_TOAST_DURATION_MS = 3500
+// Single source of truth: the post-login redirect fires after exactly this
+// delay, and the same value drives the toast's progress-bar animation, so
+// the bar can't finish before (or stall after) the actual navigation.
+const LOGIN_REDIRECT_DELAY_MS = 900
 const normalizeRole = (role) => String(role || '').trim().toLowerCase()
 
 const resolveRoleRoute = (role, isAdminRole) => {
@@ -93,7 +98,6 @@ const useAuthFlow = ({ apiBase, isAdminRole }) => {
   const [otpSent, setOtpSent] = useState(false)
   const [feedback, setFeedback] = useState({ type: '', message: '' })
   const [loading, setLoading] = useState(false)
-  const [errorModal, setErrorModal] = useState('')
   const [otpDigits, setOtpDigits] = useState(Array(6).fill(''))
   const otpInputRefs = useRef([])
   const authFormRef = useRef(null)
@@ -109,18 +113,6 @@ const useAuthFlow = ({ apiBase, isAdminRole }) => {
       return null
     }
   })
-  const [resetOpen, setResetOpen] = useState(false)
-  const [resetStep, setResetStep] = useState('request')
-  const [resetEmail, setResetEmail] = useState('')
-  const [resetOtp, setResetOtp] = useState('')
-  const [resetOtpDigits, setResetOtpDigits] = useState(Array(6).fill(''))
-  const resetOtpRefs = useRef([])
-  const resetFormRef = useRef(null)
-  const [resetToken, setResetToken] = useState('')
-  const [resetPassword, setResetPassword] = useState('')
-  const [resetConfirm, setResetConfirm] = useState('')
-  const [resetLoading, setResetLoading] = useState(false)
-  const [resetFeedback, setResetFeedback] = useState({ type: '', message: '' })
   const [toast, setToast] = useState(null)
   const isOtpRoute = route.startsWith('#/login/otp')
   const forceLogin = useMemo(() => {
@@ -195,21 +187,6 @@ const useAuthFlow = ({ apiBase, isAdminRole }) => {
     }
   }, [isOtpRoute, otpDigits, otpSent, loading])
 
-  useEffect(() => {
-    if (!resetOpen || resetStep !== 'verify') return
-    if (resetOtpDigits.every((digit) => digit) && !resetLoading) {
-      const nextOtp = resetOtpDigits.join('')
-      setResetOtp(nextOtp)
-    }
-  }, [resetOpen, resetOtpDigits, resetStep, resetLoading])
-
-  useEffect(() => {
-    if (!resetOpen || resetStep !== 'verify') return
-    if (resetOtpDigits.every((digit) => digit) && !resetLoading) {
-      resetFormRef.current?.requestSubmit()
-    }
-  }, [resetOpen, resetOtpDigits, resetStep, resetLoading])
-
   const headline = useMemo(
     () =>
       mode === 'login'
@@ -243,40 +220,13 @@ const useAuthFlow = ({ apiBase, isAdminRole }) => {
     setOtpDigits(Array(6).fill(''))
   }
 
-  const resetResetFlow = () => {
-    setResetStep('request')
-    setResetEmail('')
-    setResetOtp('')
-    setResetOtpDigits(Array(6).fill(''))
-    setResetToken('')
-    setResetPassword('')
-    setResetConfirm('')
-    setResetFeedback({ type: '', message: '' })
-  }
-
-  const openResetModal = () => {
-    setResetOpen(true)
-    setResetFeedback({ type: '', message: '' })
-    if (email) {
-      setResetEmail(email)
-    }
-  }
-
-  const closeResetModal = () => {
-    setResetOpen(false)
-    resetResetFlow()
-  }
-
-  const passwordResetValid =
-    resetPassword.length >= 8 && /[A-Z]/.test(resetPassword)
-  const passwordResetMatches =
-    resetPassword && resetConfirm && resetPassword === resetConfirm
-
   const openToast = (payload) => {
-    setToast(payload)
+    const duration = payload.duration || DEFAULT_TOAST_DURATION_MS
+    const next = { ...payload, duration }
+    setToast(next)
     window.setTimeout(() => {
-      setToast((current) => (current === payload ? null : current))
-    }, 3500)
+      setToast((current) => (current === next ? null : current))
+    }, duration)
   }
 
   const handleGoogleRedirect = () => {
@@ -303,13 +253,15 @@ const useAuthFlow = ({ apiBase, isAdminRole }) => {
     }
     if (mode === 'signup') {
       if (!passwordHasUppercase || !passwordLongEnough) {
-        setErrorModal(
-          'Password must be at least 8 characters and include 1 uppercase letter.',
-        )
+        setFeedback({
+          type: 'error',
+          message:
+            'Password must be at least 8 characters and include 1 uppercase letter.',
+        })
         return
       }
       if (!passwordMatches) {
-        setErrorModal('Passwords do not match.')
+        setFeedback({ type: 'error', message: 'Passwords do not match.' })
         return
       }
     }
@@ -364,7 +316,6 @@ const useAuthFlow = ({ apiBase, isAdminRole }) => {
     setShowPassword(false)
     setShowConfirmPassword(false)
     setFeedback({ type: '', message: '' })
-    setErrorModal('')
     window.location.hash = forceLogin ? '#/login?force=1' : '#/login'
   }
 
@@ -437,10 +388,11 @@ const useAuthFlow = ({ apiBase, isAdminRole }) => {
         openToast({
           type: 'success',
           message: 'Signed in. Redirecting...',
+          duration: LOGIN_REDIRECT_DELAY_MS,
         })
         window.setTimeout(() => {
           window.location.replace(resolveRoleRoute(responseUser.role, isAdminRole))
-        }, 600)
+        }, LOGIN_REDIRECT_DELAY_MS)
       } else if (mode !== 'login') {
         openToast({
           type: 'success',
@@ -485,8 +437,6 @@ const useAuthFlow = ({ apiBase, isAdminRole }) => {
     otpSent,
     feedback,
     loading,
-    errorModal,
-    setErrorModal,
     otpDigits,
     setOtpDigits,
     otpInputRefs,
@@ -498,27 +448,6 @@ const useAuthFlow = ({ apiBase, isAdminRole }) => {
     route,
     pendingOtp,
     setPendingOtp,
-    resetOpen,
-    resetStep,
-    setResetStep,
-    resetEmail,
-    setResetEmail,
-    resetOtp,
-    setResetOtp,
-    resetOtpDigits,
-    setResetOtpDigits,
-    resetOtpRefs,
-    resetFormRef,
-    resetToken,
-    setResetToken,
-    resetPassword,
-    setResetPassword,
-    resetConfirm,
-    setResetConfirm,
-    resetLoading,
-    setResetLoading,
-    resetFeedback,
-    setResetFeedback,
     toast,
     isOtpRoute,
     forceLogin,
@@ -530,10 +459,6 @@ const useAuthFlow = ({ apiBase, isAdminRole }) => {
     handleModeSelect,
     handleCancelOtp,
     handleAuthSubmit,
-    openResetModal,
-    closeResetModal,
-    passwordResetValid,
-    passwordResetMatches,
     resetOtpFlow,
     resetAllFields,
   }

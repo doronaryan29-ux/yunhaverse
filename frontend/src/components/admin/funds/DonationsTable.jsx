@@ -12,19 +12,19 @@ const DonationsTable = ({
   updateDonation,
   onRequestDelete,
 }) => (
-  <section className="rounded-3xl border border-rose-100 bg-white/90 p-6 shadow-lg shadow-rose-100">
+  <section className="rounded-xl border border-slate-200 bg-white p-5">
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <h3 className="font-display text-xl font-semibold text-slate-900">
+      <h3 className="text-base font-semibold text-slate-900">
         Recent Donations
       </h3>
-      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+      <span className="text-xs font-medium uppercase tracking-[0.1em] text-slate-500">
         {items.length} records
       </span>
     </div>
 
-    <div className="mt-5 overflow-x-auto rounded-2xl border border-rose-100">
+    <div className="mt-5 overflow-x-auto rounded-2xl border border-slate-200">
       <div className="min-w-[860px]">
-        <div className="grid grid-cols-[1.4fr_0.9fr_1.1fr_1fr_0.9fr] gap-3 bg-rose-50/70 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+        <div className="grid grid-cols-[1.4fr_0.9fr_1.1fr_1fr_0.9fr] gap-3 bg-slate-50 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
           <span>Donor</span>
           <span>Amount</span>
           <span>Status</span>
@@ -43,7 +43,7 @@ const DonationsTable = ({
             return (
               <div
                 key={`${item.id}-${item.email || item.name}`}
-                className="grid grid-cols-[1.4fr_0.9fr_1.1fr_1fr_0.9fr] gap-3 border-t border-rose-100 px-4 py-3 text-sm text-slate-700"
+                className="grid grid-cols-[1.4fr_0.9fr_1.1fr_1fr_0.9fr] gap-3 border-t border-slate-200 px-4 py-3 text-sm text-slate-700"
               >
                 <span className="font-semibold text-slate-900">
                   {item.name || item.email || 'Anonymous'}
@@ -58,7 +58,7 @@ const DonationsTable = ({
                       [item.id]: { ...edit, amount: event.target.value },
                     }))
                   }
-                  className="rounded-full border border-rose-200 bg-white px-3 py-1 text-[12px] text-slate-700"
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[12px] text-slate-700"
                 />
                 <select
                   value={edit.status}
@@ -68,7 +68,7 @@ const DonationsTable = ({
                       [item.id]: { ...edit, status: event.target.value },
                     }))
                   }
-                  className="rounded-full border border-rose-200 bg-white px-3 py-1 text-[12px] text-slate-700"
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[12px] text-slate-700"
                 >
                   <option value="completed">completed</option>
                   <option value="pending">pending</option>
@@ -86,7 +86,7 @@ const DonationsTable = ({
                         status: edit.status,
                       })
                     }
-                    className="rounded-full border border-rose-200 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:opacity-60"
+                    className="rounded-full border border-slate-200 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.14em] text-slate-600 disabled:opacity-60"
                   >
                     Save
                   </button>
@@ -94,7 +94,7 @@ const DonationsTable = ({
                     type="button"
                     disabled={!canSubmit || submitting}
                     onClick={() => onRequestDelete(item)}
-                    className="rounded-full border border-rose-200 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:opacity-60"
+                    className="rounded-full border border-red-200 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.14em] text-red-600 disabled:opacity-60"
                   >
                     Delete
                   </button>

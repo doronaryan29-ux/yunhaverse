@@ -63,7 +63,7 @@ class DashboardBootstrapSeeder extends Seeder
                 'app_name' => 'YUNHAverse',
                 'logo_url' => null,
                 'homepage_headline' => 'Welcome to YunhaVerse',
-                'homepage_subheadline' => 'A place for creators to thrive.',
+                'homepage_subheadline' => 'The official Filipino fanbase celebrating and supporting UNIS’ Bang Yunha.',
                 'primary_color' => '#f43f5e',
                 'updated_by' => $adminId,
                 'created_at' => now(),

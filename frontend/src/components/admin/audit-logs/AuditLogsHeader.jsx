@@ -1,17 +1,17 @@
 import { memo } from 'react'
 
 const AuditLogsHeader = ({ count }) => (
-  <header className="rounded-3xl border border-rose-100 bg-white/90 p-6 shadow-lg shadow-rose-100">
+  <header className="rounded-xl border border-slate-200 bg-white p-6">
     <div className="flex flex-wrap items-start justify-between gap-4">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.34em] text-rose-500">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
           Audit Logs
         </p>
-        <h2 className="mt-2 font-display text-3xl font-semibold text-slate-900">
-          Activity Timeline
+        <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+          Activity Log
         </h2>
       </div>
-      <span className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
         {count} records
       </span>
     </div>

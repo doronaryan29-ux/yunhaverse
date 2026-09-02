@@ -19,7 +19,7 @@ class AuditFlag
         }
 
         $existing = DB::table('audit_flags')
-            ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['open'])
+            ->whereRaw("LOWER(COALESCE(status, '')) = ?", ['open'])
             ->where('title', $title)
             ->when($createdBy !== null, function ($query) use ($createdBy) {
                 $query->where('created_by', $createdBy);

@@ -1,8 +1,56 @@
 import { memo } from 'react'
+import AuditActivityChart from './AuditActivityChart'
 import AuditLogSection from './AuditLogSection'
+import DashboardCard from './DashboardCard'
+import MemberBreakdownBars from './MemberBreakdownBars'
+import MemberGrowthChart from './MemberGrowthChart'
 import QuickActionsSection from './QuickActionsSection'
 import StatCards from './StatCards'
 import UpcomingCalendar from './UpcomingCalendar'
+
+const AttentionRow = ({
+  label,
+  count,
+  actionLabel,
+  onAction,
+  requireItemsForAction = false,
+  loading,
+  error,
+}) => {
+  const hasItems = (count ?? 0) > 0
+  const showAction = onAction && !loading && (!requireItemsForAction || hasItems)
+
+  return (
+    <div className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+      <div>
+        <p className="text-xs font-medium uppercase tracking-[0.1em] text-slate-500">
+          {label}
+        </p>
+        {loading ? (
+          <p className="mt-1 text-sm text-slate-500">Loading...</p>
+        ) : (
+          <p
+            className={`mt-0.5 text-xl font-semibold tabular-nums ${
+              hasItems ? 'text-amber-700' : 'text-slate-500'
+            }`}
+          >
+            {count ?? 0}
+          </p>
+        )}
+        {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      </div>
+      {showAction && (
+        <button
+          type="button"
+          onClick={onAction}
+          className="shrink-0 rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-600 transition motion-safe:active:scale-[0.96] hover:border-slate-400 hover:text-slate-900"
+        >
+          {actionLabel}
+        </button>
+      )}
+    </div>
+  )
+}
 
 const DashboardSection = ({
   statCards,
@@ -19,28 +67,33 @@ const DashboardSection = ({
   auditFlags,
   auditFlagsLoading,
   onResolveFlag,
+  resolvingFlagId,
+  auditFlagsActionError,
   donationSummary,
+  memberBreakdown,
+  memberGrowth,
+  auditActivityTrend,
 }) => (
   <>
-    <header className="rounded-3xl border border-rose-100 bg-white/90 p-6 shadow-lg shadow-rose-100">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.34em] text-rose-500">
-            Dashboard
-          </p>
-          <h2 className="mt-2 font-display text-3xl font-semibold text-slate-900">
-            Operations Command Center
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm text-slate-600">
-            Focus on urgent items first. Detailed records stay in their dedicated pages.
-          </p>
-        </div>
-      </div>
-    </header>
+    <div>
+      <h2 className="text-2xl font-semibold text-slate-900">
+        Here's what's happening
+      </h2>
+      <p className="mt-1 max-w-2xl text-sm text-slate-500">
+        A quick look at what needs your attention. Everything else lives on its own page.
+      </p>
+    </div>
 
     <StatCards statCards={statCards} />
 
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+    <div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+      <MemberGrowthChart data={memberGrowth} />
+      <MemberBreakdownBars breakdown={memberBreakdown} />
+    </div>
+
+    <AuditActivityChart data={auditActivityTrend} />
+
+    <div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
       <QuickActionsSection
         notificationTypes={notificationTypes}
         notificationForm={notificationForm}
@@ -52,81 +105,43 @@ const DashboardSection = ({
         onOpenFlagModal={onOpenFlagModal}
       />
 
-      <section className="rounded-3xl border border-rose-100 bg-white/90 p-6 shadow-lg shadow-rose-100">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h3 className="font-display text-xl font-semibold text-slate-900">
-            Needs Attention
-          </h3>
-          <span className="rounded-full bg-rose-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500">
-            Priority Queue
-          </span>
+      <DashboardCard title="Needs Attention" bodyClassName="flex flex-col justify-center">
+        <div className="divide-y divide-slate-100">
+          <AttentionRow
+            label="Pending Payouts"
+            count={donationSummary?.pendingCount ?? 0}
+            actionLabel="Open Funds"
+            onAction={() => window.location.replace('/#/admin/funds')}
+          />
+
+          <AttentionRow
+            label="Open Audit Flags"
+            count={auditFlags?.length ?? 0}
+            loading={auditFlagsLoading}
+            requireItemsForAction
+            actionLabel={
+              resolvingFlagId === auditFlags?.[0]?.id
+                ? 'Resolving...'
+                : 'Resolve Oldest Flag'
+            }
+            onAction={() => onResolveFlag?.(auditFlags[0]?.id)}
+            error={auditFlagsActionError}
+          />
+
+          <AttentionRow
+            label="Upcoming Events"
+            count={upcomingEventItems?.length ?? 0}
+            actionLabel="Review Calendar"
+            onAction={() => window.location.replace('/#/admin/events')}
+          />
         </div>
-
-        <div className="mt-4 space-y-3">
-          <article className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-              Pending Payouts
-            </p>
-            <p className="mt-1 text-2xl font-semibold text-slate-900">
-              {donationSummary?.pendingCount ?? 0}
-            </p>
-            <button
-              type="button"
-              onClick={() => window.location.replace('/#/admin/funds')}
-              className="mt-3 rounded-xl border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50"
-            >
-              Open Funds
-            </button>
-          </article>
-
-          <article className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-              Open Audit Flags
-            </p>
-            {auditFlagsLoading ? (
-              <p className="mt-1 text-sm text-slate-500">Loading flags...</p>
-            ) : (
-              <>
-                <p className="mt-1 text-2xl font-semibold text-slate-900">
-                  {auditFlags?.length ?? 0}
-                </p>
-                {(auditFlags?.length ?? 0) > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => onResolveFlag?.(auditFlags[0]?.id)}
-                    className="mt-3 rounded-xl border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50"
-                  >
-                    Resolve Oldest Flag
-                  </button>
-                )}
-              </>
-            )}
-          </article>
-
-          <article className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-              Upcoming Events
-            </p>
-            <p className="mt-1 text-2xl font-semibold text-slate-900">
-              {upcomingEventItems?.length ?? 0}
-            </p>
-            <button
-              type="button"
-              onClick={() => window.location.replace('/#/admin/events')}
-              className="mt-3 rounded-xl border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50"
-            >
-              Review Calendar
-            </button>
-          </article>
-        </div>
-      </section>
+      </DashboardCard>
     </div>
 
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid items-stretch gap-4 lg:grid-cols-2">
       <UpcomingCalendar upcomingEventItems={upcomingEventItems} />
       <AuditLogSection auditItems={auditItems} />
     </div>
-
   </>
 )
 

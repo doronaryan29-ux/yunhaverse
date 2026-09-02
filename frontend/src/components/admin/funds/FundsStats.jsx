@@ -5,12 +5,12 @@ const FundsStats = ({ stats }) => (
     {stats.map((stat) => (
       <article
         key={stat.label}
-        className="rounded-3xl border border-rose-100 bg-white/90 p-5 shadow-lg shadow-rose-100"
+        className="rounded-xl border border-slate-200 bg-white p-4"
       >
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+        <p className="text-xs font-medium uppercase tracking-[0.1em] text-slate-500">
           {stat.label}
         </p>
-        <p className="mt-3 font-display text-3xl font-semibold text-slate-900">
+        <p className="mt-1.5 text-2xl font-semibold tabular-nums text-slate-900">
           {stat.value}
         </p>
       </article>

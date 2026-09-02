@@ -30,7 +30,7 @@ const AuditLogsPage = ({ auditItems = [], loading = false }) => {
     <section className="space-y-6">
       <AuditLogsHeader count={filteredItems.length} />
 
-      <section className="rounded-3xl border border-rose-100 bg-white/90 p-6 shadow-lg shadow-rose-100">
+      <section className="rounded-xl border border-slate-200 bg-white p-5">
         <AuditLogsSearch value={search} onChange={(event) => setSearch(event.target.value)} />
         <AuditLogsTable items={filteredItems} loading={loading} />
       </section>

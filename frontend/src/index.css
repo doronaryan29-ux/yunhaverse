@@ -63,6 +63,136 @@
   --brand-500: #e11d48;
   --brand-600: #be123c;
   --brand-700: #9f1239;
+
+  /* Neubrutalism structural tokens (theme-agnostic: same across all fanclub palettes) */
+  --nb-ink: #241a2b;
+  --nb-border-w: 3px;
+  --nb-border-w-sm: 2px;
+  --nb-shadow-x: 5px;
+  --nb-shadow-y: 5px;
+  --nb-shadow-x-sm: 3px;
+  --nb-shadow-y-sm: 3px;
+  --nb-radius-card: 1.75rem;
+  --nb-radius-chip: 1.25rem;
+  --nb-radius-pill: 9999px;
+}
+
+/* Neubrutalism component classes — colors come from --brand-* / utility classes,
+   never hardcoded, so swapping the palette re-themes every .nb-* element. */
+@layer components {
+  .nb-surface {
+    background-color: #fff;
+    border: var(--nb-border-w) solid var(--nb-ink);
+    border-radius: var(--nb-radius-card);
+    box-shadow: var(--nb-shadow-x) var(--nb-shadow-y) 0 var(--nb-ink);
+  }
+
+  .nb-chip {
+    border: var(--nb-border-w) solid var(--nb-ink);
+    border-radius: var(--nb-radius-chip);
+    box-shadow: var(--nb-shadow-x-sm) var(--nb-shadow-y-sm) 0 var(--nb-ink);
+  }
+
+  .nb-pill {
+    border: var(--nb-border-w-sm) solid var(--nb-ink);
+    border-radius: var(--nb-radius-pill);
+    box-shadow: var(--nb-shadow-x-sm) var(--nb-shadow-y-sm) 0 var(--nb-ink);
+    font-weight: 700;
+  }
+
+  .nb-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: var(--nb-border-w) solid var(--nb-ink);
+    border-radius: var(--nb-radius-pill);
+    box-shadow: var(--nb-shadow-x) var(--nb-shadow-y) 0 var(--nb-ink);
+    font-weight: 700;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .nb-btn:active {
+    transform: translate(var(--nb-shadow-x), var(--nb-shadow-y));
+    box-shadow: 0 0 0 var(--nb-ink);
+  }
+
+  .nb-dot {
+    border: var(--nb-border-w-sm) solid var(--nb-ink);
+  }
+
+  .nb-hover-lift {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .nb-hover-lift:hover {
+    transform: translate(calc(-1 * var(--nb-shadow-x-sm)), calc(-1 * var(--nb-shadow-y-sm)));
+    box-shadow: calc(var(--nb-shadow-x) + var(--nb-shadow-x-sm))
+      calc(var(--nb-shadow-y) + var(--nb-shadow-y-sm)) 0 var(--nb-ink);
+  }
+
+  .nb-tab-active {
+    transform: translate(var(--nb-shadow-x-sm), var(--nb-shadow-y-sm));
+    box-shadow: 0 0 0 var(--nb-ink) !important;
+  }
+
+  .nb-input {
+    border: var(--nb-border-w-sm) solid var(--nb-ink);
+    border-radius: var(--nb-radius-chip);
+    background-color: #fff;
+    transition: box-shadow 0.15s ease;
+  }
+
+  .nb-input:focus {
+    outline: none;
+    box-shadow: var(--nb-shadow-x-sm) var(--nb-shadow-y-sm) 0 var(--nb-ink);
+  }
+
+  .nb-input:disabled {
+    background-color: #f8fafc;
+  }
+
+  /* Clearly-visible field label — distinct from placeholder text, which
+     disappears on input. Used above every form field, not just inside it. */
+  .field-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--nb-ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nb-btn,
+    .nb-hover-lift {
+      transition: none;
+    }
+  }
+
+  /* Subtle mount entrance — transform/opacity only, no motion on repeat
+     interaction. Used for the login split-card. */
+  .auth-entrance {
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      opacity 350ms cubic-bezier(0.23, 1, 0.32, 1),
+      transform 350ms cubic-bezier(0.23, 1, 0.32, 1);
+
+    @starting-style {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .auth-entrance {
+      transition: opacity 200ms ease;
+
+      @starting-style {
+        transform: none;
+      }
+    }
+  }
 }
 
 .text-rose-400 { color: var(--brand-400) !important; }

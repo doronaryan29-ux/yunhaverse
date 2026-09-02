@@ -42,8 +42,8 @@ const ReviewActionModal = ({
       <p className="text-sm text-slate-600">
         {descriptionMap[action] || 'Review the latest submission.'}
       </p>
-      <div className="mt-4 rounded-2xl border border-rose-100 bg-rose-50/70 p-4 text-xs text-slate-600">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500">
+      <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
           Request
         </p>
         <p className="mt-2 text-sm font-semibold text-slate-900">
@@ -54,7 +54,7 @@ const ReviewActionModal = ({
             href={request.submission_url}
             target="_blank"
             rel="noreferrer"
-            className="mt-2 inline-flex text-xs font-semibold text-rose-500 hover:underline"
+            className="mt-2 inline-flex text-xs font-semibold text-indigo-600 hover:underline"
           >
             {request.submission_url}
           </a>
@@ -69,7 +69,7 @@ const ReviewActionModal = ({
           <select
             value={reviewAssignee}
             onChange={(event) => setReviewAssignee(event.target.value)}
-            className="mt-2 w-full rounded-2xl border border-rose-100 bg-white px-3 py-2 pr-8 text-sm text-slate-700"
+            className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-700"
           >
             <option value="">Select assignee</option>
             {availableMembers.map((member) => (
@@ -90,7 +90,7 @@ const ReviewActionModal = ({
           value={reviewNote}
           onChange={(event) => setReviewNote(event.target.value)}
           placeholder="Add context for this review"
-          className="mt-2 w-full rounded-2xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700"
+          className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
         />
       </div>
 
@@ -98,7 +98,7 @@ const ReviewActionModal = ({
         <button
           type="button"
           onClick={onClose}
-          className="rounded-xl border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-rose-500"
+          className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-slate-600 transition motion-safe:active:scale-[0.97] hover:bg-slate-50"
         >
           Cancel
         </button>
@@ -106,7 +106,7 @@ const ReviewActionModal = ({
           type="button"
           disabled={submitting}
           onClick={onConfirm}
-          className="rounded-xl bg-rose-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white shadow-lg shadow-rose-200"
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white transition motion-safe:active:scale-[0.97] hover:bg-indigo-700"
         >
           {submitting ? 'Saving...' : 'Confirm'}
         </button>

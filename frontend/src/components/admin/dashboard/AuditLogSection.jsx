@@ -1,58 +1,72 @@
 import { memo, useMemo } from 'react'
 import { formatDateTimeInManila } from '../../../utils/date'
+import { getAuditLogDisplay, toneClasses } from '../../../constants/auditLogActions'
+import DashboardCard from './DashboardCard'
+
+const iconToneClasses = {
+  success: 'bg-emerald-50 text-emerald-600',
+  danger: 'bg-red-50 text-red-500',
+  warning: 'bg-amber-50 text-amber-600',
+  info: 'bg-sky-50 text-sky-600',
+  neutral: 'bg-slate-100 text-slate-500',
+}
 
 const AuditLogSection = ({ auditItems }) => {
   const previewItems = useMemo(() => auditItems.slice(0, 4), [auditItems])
 
   return (
-    <section className="rounded-3xl border border-rose-100 bg-white/90 p-6 shadow-lg shadow-rose-100">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="font-display text-xl font-semibold text-slate-900">
-          Audit Log Snapshot
-        </h3>
+    <DashboardCard
+      title="Recent Activity"
+      action={
         <button
           type="button"
           onClick={() => window.location.replace('/#/admin/audit-logs')}
-          className="rounded-2xl border border-rose-200 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50"
+          className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition motion-safe:active:scale-[0.97] hover:border-slate-300 hover:bg-slate-50"
         >
-          Open Full Logs
+          See All Activity
         </button>
-      </div>
-
-      <div className="mt-4 space-y-3">
-        {previewItems.length === 0 && (
-          <p className="rounded-2xl border border-rose-100 bg-rose-50/60 p-4 text-sm text-slate-500">
-            No audit activity yet.
-          </p>
-        )}
-        {previewItems.map((item) => (
-          <div
-            key={`${item.id}-${item.created_at}`}
-            className="rounded-2xl border border-rose-100 bg-rose-50/60 p-4"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-sm font-semibold text-slate-900">{item.action}</p>
-              {item.entity_type && (
-                <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-rose-500">
-                  {item.entity_type}
+      }
+    >
+      {previewItems.length === 0 ? (
+        <p className="flex h-full items-center justify-center text-center text-sm text-slate-500">
+          Nothing's happened yet.
+        </p>
+      ) : (
+        <div className="divide-y divide-slate-100">
+          {previewItems.map((item) => {
+            const display = getAuditLogDisplay(item.action)
+            const who = item.actor_email || 'System'
+            return (
+              <div
+                key={`${item.id}-${item.created_at}`}
+                className="flex items-start gap-3 py-3 first:pt-0 last:pb-0"
+              >
+                <span
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${iconToneClasses[display.tone]}`}
+                >
+                  <i className={`fas ${display.icon} text-xs`} />
                 </span>
-              )}
-            </div>
-            <p className="mt-1 text-xs text-slate-500">
-              {(item.actor_email || 'system')}
-              {item.actor_role ? ` • ${item.actor_role}` : ''} •{' '}
-              {item.created_at ? formatDateTimeInManila(item.created_at) : 'No timestamp'}
-            </p>
-            {(item.ip_address || item.entity_id) && (
-              <p className="mt-1 text-[11px] text-slate-400">
-                {item.ip_address ? `IP ${item.ip_address}` : 'IP unknown'}
-                {item.entity_id ? ` • Entity ${item.entity_id}` : ''}
-              </p>
-            )}
-          </div>
-        ))}
-      </div>
-    </section>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="truncate text-sm font-medium text-slate-900">
+                      {who} {display.label}
+                    </p>
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${toneClasses[display.tone]}`}
+                    >
+                      {display.tag}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    {item.created_at ? formatDateTimeInManila(item.created_at) : 'No timestamp'}
+                  </p>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </DashboardCard>
   )
 }
 

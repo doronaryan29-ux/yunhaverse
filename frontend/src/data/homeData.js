@@ -1,24 +1,3 @@
-export const carouselItems = [
-  {
-    src: '/image/hbdyunha.png',
-    alt: 'Happy Birthday Yunha',
-    caption: 'Happy Birthday Yunha',
-    objectPosition: '50% 28%',
-  },
-  {
-    src: '/image/yunha28days.png',
-    alt: 'Yunha 28 Days',
-    caption: 'Yunha 28 Days',
-    objectPosition: '50% 55%',
-  },
-  {
-    src: '/image/yunhacse.png',
-    alt: 'Yunha CSE',
-    caption: 'Yunha CSE',
-    objectPosition: '50% 20%',
-  },
-]
-
 export const fanartItems = [
   {
     src: '/image/hbdyunha.png',
@@ -90,7 +69,7 @@ const getNextOccurrenceIso = (month, day) => {
 export const countdownEvents = [
   {
     title: "Yunha's Birthday",
-    date: '2026-02-28T00:00:00+08:00',
+    date: getNextOccurrenceIso(2, 28),
     icon: 'fa-birthday-cake',
   },
   {

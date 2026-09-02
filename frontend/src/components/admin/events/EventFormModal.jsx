@@ -33,7 +33,7 @@ const EventFormModal = ({
           onChange={(event) =>
             setEventForm((prev) => ({ ...prev, title: event.target.value }))
           }
-          className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+          className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
         />
       </label>
       <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
@@ -44,7 +44,7 @@ const EventFormModal = ({
           onChange={(event) =>
             setEventForm((prev) => ({ ...prev, startAt: event.target.value }))
           }
-          className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+          className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
         />
       </label>
       <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
@@ -55,7 +55,7 @@ const EventFormModal = ({
           onChange={(event) =>
             setEventForm((prev) => ({ ...prev, endAt: event.target.value }))
           }
-          className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+          className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
         />
       </label>
       <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
@@ -66,7 +66,7 @@ const EventFormModal = ({
           onChange={(event) =>
             setEventForm((prev) => ({ ...prev, location: event.target.value }))
           }
-          className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+          className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
         />
       </label>
       <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
@@ -77,7 +77,7 @@ const EventFormModal = ({
           onChange={(event) =>
             setEventForm((prev) => ({ ...prev, timezone: event.target.value }))
           }
-          className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+          className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
         />
       </label>
       <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
@@ -114,7 +114,7 @@ const EventFormModal = ({
           onChange={(event) =>
             setEventForm((prev) => ({ ...prev, linkUrl: event.target.value }))
           }
-          className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+          className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
         />
       </label>
       <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
@@ -124,7 +124,7 @@ const EventFormModal = ({
           onChange={(event) =>
             setEventForm((prev) => ({ ...prev, type: event.target.value }))
           }
-          className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+          className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
         >
           <option value="streaming">streaming</option>
           <option value="cupsleeve">cupsleeve</option>
@@ -138,7 +138,7 @@ const EventFormModal = ({
           onChange={(event) =>
             setEventForm((prev) => ({ ...prev, description: event.target.value }))
           }
-          className="mt-1 h-24 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+          className="mt-1 h-24 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
         />
       </label>
       <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
@@ -148,7 +148,7 @@ const EventFormModal = ({
           onChange={(event) =>
             setEventForm((prev) => ({ ...prev, status: event.target.value }))
           }
-          className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+          className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
         >
           <option value="published">published</option>
           <option value="draft">draft</option>
@@ -162,14 +162,14 @@ const EventFormModal = ({
             onReset()
             onClose()
           }}
-          className="rounded-xl border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50"
+          className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-slate-600 transition motion-safe:active:scale-[0.97] hover:bg-slate-50"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={!canSubmit || submitting}
-          className="rounded-xl bg-rose-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white shadow-lg shadow-rose-200 transition hover:-translate-y-0.5 disabled:opacity-70"
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white transition motion-safe:active:scale-[0.97] hover:bg-indigo-700 disabled:opacity-70"
         >
           {submitting ? 'Saving...' : 'Create Event'}
         </button>

@@ -1,7 +1,7 @@
 import { memo } from 'react'
 
 const RolesSection = ({ roles, permissions, permissionMap, toggleRolePermission }) => (
-  <section className="rounded-3xl border border-rose-100 bg-white/90 p-6 shadow-sm">
+  <section className="rounded-xl border border-slate-200 bg-white/90 p-6 shadow-sm">
     <h3 className="text-lg font-semibold text-slate-900">Users</h3>
     <p className="mt-1 text-sm text-slate-600">
       Manage permissions for members and creative staff.
@@ -26,7 +26,7 @@ const RolesSection = ({ roles, permissions, permissionMap, toggleRolePermission 
               >
                 <input
                   type="checkbox"
-                  checked={role.permissions.includes(permission.id)}
+                  checked={(role.permissions || []).includes(permission.id)}
                   onChange={() => toggleRolePermission(role.id, permission.id)}
                   className="h-4 w-4 rounded border-slate-300"
                 />

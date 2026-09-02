@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react'
 import Home from './pages/Home'
 import Login from './pages/Login'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPasswordVerify from './pages/ResetPasswordVerify'
+import ResetPasswordNew from './pages/ResetPasswordNew'
+import Gallery from './pages/Gallery'
+import CalendarPage from './pages/CalendarPage'
+import EventDetail from './pages/EventDetail'
 import Admin from './pages/admin/Admin'
 import Member from './pages/member/Member'
 import CreativeStaff from './pages/creative/CreativeStaff'
@@ -27,6 +33,13 @@ const isSnsRole = (role) => {
 }
 const AUTH_MAX_AGE_MS = 12 * 60 * 60 * 1000
 const redirectTo = (hashRoute) => window.location.replace(`/${hashRoute}`)
+const resolveRoleRoute = (role) => {
+  if (isAdminRole(role)) return '#/admin'
+  if (isCopywriterRole(role)) return '#/copywriter'
+  if (isSnsRole(role)) return '#/sns'
+  if (isCreativeRole(role)) return '#/staff'
+  return '#/member'
+}
 const decodeBase64Url = (value) => {
   const normalized = String(value || '').replace(/-/g, '+').replace(/_/g, '/')
   const padding = normalized.length % 4
@@ -114,12 +127,37 @@ function App() {
     }
   }, [route])
 
+  if (route.startsWith('#/forgot-password/verify')) {
+    return <ResetPasswordVerify />
+  }
+
+  if (route.startsWith('#/forgot-password/new')) {
+    return <ResetPasswordNew />
+  }
+
+  if (route.startsWith('#/forgot-password')) {
+    return <ForgotPassword />
+  }
+
   if (route.startsWith('#/login')) {
     return <Login />
   }
 
   if (route.startsWith('#/oauth')) {
     return <div className="min-h-screen bg-white" />
+  }
+
+  if (route.startsWith('#/gallery')) {
+    return <Gallery />
+  }
+
+  if (route.startsWith('#/calendar')) {
+    return <CalendarPage />
+  }
+
+  if (route.startsWith('#/events/')) {
+    const eventId = route.slice('#/events/'.length).split('?')[0]
+    return <EventDetail eventId={eventId} />
   }
 
   if (route.startsWith('#/admin')) {
@@ -165,6 +203,12 @@ function App() {
       return <Login />
     }
     return <SnsUpdater />
+  }
+
+  const user = getStoredUser()
+  if (user) {
+    redirectTo(resolveRoleRoute(user.role))
+    return <div className="min-h-screen bg-white" />
   }
 
   return <Home />

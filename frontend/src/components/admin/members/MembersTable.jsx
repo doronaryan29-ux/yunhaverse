@@ -2,8 +2,8 @@ import { memo } from 'react'
 import { formatDateTimeInManila } from '../../../utils/date'
 
 const MembersTable = ({ members, loading, onSelect }) => (
-  <div className="mt-5 overflow-x-auto rounded-2xl border border-rose-100">
-    <div className="grid min-w-[720px] grid-cols-[1.4fr_1fr_1fr_1fr] gap-3 bg-rose-50/70 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+  <div className="mt-5 overflow-x-auto rounded-xl border border-slate-200">
+    <div className="grid min-w-[720px] grid-cols-[1.4fr_1fr_1fr_1fr] gap-3 bg-slate-50 px-4 py-3 text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">
       <span>Member</span>
       <span>Role</span>
       <span>Status</span>
@@ -28,7 +28,7 @@ const MembersTable = ({ members, loading, onSelect }) => (
               type="button"
               key={member.id}
               onClick={() => onSelect(member.id)}
-              className="grid min-w-[720px] w-full grid-cols-[1.4fr_1fr_1fr_1fr] gap-3 border-t border-rose-100 px-4 py-3 text-left text-sm text-slate-700 transition hover:bg-rose-50"
+              className="grid min-w-[720px] w-full grid-cols-[1.4fr_1fr_1fr_1fr] gap-3 border-t border-slate-100 px-4 py-3 text-left text-sm text-slate-700 transition hover:bg-slate-50"
             >
               <span>
                 <span className="font-semibold text-slate-900">{name}</span>

@@ -31,7 +31,7 @@ const MemberDrawer = ({
       title={memberName}
     >
       <div className="space-y-4">
-        <section className="rounded-2xl border border-rose-100 bg-white p-4 text-sm text-slate-600">
+        <section className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
           <div className="grid gap-2 sm:grid-cols-2">
             <p>
               <span className="font-semibold text-slate-900">Email:</span>{' '}
@@ -60,59 +60,59 @@ const MemberDrawer = ({
           </div>
         </section>
 
-        <section className="rounded-2xl border border-rose-100 bg-white p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+        <section className="rounded-xl border border-slate-200 bg-white p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">
             Actions
           </p>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             <button
               type="button"
               disabled={!canAdmin}
-              className="rounded-xl border border-rose-200 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50 disabled:opacity-50"
+              className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-700 transition motion-safe:active:scale-[0.97] hover:bg-slate-50 disabled:opacity-50"
             >
               Reset Password
             </button>
             <button
               type="button"
               disabled={!canEdit}
-              className="rounded-xl border border-rose-200 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50 disabled:opacity-50"
+              className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-700 transition motion-safe:active:scale-[0.97] hover:bg-slate-50 disabled:opacity-50"
             >
               Change Role
             </button>
             <button
               type="button"
               disabled={!canEdit}
-              className="rounded-xl border border-rose-200 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50 disabled:opacity-50"
+              className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-700 transition motion-safe:active:scale-[0.97] hover:bg-slate-50 disabled:opacity-50"
             >
               Deactivate
             </button>
             <button
               type="button"
               disabled={!canEdit}
-              className="rounded-xl border border-rose-200 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50 disabled:opacity-50"
+              className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-700 transition motion-safe:active:scale-[0.97] hover:bg-slate-50 disabled:opacity-50"
             >
               Resend Verification
             </button>
           </div>
         </section>
 
-        <section className="rounded-2xl border border-rose-100 bg-white p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+        <section className="rounded-xl border border-slate-200 bg-white p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">
             Notes / Flags
           </p>
-          <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+          <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">
             Internal Note
             <textarea
               value={notes}
               onChange={(event) => onNoteChange(event.target.value)}
-              className="mt-1 h-24 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+              className="mt-1 h-24 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
               placeholder="Add a note for internal reference"
             />
           </label>
           <button
             type="button"
             onClick={onToggleFlag}
-            className="mt-3 rounded-xl border border-rose-200 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50"
+            className="mt-3 rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-700 transition motion-safe:active:scale-[0.97] hover:bg-slate-50"
           >
             {flagged ? 'Remove Flag' : 'Flag Member'}
           </button>

@@ -9,14 +9,14 @@ const NotificationForm = ({
   onSubmitNotification,
 }) => (
   <form
-    className="mt-6 space-y-3 rounded-2xl border border-rose-100 bg-rose-50/60 p-4"
+    className="mt-6 space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4"
     onSubmit={onSubmitNotification}
   >
-    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-rose-500">
+    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
       Publish Notification
     </p>
     <div className="grid gap-3 sm:grid-cols-3">
-      <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+      <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
         Type
         <select
           value={notificationForm.type}
@@ -26,7 +26,7 @@ const NotificationForm = ({
               type: event.target.value,
             }))
           }
-          className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+          className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
         >
           {notificationTypes.map((type) => (
             <option key={type.value} value={type.value}>
@@ -35,7 +35,7 @@ const NotificationForm = ({
           ))}
         </select>
       </label>
-      <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+      <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
         Audience
         <select
           value={notificationForm.audience}
@@ -45,14 +45,14 @@ const NotificationForm = ({
               audience: event.target.value,
             }))
           }
-          className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+          className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
         >
           <option value="all">All</option>
           <option value="members">Members</option>
           <option value="creatives">Creatives</option>
         </select>
       </label>
-      <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+      <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
         Priority
         <select
           value={notificationForm.priority}
@@ -62,7 +62,7 @@ const NotificationForm = ({
               priority: event.target.value,
             }))
           }
-          className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+          className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
         >
           <option value="low">Low</option>
           <option value="normal">Normal</option>
@@ -70,7 +70,7 @@ const NotificationForm = ({
         </select>
       </label>
     </div>
-    <label className="block text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+    <label className="block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
       Title
       <input
         type="text"
@@ -81,11 +81,11 @@ const NotificationForm = ({
             title: event.target.value,
           }))
         }
-        className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
         placeholder="Short alert title"
       />
     </label>
-    <label className="block text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+    <label className="block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
       Message
       <textarea
         value={notificationForm.message}
@@ -95,14 +95,14 @@ const NotificationForm = ({
             message: event.target.value,
           }))
         }
-        className="mt-1 h-24 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+        className="mt-1 h-24 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
         placeholder="Write the notice details"
       />
     </label>
     {formFeedback.message && (
       <p
         className={`text-xs ${
-          formFeedback.type === 'success' ? 'text-emerald-600' : 'text-rose-500'
+          formFeedback.type === 'success' ? 'text-emerald-600' : 'text-red-600'
         }`}
       >
         {formFeedback.message}
@@ -111,7 +111,7 @@ const NotificationForm = ({
     <button
       type="submit"
       disabled={formLoading}
-      className="rounded-xl bg-rose-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white shadow-lg shadow-rose-200 transition hover:-translate-y-0.5 disabled:opacity-70"
+      className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition motion-safe:active:scale-[0.97] hover:bg-indigo-700 disabled:opacity-70"
     >
       {formLoading ? 'Publishing...' : 'Publish Notice'}
     </button>

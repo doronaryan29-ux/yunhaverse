@@ -52,12 +52,12 @@ class AuditLogController extends Controller
         $query = DB::table('audit_flags')->orderByDesc('created_at');
 
         if (in_array($status, ['open', 'resolved'], true)) {
-            $query->whereRaw('LOWER(COALESCE(status, "")) = ?', [$status]);
+            $query->whereRaw("LOWER(COALESCE(status, '')) = ?", [$status]);
         }
 
         $items = $query->limit($limit)->get();
         $openCount = DB::table('audit_flags')
-            ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['open'])
+            ->whereRaw("LOWER(COALESCE(status, '')) = ?", ['open'])
             ->count();
 
         return response()->json([

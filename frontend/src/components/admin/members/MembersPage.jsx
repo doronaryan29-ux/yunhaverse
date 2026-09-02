@@ -105,12 +105,12 @@ const MembersPage = ({ members, loading, currentRole }) => {
       <MembersHeader permission={permission} />
       <MembersStats stats={overviewStats} />
 
-      <section className="rounded-3xl border border-rose-100 bg-white/90 p-6 shadow-lg shadow-rose-100">
+      <section className="rounded-xl border border-slate-200 bg-white p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h3 className="font-display text-xl font-semibold text-slate-900">
+          <h3 className="text-base font-semibold text-slate-900">
             Directory
           </h3>
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+          <span className="text-xs font-medium uppercase tracking-[0.1em] text-slate-500">
             {filteredMembers.length} records
           </span>
         </div>

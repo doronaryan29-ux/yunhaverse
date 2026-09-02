@@ -25,7 +25,7 @@ const FlagIssueModal = ({
               type="text"
               value={form.title}
               onChange={(event) => onChange({ title: event.target.value })}
-              className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
               placeholder="Short summary"
               required
             />
@@ -35,7 +35,7 @@ const FlagIssueModal = ({
             <select
               value={form.severity}
               onChange={(event) => onChange({ severity: event.target.value })}
-              className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
             >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
@@ -48,7 +48,7 @@ const FlagIssueModal = ({
             <textarea
               value={form.details}
               onChange={(event) => onChange({ details: event.target.value })}
-              className="mt-1 h-28 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+              className="mt-1 h-28 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
               placeholder="Describe the issue"
             />
           </label>
@@ -56,7 +56,7 @@ const FlagIssueModal = ({
           {feedback?.message && (
             <p
               className={`text-xs ${
-                feedback.type === 'success' ? 'text-emerald-600' : 'text-rose-500'
+                feedback.type === 'success' ? 'text-emerald-600' : 'text-red-600'
               }`}
             >
               {feedback.message}
@@ -67,14 +67,14 @@ const FlagIssueModal = ({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50"
+              className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600 transition motion-safe:active:scale-[0.97] hover:bg-slate-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="rounded-xl bg-rose-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white shadow-lg shadow-rose-200 transition hover:-translate-y-0.5 disabled:opacity-70"
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition motion-safe:active:scale-[0.97] hover:bg-indigo-700 disabled:opacity-70"
             >
               {loading ? 'Saving...' : 'Create Flag'}
             </button>

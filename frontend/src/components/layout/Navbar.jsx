@@ -1,38 +1,22 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAppSettings } from '../../hooks/useAppSettings'
 
 const navItems = [
   { label: 'Home', href: '#home', keywords: ['start', 'top'] },
-  { label: 'Highlights', href: '#highlights', keywords: ['carousel', 'featured'] },
-  { label: 'Gallery', href: '#gallery', keywords: ['fanart', 'art'] },
+  { label: 'Gallery', href: '#/gallery', keywords: ['fanart', 'art'] },
   { label: 'Countdown', href: '#countdown', keywords: ['dates', 'timer'] },
-  { label: 'Events', href: '#events', keywords: ['calendar', 'schedule'] },
+  { label: 'Events', href: '#/calendar', keywords: ['calendar', 'schedule'] },
   { label: 'Contact', href: '#footer-contact', keywords: ['email', 'footer'] },
 ]
 
+const isNavItemActive = (item, route) => {
+  if (item.href === '#home') {
+    return route === '#home' || route === '#/' || route === '' || route === '#'
+  }
+  return route === item.href
+}
+
 const AUTH_MAX_AGE_MS = 12 * 60 * 60 * 1000
-const normalizeRole = (role) => String(role || '').trim().toLowerCase()
-const isAdminRole = (role) => normalizeRole(role) === 'admin'
-const isCreativeRole = (role) => {
-  const normalized = normalizeRole(role)
-  if (!normalized) return false
-  const compact = normalized.replace(/[_-]+/g, ' ')
-  return (
-    compact.includes('creative') ||
-    compact.includes('copywriter') ||
-    compact.includes('sns')
-  )
-}
-const isCopywriterRole = (role) => {
-  const normalized = normalizeRole(role)
-  if (!normalized) return false
-  return normalized.replace(/[_-]+/g, ' ').includes('copywriter')
-}
-const isSnsRole = (role) => {
-  const normalized = normalizeRole(role)
-  if (!normalized) return false
-  return normalized.replace(/[_-]+/g, ' ').includes('sns')
-}
 const getStoredUser = () => {
   try {
     const user = JSON.parse(sessionStorage.getItem('user') || 'null')
@@ -50,78 +34,23 @@ const getStoredUser = () => {
   }
 }
 
-const getUserInitials = (user) => {
-  const first = String(user?.firstName || '').trim()
-  const last = String(user?.lastName || '').trim()
-  const initials = `${first[0] || ''}${last[0] || ''}`.trim()
-  if (initials) return initials.toUpperCase()
-  const email = String(user?.email || '').trim()
-  return email ? email[0].toUpperCase() : 'U'
-}
-
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [profileOpen, setProfileOpen] = useState(false)
+  const [route, setRoute] = useState(() => window.location.hash || '#/')
   const { settings } = useAppSettings()
-  const { user, authLink } = useMemo(() => {
-    const storedUser = getStoredUser()
-    if (!storedUser) {
-      return { user: null, authLink: { href: '/#/login', label: 'Login' } }
-    }
-    const isAdmin = isAdminRole(storedUser.role)
-    const isCopywriter = isCopywriterRole(storedUser.role)
-    const isSns = isSnsRole(storedUser.role)
-    const isCreative = isCreativeRole(storedUser.role)
-    const target = isAdmin
-      ? '/#/admin'
-      : isCopywriter
-        ? '/#/copywriter'
-        : isSns
-          ? '/#/sns'
-          : isCreative
-            ? '/#/staff'
-            : '/#/member'
-    return {
-      user: storedUser,
-      authLink: {
-        href: target,
-        label: isAdmin
-          ? 'Dashboard'
-          : isCopywriter
-            ? 'Copywriter'
-            : isSns
-              ? 'SNS Updater'
-              : isCreative
-                ? 'Staff Portal'
-                : 'My Page',
-      },
-    }
+
+  useEffect(() => {
+    const handleRouteChange = () => setRoute(window.location.hash || '#/')
+    window.addEventListener('hashchange', handleRouteChange)
+    return () => window.removeEventListener('hashchange', handleRouteChange)
   }, [])
-  const initials = useMemo(() => getUserInitials(user), [user])
+
+  const user = useMemo(() => getStoredUser(), [])
+
   const navigateTo = (href) => {
     if (!href) return
     setMenuOpen(false)
-    setProfileOpen(false)
     window.location.replace(`/${href}`)
-  }
-
-  const handleSignOut = () => {
-    sessionStorage.removeItem('user')
-    sessionStorage.removeItem('authAt')
-    window.location.replace('/#/')
-  }
-
-  const handleProfileToggle = () => {
-    setProfileOpen((prev) => !prev)
-  }
-
-  const handleCloseProfile = () => {
-    setProfileOpen(false)
-  }
-
-  const handleGoProfile = () => {
-    setProfileOpen(false)
-    window.location.replace(authLink.href)
   }
 
   return (
@@ -134,26 +63,27 @@ const Navbar = () => {
           onClick={() => setMenuOpen(false)}
         />
       )}
-      <nav className="sticky top-0 z-40 border-b border-pink-100 bg-white/80 backdrop-blur">
-        <div className="flex w-full items-center justify-between px-4 py-3 sm:px-6 lg:px-10">
+      <nav className="sticky top-0 z-40 border-b-[var(--nb-border-w)] border-[var(--nb-ink)] bg-white">
+        <div className="flex w-full items-center justify-between px-4 py-3 sm:px-6 lg:grid lg:grid-cols-[auto_1fr_auto] lg:items-center lg:gap-6 lg:px-10">
           <div className="flex items-center gap-3">
             <img
               src={settings.logoUrl}
               alt={`${settings.appName} Logo`}
-              className="h-10 w-10 rounded-full object-cover shadow"
+              className="h-10 w-10 rounded-full border-2 border-[var(--nb-ink)] object-cover"
             />
-            <span className="max-w-[180px] truncate font-display text-lg font-semibold tracking-wide text-rose-600 sm:max-w-none">
+            <span className="max-w-[180px] truncate font-display text-lg font-extrabold tracking-wide text-rose-600 sm:max-w-none">
               {settings.appName}
             </span>
           </div>
-          <div className="hidden items-center gap-8 text-sm font-semibold uppercase tracking-[0.12em] text-slate-600 lg:flex">
-            {navItems.map((item, index) => (
+
+          <div className="hidden items-center justify-center gap-8 text-sm font-bold uppercase tracking-[0.12em] text-slate-600 lg:flex">
+            {navItems.map((item) => (
               <button
                 key={item.label}
                 type="button"
                 onClick={() => navigateTo(item.href)}
                 className={
-                  index === 0
+                  isNavItemActive(item, route)
                     ? 'text-rose-500'
                     : 'transition hover:text-rose-500'
                 }
@@ -161,120 +91,55 @@ const Navbar = () => {
                 {item.label}
               </button>
             ))}
-            {!user ? (
+          </div>
+
+          <div className="hidden items-center justify-end lg:flex">
+            {!user && (
               <a
-                href={authLink.href}
-                className="rounded-full bg-rose-500 px-5 py-2 text-xs font-semibold tracking-[0.16em] text-white shadow-lg shadow-rose-200 transition hover:-translate-y-0.5"
+                href="/#/login"
+                className="nb-btn bg-rose-500 px-5 py-2 text-xs tracking-[0.16em] text-white hover:-translate-y-0.5"
               >
-                {authLink.label}
+                Join Fanclub
               </a>
-            ) : (
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={handleProfileToggle}
-                  className="flex items-center gap-3 rounded-full border border-rose-100 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-500 shadow-lg shadow-rose-100 transition hover:-translate-y-0.5"
-                >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-100 text-xs font-bold text-rose-500">
-                    {initials}
-                  </span>
-                  Profile
-                </button>
-                {profileOpen && (
-                  <>
-                    <button
-                      type="button"
-                      aria-label="Close profile menu"
-                      className="fixed inset-0 z-10 cursor-default"
-                      onClick={handleCloseProfile}
-                    />
-                    <div className="absolute right-0 z-20 mt-3 w-56 rounded-2xl border border-rose-100 bg-white p-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600 shadow-xl shadow-rose-100">
-                      <div className="flex items-center gap-3 rounded-xl bg-rose-50 px-3 py-2 text-left text-[10px] font-semibold tracking-[0.18em] text-rose-500">
-                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-bold text-rose-500 shadow">
-                          {initials}
-                        </span>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[10px]">Signed in as</span>
-                          <span className="max-w-[160px] truncate text-[11px] font-semibold text-slate-700">
-                            {user.email}
-                          </span>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleGoProfile}
-                        className="mt-3 w-full rounded-xl border border-rose-100 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600 transition hover:bg-rose-50"
-                      >
-                        {authLink.label}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleSignOut}
-                        className="mt-2 w-full rounded-xl border border-rose-100 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-rose-500 transition hover:bg-rose-50"
-                      >
-                        Sign out
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
             )}
           </div>
+
           <button
             type="button"
-            className="flex flex-col gap-1.5 lg:hidden"
+            className="nb-pill flex flex-col gap-1.5 bg-white p-2.5 lg:hidden"
             aria-label="Toggle menu"
             onClick={() => setMenuOpen((prev) => !prev)}
           >
-            <span className="h-0.5 w-8 rounded-full bg-slate-700" />
-            <span className="h-0.5 w-8 rounded-full bg-slate-700" />
-            <span className="h-0.5 w-8 rounded-full bg-slate-700" />
+            <span className="h-0.5 w-6 rounded-full bg-slate-700" />
+            <span className="h-0.5 w-6 rounded-full bg-slate-700" />
+            <span className="h-0.5 w-6 rounded-full bg-slate-700" />
           </button>
         </div>
         {menuOpen && (
-          <div className="border-t border-pink-100 bg-white px-4 pb-6 pt-4 lg:hidden">
-            <div className="flex flex-col gap-4 text-sm font-semibold uppercase tracking-[0.2em] text-slate-700">
-              {navItems.map((item, index) => (
+          <div className="border-t-[var(--nb-border-w)] border-[var(--nb-ink)] bg-white px-4 pb-6 pt-4 lg:hidden">
+            <div className="flex flex-col gap-4 text-sm font-bold uppercase tracking-[0.2em] text-slate-700">
+              {navItems.map((item) => (
                 <button
                   key={item.label}
                   type="button"
-                  className={index === 0 ? 'text-rose-500 text-left' : 'text-left'}
+                  className={
+                    isNavItemActive(item, route)
+                      ? 'text-rose-500 text-left'
+                      : 'text-left'
+                  }
                   onClick={() => navigateTo(item.href)}
                 >
                   {item.label}
                 </button>
               ))}
-              {!user ? (
+              {!user && (
                 <a
-                  href={authLink.href}
-                  className="rounded-full bg-rose-500 px-4 py-2 text-center text-xs font-semibold tracking-[0.2em] text-white"
+                  href="/#/login"
+                  className="nb-btn bg-rose-500 px-4 py-2 text-center text-xs tracking-[0.2em] text-white"
                   onClick={() => setMenuOpen(false)}
                 >
-                  {authLink.label}
+                  Join Fanclub
                 </a>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMenuOpen(false)
-                      window.location.replace(authLink.href)
-                    }}
-                    className="rounded-full border border-rose-100 px-4 py-2 text-center text-xs font-semibold uppercase tracking-[0.2em] text-rose-500"
-                  >
-                    {authLink.label}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMenuOpen(false)
-                      handleSignOut()
-                    }}
-                    className="rounded-full border border-rose-100 px-4 py-2 text-center text-xs font-semibold uppercase tracking-[0.2em] text-rose-500"
-                  >
-                    Sign out
-                  </button>
-                </>
               )}
             </div>
           </div>

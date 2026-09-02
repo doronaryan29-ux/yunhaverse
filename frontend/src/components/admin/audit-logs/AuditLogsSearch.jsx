@@ -8,7 +8,7 @@ const AuditLogsSearch = ({ value, onChange }) => (
       value={value}
       onChange={onChange}
       placeholder="Action, user, role, ip..."
-      className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+      className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
     />
   </label>
 )

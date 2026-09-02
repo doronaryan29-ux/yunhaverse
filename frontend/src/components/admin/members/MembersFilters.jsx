@@ -25,10 +25,10 @@ const MembersFilters = ({
         <button
           type="button"
           onClick={() => setFiltersOpen((prev) => !prev)}
-          className={`rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] transition ${
+          className={`rounded-lg border px-3.5 py-1.5 text-xs font-medium transition motion-safe:active:scale-[0.97] ${
             filtersOpen
-              ? 'border-rose-400 bg-rose-500 text-white'
-              : 'border-rose-200 text-rose-500 hover:bg-rose-50'
+              ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+              : 'border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
           }`}
         >
           <span className="inline-flex items-center gap-2">
@@ -37,7 +37,7 @@ const MembersFilters = ({
           </span>
         </button>
         {hasActiveFilters ? (
-          <span className="rounded-full bg-rose-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-rose-500">
+          <span className="rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700">
             Active
           </span>
         ) : null}
@@ -47,23 +47,23 @@ const MembersFilters = ({
           filtersOpen ? 'mt-3 max-h-[520px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
         }`}
       >
-        <div className="grid gap-3 rounded-2xl border border-rose-100 bg-rose-50/60 p-4 sm:grid-cols-2 lg:grid-cols-4">
-          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+        <div className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-2 lg:grid-cols-4">
+          <label className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">
             Search
             <input
               type="text"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Name, email, role..."
-              className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
             />
           </label>
-          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+          <label className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">
             Role
             <select
               value={roleFilter}
               onChange={(event) => setRoleFilter(event.target.value)}
-              className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
             >
               {roleOptions.map((role) => (
                 <option key={role} value={role}>
@@ -72,12 +72,12 @@ const MembersFilters = ({
               ))}
             </select>
           </label>
-          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+          <label className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">
             Status
             <select
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
-              className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
             >
               {statusOptions.map((status) => (
                 <option key={status} value={status}>
@@ -86,12 +86,12 @@ const MembersFilters = ({
               ))}
             </select>
           </label>
-          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+          <label className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">
             Verified
             <select
               value={verifiedFilter}
               onChange={(event) => setVerifiedFilter(event.target.value)}
-              className="mt-1 w-full rounded-xl border border-rose-100 bg-white px-3 py-2 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none"
             >
               <option value="all">All</option>
               <option value="verified">Verified</option>
@@ -107,7 +107,7 @@ const MembersFilters = ({
                 setStatusFilter('all')
                 setVerifiedFilter('all')
               }}
-              className="rounded-full border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-rose-500"
+              className="rounded-lg border border-slate-200 px-3.5 py-1.5 text-xs font-medium text-slate-600 transition motion-safe:active:scale-[0.97] hover:border-slate-300 hover:bg-white"
             >
               Clear All
             </button>

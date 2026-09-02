@@ -1,8 +1,6 @@
 const OtpInputs = ({ label, helpText, digits, setDigits, inputRefs }) => (
   <div className="space-y-3">
-    <div className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
-      {label}
-    </div>
+    <div className="field-label">{label}</div>
     <div className="flex flex-wrap gap-2">
       {digits.map((value, index) => (
         <input
@@ -51,7 +49,7 @@ const OtpInputs = ({ label, helpText, digits, setDigits, inputRefs }) => (
               }
             }
           }}
-          className="h-12 w-12 rounded-2xl border border-rose-200 bg-white text-center text-lg font-semibold text-slate-700 focus:border-rose-400 focus:outline-none"
+          className="nb-input h-12 w-12 text-center text-lg font-bold text-slate-700"
           required
         />
       ))}

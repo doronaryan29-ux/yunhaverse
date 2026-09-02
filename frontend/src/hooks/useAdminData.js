@@ -1,6 +1,20 @@
 import { useCallback, useEffect, useState } from 'react'
 import { fetchJsonWithFallback } from '../utils/fetchJsonWithFallback'
 
+const emptyStats = {
+  activeMembers: null,
+  creativeStaff: null,
+  openAuditFlags: null,
+  memberBreakdown: { activeMembers: 0, creativeStaff: 0, inactive: 0, pendingVerification: 0, totalMembers: 0 },
+  memberGrowth: [],
+  auditActivityTrend: [],
+  goals: {
+    donations: { current: 0, goal: 10000, progress: 0 },
+    flagsResolved: { resolved: 0, total: 0, progress: 0 },
+    verification: { verified: 0, total: 0, progress: 0 },
+  },
+}
+
 export const useAdminData = ({
   apiBase,
   profileRoleNormalized,
@@ -34,11 +48,10 @@ export const useAdminData = ({
   })
   const [auditFlags, setAuditFlags] = useState([])
   const [auditFlagsLoading, setAuditFlagsLoading] = useState(false)
-  const [stats, setStats] = useState({
-    activeMembers: null,
-    creativeStaff: null,
-    openAuditFlags: null,
-  })
+  const [resolvingFlagId, setResolvingFlagId] = useState(null)
+  const [auditFlagsActionError, setAuditFlagsActionError] = useState(null)
+  const [stats, setStats] = useState(emptyStats)
+  const [statsLoading, setStatsLoading] = useState(true)
 
   const fetchNotifications = useCallback(async () => {
     if (!userId) return
@@ -67,6 +80,7 @@ export const useAdminData = ({
   }, [apiBase, profileRoleNormalized, userId])
 
   const fetchAdminStats = useCallback(async () => {
+    setStatsLoading(true)
     try {
       const params = new URLSearchParams({
         requesterRole: profileRoleNormalized,
@@ -82,6 +96,10 @@ export const useAdminData = ({
         activeMembers: Number(data.activeMembers || 0),
         creativeStaff: Number(data.creativeStaff || 0),
         openAuditFlags: Number(data.openAuditFlags || 0),
+        memberBreakdown: data.memberBreakdown || emptyStats.memberBreakdown,
+        memberGrowth: Array.isArray(data.memberGrowth) ? data.memberGrowth : [],
+        auditActivityTrend: Array.isArray(data.auditActivityTrend) ? data.auditActivityTrend : [],
+        goals: data.goals || emptyStats.goals,
       })
     } catch {
       try {
@@ -126,17 +144,16 @@ export const useAdminData = ({
         const openAuditFlags = Array.isArray(flagsData?.items) ? flagsData.items.length : 0
 
         setStats({
+          ...emptyStats,
           activeMembers,
           creativeStaff,
           openAuditFlags,
         })
       } catch {
-        setStats({
-          activeMembers: 0,
-          creativeStaff: 0,
-          openAuditFlags: 0,
-        })
+        setStats(emptyStats)
       }
+    } finally {
+      setStatsLoading(false)
     }
   }, [apiBase, profileRoleNormalized])
 
@@ -405,19 +422,36 @@ export const useAdminData = ({
   const markNotificationRead = useCallback(
     async (notificationId) => {
       if (!userId) return
+
+      // Optimistic update — reflects immediately, rolled back below on failure.
+      setNotifications((prev) =>
+        prev.map((item) =>
+          item.id === notificationId ? { ...item, isRead: true } : item,
+        ),
+      )
+      setUnreadCount((prev) => Math.max(0, prev - 1))
+
       try {
-        await fetchJsonWithFallback(apiBase, `/notifications/${notificationId}/read`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId }),
-        })
-      } finally {
+        const { response, data } = await fetchJsonWithFallback(
+          apiBase,
+          `/notifications/${notificationId}/read`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId }),
+          },
+        )
+        if (!response.ok) {
+          throw new Error(data?.message || 'Failed to mark notification read.')
+        }
+      } catch (err) {
+        console.error(err)
         setNotifications((prev) =>
           prev.map((item) =>
-            item.id === notificationId ? { ...item, isRead: true } : item,
+            item.id === notificationId ? { ...item, isRead: false } : item,
           ),
         )
-        setUnreadCount((prev) => Math.max(0, prev - 1))
+        setUnreadCount((prev) => prev + 1)
       }
     },
     [apiBase, userId],
@@ -425,7 +459,23 @@ export const useAdminData = ({
 
   const handleResolveFlag = useCallback(
     async (flagId) => {
-      if (!flagId) return
+      if (!flagId || resolvingFlagId === flagId) return
+      const flagToResolve = auditFlags.find((flag) => flag.id === flagId)
+      if (!flagToResolve) return
+
+      setAuditFlagsActionError(null)
+      setResolvingFlagId(flagId)
+
+      // Optimistic update — remove immediately, roll back below on failure.
+      setAuditFlags((prev) => prev.filter((flag) => flag.id !== flagId))
+      setStats((prev) => ({
+        ...prev,
+        openAuditFlags:
+          typeof prev.openAuditFlags === 'number'
+            ? Math.max(0, prev.openAuditFlags - 1)
+            : prev.openAuditFlags,
+      }))
+
       try {
         const { response, data } = await fetchJsonWithFallback(
           apiBase,
@@ -442,13 +492,29 @@ export const useAdminData = ({
         if (!response.ok) {
           throw new Error(data?.message || 'Failed to resolve audit flag.')
         }
+        // Optimistic state is already correct; quietly reconcile stats in
+        // the background (no fetchAuditFlags() here — that would re-trigger
+        // auditFlagsLoading and flash the list right after it just settled).
         fetchAdminStats()
-        fetchAuditFlags()
-      } catch {
-        // no-op for now
+      } catch (err) {
+        setAuditFlags((prev) =>
+          prev.some((flag) => flag.id === flagId) ? prev : [flagToResolve, ...prev],
+        )
+        setStats((prev) => ({
+          ...prev,
+          openAuditFlags:
+            typeof prev.openAuditFlags === 'number'
+              ? prev.openAuditFlags + 1
+              : prev.openAuditFlags,
+        }))
+        setAuditFlagsActionError(
+          err instanceof Error ? err.message : 'Failed to resolve audit flag.',
+        )
+      } finally {
+        setResolvingFlagId((current) => (current === flagId ? null : current))
       }
     },
-    [apiBase, fetchAdminStats, fetchAuditFlags, profileRoleNormalized, userId],
+    [apiBase, auditFlags, fetchAdminStats, profileRoleNormalized, resolvingFlagId, userId],
   )
 
   useEffect(() => {
@@ -503,6 +569,7 @@ export const useAdminData = ({
     fetchNotifications,
     markNotificationRead,
     stats,
+    statsLoading,
     fetchAdminStats,
     auditItems,
     auditLogsLoading,
@@ -526,5 +593,7 @@ export const useAdminData = ({
     auditFlagsLoading,
     fetchAuditFlags,
     handleResolveFlag,
+    resolvingFlagId,
+    auditFlagsActionError,
   }
 }

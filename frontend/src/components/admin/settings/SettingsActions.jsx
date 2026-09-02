@@ -10,7 +10,7 @@ const SettingsActions = ({ saving, loading, feedback }) => (
       {saving ? 'Saving...' : loading ? 'Loading...' : 'Save settings'}
     </button>
     {feedback.message ? (
-      <p className={`text-sm ${feedback.type === 'error' ? 'text-rose-500' : 'text-emerald-600'}`}>
+      <p className={`text-sm ${feedback.type === 'error' ? 'text-red-600' : 'text-emerald-600'}`}>
         {feedback.message}
       </p>
     ) : null}

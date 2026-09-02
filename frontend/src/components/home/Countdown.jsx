@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import useCountdown from '../../hooks/useCountdown'
 import { formatDateInManila } from '../../utils/date'
+import { Tooltip } from '../common'
 
 const Countdown = ({ events }) => {
   const [activeCountdown, setActiveCountdown] = useState(0)
@@ -20,26 +21,26 @@ const Countdown = ({ events }) => {
   return (
     <section
       id="countdown"
-      className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 scroll-mt-28"
+      className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 scroll-mt-28"
     >
       <div className="text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.5em] text-rose-500">
+        <span className="nb-pill inline-flex bg-rose-100 px-4 py-1.5 text-xs uppercase tracking-[0.4em] text-rose-600">
           Keep The Hype
-        </p>
-        <h2 className="font-display text-3xl font-semibold text-slate-900">
+        </span>
+        <h2 className="mt-4 font-display text-3xl font-extrabold text-slate-900">
           Countdown to Important Dates
         </h2>
       </div>
-      <div className="rounded-3xl border border-pink-100 bg-white p-5 shadow-xl sm:p-8">
+      <div className="nb-surface p-5 sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-rose-500">
+            <p className="text-xs font-bold uppercase tracking-[0.4em] text-rose-500">
               Next Up
             </p>
-            <h3 className="text-2xl font-semibold text-slate-900">{activeEvent.title}</h3>
+            <h3 className="text-2xl font-bold text-slate-900">{activeEvent.title}</h3>
             <p className="text-sm text-slate-500">{activeEventDateLabel}</p>
             <span
-              className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+              className={`nb-pill inline-flex items-center px-3 py-1 text-xs ${
                 timeLeft.isOver
                   ? 'bg-amber-100 text-amber-700'
                   : 'bg-emerald-100 text-emerald-700'
@@ -55,10 +56,7 @@ const Countdown = ({ events }) => {
               { label: 'Mins', value: timeLeft.minutes },
               { label: 'Secs', value: timeLeft.secs },
             ].map((item) => (
-              <div
-                key={item.label}
-                className="rounded-2xl border border-rose-100 bg-rose-50 px-3 py-2.5"
-              >
+              <div key={item.label} className="nb-chip bg-rose-50 px-3 py-2.5">
                 <div className="font-display text-2xl font-bold leading-none tracking-tight text-slate-900 tabular-nums sm:text-3xl">
                   {String(item.value).padStart(2, '0')}
                 </div>
@@ -71,18 +69,20 @@ const Countdown = ({ events }) => {
         </div>
         <div className="mt-6 flex items-center justify-center gap-4">
           {events.map((event, index) => (
-            <button
-              key={event.title}
-              type="button"
-              onClick={() => setActiveCountdown(index)}
-              className={`flex h-12 w-12 items-center justify-center rounded-full border text-lg transition ${
-                activeCountdown === index
-                  ? 'border-rose-500 bg-rose-500 text-white'
-                  : 'border-rose-200 bg-white text-rose-500 hover:-translate-y-0.5'
-              }`}
-            >
-              <i className={`fas ${event.icon}`} />
-            </button>
+            <Tooltip key={event.title} label={event.title}>
+              <button
+                type="button"
+                onClick={() => setActiveCountdown(index)}
+                aria-label={`Show countdown for ${event.title}`}
+                className={`nb-pill flex h-12 w-12 items-center justify-center text-lg transition ${
+                  activeCountdown === index
+                    ? 'nb-tab-active bg-rose-500 text-white'
+                    : 'bg-white text-rose-500 hover:-translate-y-0.5'
+                }`}
+              >
+                <i className={`fas ${event.icon}`} />
+              </button>
+            </Tooltip>
           ))}
         </div>
       </div>

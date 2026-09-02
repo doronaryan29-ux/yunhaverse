@@ -19,10 +19,10 @@ const RequestHistoryModal = ({ historyModal, historyItems, historyLoading, onClo
         {historyItems.map((entry) => (
           <div
             key={entry.id}
-            className="rounded-2xl border border-rose-100 bg-rose-50/70 px-4 py-3"
+            className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-500">
+              <span className="text-xs font-semibold uppercase tracking-[0.14em] text-indigo-600">
                 {entry.action?.replace('_', ' ') || 'update'}
               </span>
               <span className="text-xs text-slate-400">

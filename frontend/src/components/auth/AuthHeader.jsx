@@ -9,20 +9,20 @@ const AuthHeader = ({ onBack }) => {
         <img
           src={settings.logoUrl}
           alt={`${settings.appName} Logo`}
-          className="h-11 w-11 rounded-full object-cover shadow"
+          className="h-11 w-11 rounded-full border-2 border-[var(--nb-ink)] object-cover"
         />
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-rose-500">
+          <p className="text-xs font-bold uppercase tracking-[0.4em] text-rose-500">
             General Access
           </p>
-          <h1 className="font-display text-2xl font-semibold text-slate-900">
+          <h1 className="font-display text-2xl font-extrabold text-slate-900">
             {settings.appName} Portal
           </h1>
         </div>
       </div>
       <button
         type="button"
-        className="rounded-full border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50"
+        className="nb-pill bg-white px-4 py-2 text-xs uppercase tracking-[0.3em] text-rose-500 transition hover:-translate-y-0.5 hover:bg-rose-50"
         onClick={onBack}
       >
         Back to home

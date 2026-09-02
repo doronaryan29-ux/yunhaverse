@@ -6,16 +6,19 @@ const PasswordField = ({
   onToggle,
   placeholder,
   required,
+  compact = false,
 }) => (
-  <label className="block text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
-    {label}
-    <div className="relative mt-2">
+  <label className="block">
+    <span className="field-label">{label}</span>
+    <div className="relative">
       <input
         type={show ? 'text' : 'password'}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full rounded-2xl border border-rose-100 bg-white px-4 py-3 pr-12 text-sm text-slate-700 focus:border-rose-400 focus:outline-none"
+        className={`nb-input w-full pr-12 text-sm text-slate-700 ${
+          compact ? 'px-3 py-2' : 'px-4 py-3'
+        }`}
         required={required}
       />
       <button

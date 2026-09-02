@@ -7,7 +7,7 @@ const BrandingSection = ({
   onSettingChange,
   onLogoUpload,
 }) => (
-  <section className="rounded-3xl border border-rose-100 bg-white/90 p-6 shadow-sm">
+  <section className="rounded-xl border border-slate-200 bg-white/90 p-6 shadow-sm">
     <h3 className="text-lg font-semibold text-slate-900">Branding</h3>
     <p className="mt-1 text-sm text-slate-600">
       Customize what members see on the homepage.
@@ -26,8 +26,8 @@ const BrandingSection = ({
         </label>
         <div className="space-y-2 text-sm">
           <span className="font-medium text-slate-700">Upload logo</span>
-          <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-dashed border-rose-200 bg-rose-50/60 p-3">
-            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-rose-200 bg-white shadow-sm">
+          <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-3">
+            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white shadow-sm">
               {settings.logoUrl ? (
                 <img
                   src={settings.logoUrl}
@@ -35,7 +35,7 @@ const BrandingSection = ({
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <span className="text-[10px] font-semibold text-rose-400">No logo</span>
+                <span className="text-[10px] font-semibold text-slate-400">No logo</span>
               )}
             </div>
             <div className="min-w-[160px] flex-1 space-y-1">
@@ -76,7 +76,7 @@ const BrandingSection = ({
         </label>
       </div>
 
-      <div className="rounded-3xl border border-rose-100 bg-rose-50/60 p-4 shadow-sm lg:-ml-2">
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-sm lg:-ml-2">
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-2 text-sm">
             <span className="font-medium text-slate-700">Primary color</span>
@@ -108,12 +108,12 @@ const BrandingSection = ({
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-rose-500">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
               Homepage Preview
             </p>
             <div className="mt-3 space-y-3 rounded-2xl border border-white/70 bg-white/80 p-4">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 overflow-hidden rounded-full border border-rose-100 bg-white">
+                <div className="h-10 w-10 overflow-hidden rounded-full border border-slate-200 bg-white">
                   {settings.logoUrl ? (
                     <img
                       src={settings.logoUrl}

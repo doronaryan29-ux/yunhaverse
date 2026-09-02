@@ -64,22 +64,22 @@ const RequestsSection = ({
     archivedItems.every((item) => selectedArchivedIds.includes(item.id))
 
   return (
-    <section className="rounded-3xl border border-rose-100 bg-white/90 p-6 shadow-lg shadow-rose-100">
+    <section className="rounded-xl border border-slate-200 bg-white p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="font-display text-xl font-semibold text-slate-900">
-          Requests Queue
+        <h3 className="text-base font-semibold text-slate-900">
+          Open Requests
         </h3>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+          <span className="text-xs font-medium uppercase tracking-[0.1em] text-slate-500">
             {requestItems.length} active
           </span>
           <button
             type="button"
             onClick={() => setFiltersOpen((prev) => !prev)}
-            className={`rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] transition ${
+            className={`rounded-lg border px-3.5 py-1.5 text-xs font-medium transition motion-safe:active:scale-[0.97] ${
               filtersOpen
-                ? 'border-rose-400 bg-rose-500 text-white'
-                : 'border-rose-200 text-rose-500 hover:bg-rose-50'
+                ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                : 'border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
             }`}
           >
             <span className="inline-flex items-center gap-2">
@@ -95,7 +95,7 @@ const RequestsSection = ({
           filtersOpen ? 'mt-4 max-h-64 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
         }`}
       >
-        <div className="space-y-3 rounded-2xl border border-rose-100 bg-rose-50/60 p-4">
+        <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <div className="grid gap-3 md:grid-cols-2">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -114,10 +114,10 @@ const RequestsSection = ({
                     key={option.value}
                     type="button"
                     onClick={() => setRequestStatusFilter(option.value)}
-                    className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] ${
+                    className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition motion-safe:active:scale-[0.97] ${
                       requestStatusFilter === option.value
-                        ? 'border-rose-400 bg-rose-500 text-white'
-                        : 'border-rose-200 bg-white text-rose-500 hover:bg-rose-50'
+                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
                     }`}
                   >
                     {option.label}
@@ -139,10 +139,10 @@ const RequestsSection = ({
                     key={option.value}
                     type="button"
                     onClick={() => setRequestSubmissionFilter(option.value)}
-                    className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] ${
+                    className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition motion-safe:active:scale-[0.97] ${
                       requestSubmissionFilter === option.value
-                        ? 'border-rose-400 bg-rose-500 text-white'
-                        : 'border-rose-200 bg-white text-rose-500 hover:bg-rose-50'
+                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
                     }`}
                   >
                     {option.label}
@@ -157,7 +157,7 @@ const RequestsSection = ({
               setRequestStatusFilter('all')
               setRequestSubmissionFilter('all')
             }}
-            className="rounded-full border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-rose-500"
+            className="rounded-lg border border-slate-200 px-3.5 py-1.5 text-xs font-medium text-slate-600 transition motion-safe:active:scale-[0.97] hover:border-slate-300 hover:bg-white"
           >
             <span className="inline-flex items-center gap-1">
               <i className="fas fa-rotate-left" aria-hidden="true" />
@@ -169,12 +169,12 @@ const RequestsSection = ({
 
       <div className="mt-4 grid gap-3">
         {loadingRequests && (
-          <p className="rounded-2xl border border-rose-100 bg-rose-50/60 p-4 text-sm text-slate-500">
+          <p className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
             Loading requests...
           </p>
         )}
         {!loadingRequests && requestItems.length === 0 && (
-          <p className="rounded-2xl border border-rose-100 bg-rose-50/60 p-4 text-sm text-slate-500">
+          <p className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
             No requests yet.
           </p>
         )}
@@ -182,7 +182,7 @@ const RequestsSection = ({
           requestItems.map((item) => (
             <article
               key={item.id}
-              className="rounded-2xl border border-rose-100 bg-rose-50/60 p-4"
+              className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -198,10 +198,10 @@ const RequestsSection = ({
                   ) : null}
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="rounded-full border border-rose-200 bg-rose-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-rose-700">
+                  <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700">
                     {String(item.priority || 'Medium')}
                   </span>
-                  <span className="rounded-full border border-rose-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-rose-600">
+                  <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">
                     {formatStageLabel(item.stage)}
                   </span>
                   <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700">
@@ -211,8 +211,8 @@ const RequestsSection = ({
               </div>
 
               {(item.submission_url || item.submission_notes || item.submission_title) && (
-                <div className="mt-3 rounded-2xl border border-rose-100 bg-white/80 p-3 text-xs text-slate-600">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500">
+                <div className="mt-3 rounded-2xl border border-slate-200 bg-white/80 p-3 text-xs text-slate-600">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
                     Latest Submission
                   </p>
                   <p className="mt-2 text-sm font-semibold text-slate-800">
@@ -223,7 +223,7 @@ const RequestsSection = ({
                       href={item.submission_url}
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-1 inline-flex text-xs font-semibold text-rose-500 hover:underline"
+                      className="mt-1 inline-flex text-xs font-semibold text-indigo-600 hover:underline"
                     >
                       {item.submission_url}
                     </a>
@@ -242,7 +242,7 @@ const RequestsSection = ({
                     </p>
                   ) : null}
                   {item.review_note ? (
-                    <p className="mt-2 text-[11px] text-rose-500">
+                    <p className="mt-2 text-[11px] text-slate-500">
                       Review note: {item.review_note}
                     </p>
                   ) : null}
@@ -282,7 +282,7 @@ const RequestsSection = ({
                         type="button"
                         disabled={!canSubmit || submitting}
                         onClick={() => onOpenReview?.({ request: item, action: 'decline' })}
-                        className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:opacity-60"
+                        className="rounded-full border border-red-200 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.14em] text-red-600 disabled:opacity-60"
                       >
                         <span className="inline-flex items-center gap-1">
                           <i className="fas fa-xmark" aria-hidden="true" />
@@ -295,7 +295,7 @@ const RequestsSection = ({
                     type="button"
                     disabled={!canSubmit}
                     onClick={() => setActionsRequestId(item.id)}
-                    className="rounded-full border border-rose-200 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-rose-600 disabled:opacity-60"
+                    className="rounded-full border border-slate-200 px-4 py-1.5 text-xs font-medium text-slate-600 disabled:opacity-60"
                   >
                     <span className="inline-flex items-center gap-1.5">
                       <i className="fas fa-sliders" aria-hidden="true" />
@@ -309,7 +309,7 @@ const RequestsSection = ({
                       setHistoryModal(item)
                       fetchHistory(item.id)
                     }}
-                    className="rounded-full border border-rose-200 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-rose-600 disabled:opacity-60"
+                    className="rounded-full border border-slate-200 px-4 py-1.5 text-xs font-medium text-slate-600 disabled:opacity-60"
                   >
                     <span className="inline-flex items-center gap-1">
                       <i className="fas fa-clock-rotate-left" aria-hidden="true" />
@@ -326,7 +326,7 @@ const RequestsSection = ({
         <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-600">
-              Declined Archive
+              Declined Requests
             </h4>
             <span className="rounded-full bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
               {archivedItems.length} declined
@@ -472,7 +472,7 @@ const RequestsSection = ({
                       },
                     }))
                   }
-                  className="mt-1 w-full rounded-xl border border-rose-200 bg-white px-3 py-2 pr-8 text-sm text-slate-700"
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-700"
                 >
                   {stageOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -494,7 +494,7 @@ const RequestsSection = ({
                       },
                     }))
                   }
-                  className="mt-1 w-full rounded-xl border border-rose-200 bg-white px-3 py-2 pr-8 text-sm text-slate-700"
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-700"
                 >
                   <option value="">Unassigned</option>
                   {getMembersForStage(actionEdit.stage).map((member) => (
@@ -516,7 +516,7 @@ const RequestsSection = ({
                       [actionRequest.id]: { ...actionEdit, status: event.target.value },
                     }))
                   }
-                  className="mt-1 w-full rounded-xl border border-rose-200 bg-white px-3 py-2 pr-8 text-sm text-slate-700"
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-700"
                 >
                   {statusOptions
                     .filter((option) => String(option) !== 'blocked')
@@ -537,7 +537,7 @@ const RequestsSection = ({
                       [actionRequest.id]: { ...actionEdit, priority: event.target.value },
                     }))
                   }
-                  className="mt-1 w-full rounded-xl border border-rose-200 bg-white px-3 py-2 pr-8 text-sm text-slate-700"
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-700"
                 >
                   {priorityOptions.map((option) => (
                     <option key={option} value={option}>
@@ -561,7 +561,7 @@ const RequestsSection = ({
                     },
                   }))
                 }
-                className="mt-1 w-full rounded-xl border border-rose-200 bg-white px-3 py-2 text-xs text-slate-700"
+                className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700"
                 placeholder="Add admin note for this request..."
               />
             </label>
@@ -581,7 +581,7 @@ const RequestsSection = ({
                   })
                   setActionsRequestId(null)
                 }}
-                className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:opacity-60"
+                className="rounded-full border border-slate-200 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.14em] text-slate-600 disabled:opacity-60"
               >
                 <span className="inline-flex items-center gap-1">
                   <i className="fas fa-floppy-disk" aria-hidden="true" />
@@ -599,7 +599,7 @@ const RequestsSection = ({
                   })
                   setActionsRequestId(null)
                 }}
-                className="rounded-full border border-rose-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-500 disabled:opacity-60"
+                className="rounded-full border border-red-200 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.14em] text-red-600 disabled:opacity-60"
               >
                 <span className="inline-flex items-center gap-1">
                   <i className="fas fa-trash" aria-hidden="true" />
